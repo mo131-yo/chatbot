@@ -1,8 +1,8 @@
 "use client";
 import { useState, useEffect, useRef, useLayoutEffect } from "react";
-import { Header } from "./components/Header";
+
 import { Sidebar } from "./components/SideBar";
-import { ChatInput } from "./components/ChatInput";
+// import { ChatInput } from "./components/ChatInput";
 import ReactMarkdown from "react-markdown";
 import React from "react";
 import dynamic from "next/dynamic";
@@ -12,6 +12,9 @@ import { ProductCarousel } from "@/app/components/InfiniteCarousel";
 import { ProductDetailSidebar } from "./components/ProductDetailSidebar";
 import { AnimatePresence, motion } from "framer-motion";
 import { MoveLeft, MoveRight } from "lucide-react";
+import HeaderHomePage from "./chat/header/page";
+import { ChatInput } from "./components/ChatInput";
+
 
 const SplineScene = dynamic(
   () => import("@/components/ui/splite").then((mod) => mod.SplineScene),
@@ -224,8 +227,8 @@ export default function Home() {
       />
 
       <div className="flex-1 flex flex-col min-w-0 h-screen relative">
-        <Header toggleSidebar={() => setIsCollapsed(!isCollapsed)} />
 
+        <HeaderHomePage />
         <div className="absolute inset-0 z-0 pointer-events-none">
           <SparklesCore
             id="tsparticlesfullpage"
@@ -243,7 +246,6 @@ export default function Home() {
             speed={1}
           />
         </div>
-
         <main className="flex-1 overflow-y-auto bg-transparent p-4 custom-scrollbar relative z-10">
           {currentChatMessages.length === 0 ? (
             <div className="flex-1 relative min-h-125 flex items-center justify-center">
@@ -445,11 +447,17 @@ export default function Home() {
             </div>
           )}
         </main>
-        <ChatInput
+          {/* <ChatInput
+            onMessageReceived={handleNewMessage}
+            history={currentChatMessages}
+            setIsTyping={setIsTyping}
+          /> */}
+          <ChatInput
           onMessageReceived={handleNewMessage}
           history={currentChatMessages}
           setIsTyping={setIsTyping}
         />
+        {/* <ChatHomePage/> */}
       </div>
     </div>
   );
