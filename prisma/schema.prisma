@@ -12,6 +12,14 @@ model product {
     description String
     price       Float
     imageUrl    String
+    stock       Int
+    color       String
+    size        String
+    rating      Float
+    reviews     Int
+    category    String
+    brand       String
+
     createdAt   DateTime @default(now())
     updatedAt   DateTime @updatedAt
 }
