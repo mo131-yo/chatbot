@@ -14,12 +14,11 @@ export const useChatLogic = () => {
     const savedSidebar = localStorage.getItem("ai_sidebar_history");
     if (savedAllChats) setAllChats(JSON.parse(savedAllChats));
     if (savedSidebar) setSidebarHistory(JSON.parse(savedSidebar));
+    
   }, []);
 
   useEffect(() => {
-    if (Object.keys(allChats).length > 0) {
-      localStorage.setItem("ai_all_chats", JSON.stringify(allChats));
-    }
+    localStorage.setItem("ai_all_chats", JSON.stringify(allChats));
     localStorage.setItem("ai_sidebar_history", JSON.stringify(sidebarHistory));
   }, [allChats, sidebarHistory]);
 
@@ -53,7 +52,7 @@ useEffect(() => {
   migrateHistory();
 }, [isSignedIn, user?.id]);
   const sendMessage = async (message: string) => {
-  if (!message.trim()) return;
+    if (!message.trim()) return;
 
 // <<<<<<< Updated upstream
 //   setIsTyping(true); 
@@ -149,6 +148,6 @@ useEffect(() => {
     allChats, sidebarHistory,
     isTyping, setIsTyping,
     sendMessage,
-    handleNewMessage: (u: string, a: string) => {}
+    handleNewMessage: () => {}
   };
 };
