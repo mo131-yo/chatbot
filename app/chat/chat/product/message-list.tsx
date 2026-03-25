@@ -49,9 +49,10 @@ export const MessageList = ({
                       const imageElements = childrenArray.filter((c: any) => c.type === 'img' || (c.props && c.props.src));
                       const textElements = childrenArray.filter((c: any) => c.type !== 'img' && !(c.props && c.props.src));
 
-                      const products = imageElements.map((img: any) => {
+                      const products = imageElements.map((img: any, idx: number) => {
                         const [name, price] = (img.props.alt || "").split(",");
                         return {
+                          id: img.props.src || `prod-${idx}`,
                           name: name || "Нэргүй бараа",
                           price: price || "Үнэ тодорхойгүй",
                           image: img.props.src,
