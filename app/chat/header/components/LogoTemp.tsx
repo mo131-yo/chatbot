@@ -1,6 +1,6 @@
 "use client";
 
-export const Logo = () => {
+export const LogoTemp = () => {
   return (
     <div className="flex items-center gap-3">
       <h2 className="text-xl font-light tracking-[0.2em] uppercase dark:text-slate-100">
