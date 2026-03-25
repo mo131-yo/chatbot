@@ -22,7 +22,7 @@ export function useVoiceToText() {
         formData.append("file", audioBlob, "recording.webm");
 
         try {
-          const res = await fetch("/api/whisper", { method: "POST", body: formData });
+          const res = await fetch("/chat/api/whisper", { method: "POST", body: formData });
           const data = await res.json();
           if (data.text) {
             onTextReceived(data.text);
