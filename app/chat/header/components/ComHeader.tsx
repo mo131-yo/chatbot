@@ -1,7 +1,7 @@
 import React from 'react'
 import { ClerkAuth } from './Clerk'
 import { DarkMode } from './DarkMode'
-import { Logo } from './Logo'
+import { LogoTemp } from './LogoTemp'
 
 export const ComHeader = ({ toggleSidebar }: { toggleSidebar: () => void }) => {
   return (
@@ -10,7 +10,7 @@ export const ComHeader = ({ toggleSidebar }: { toggleSidebar: () => void }) => {
         <span>Menu</span>
       </button>
 
-      <Logo />
+      <LogoTemp />
       <div className="flex items-center gap-4">
         <ClerkAuth />
         <DarkMode />
