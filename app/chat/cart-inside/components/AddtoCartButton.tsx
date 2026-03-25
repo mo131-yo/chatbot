@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { FaShoppingCart } from "react-icons/fa";
 
 export default function AddToCartButton({ productId }: { productId: string }) {
   const [loading, setLoading] = useState(false);
@@ -25,9 +26,9 @@ export default function AddToCartButton({ productId }: { productId: string }) {
   return (
     <button
       onClick={addToCart}
-      className="bg-black text-white px-4 py-2 rounded"
+      className="bg-black text-white rounded-full px-4 py-2"
     >
-      {loading ? "Adding..." : "Add to Cart"}
+      {loading ? "Adding..." : <FaShoppingCart />}
     </button>
   );
 }

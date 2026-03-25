@@ -1,7 +1,9 @@
 "use client";
 import React, { useRef } from "react";
+import AddToCartButton from "../../cart-inside/components/AddtoCartButton";
 
 interface Product {
+  id: string;
   name: string;
   price: string;
   image: string;
@@ -36,7 +38,7 @@ export const ProductCarousel = ({ products, onBuy, onSelect }: ProductCarouselPr
         {products.map((product, i) => (
           <div 
             key={i} 
-            className="flex-shrink-0 w-[220px] md:w-[260px] snap-center cursor-pointer"
+            className="shrink-0 w-55 md:w-65 snap-center cursor-pointer"
             onClick={() => onSelect(product)}
           >
             <div className="relative group/card rounded-2xl overflow-hidden bg-[#161616] border border-white/5 shadow-xl transition-all duration-300 hover:border-[#C5A059]/40">
@@ -52,13 +54,13 @@ export const ProductCarousel = ({ products, onBuy, onSelect }: ProductCarouselPr
                 <h3 className="text-white font-bold text-sm truncate">{product.name}</h3>
                 <div className="flex items-center justify-between pt-2">
                   <span className="text-[#C5A059] font-black text-sm">{product.price}</span>
+                  <AddToCartButton productId={product.id || i.toString()}/>
                   <button 
                     onClick={(e) => {
                       e.stopPropagation();
                       onBuy(product.name, product.price);
                     }}
-                    className="px-3 py-1.5 bg-[#C5A059] text-black text-[10px] font-black rounded-lg uppercase hover:bg-white transition-all"
-                  >
+                    className="px-3 py-1.5 bg-[#C5A059] text-black text-[10px] font-black rounded-lg uppercase hover:bg-white transition-all">
                     Buy
                   </button>
                 </div>
