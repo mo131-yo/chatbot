@@ -1,6 +1,6 @@
   import { NextResponse } from 'next/server';
   import OpenAI from 'openai';
-  import { index } from "@/app/lib/pinecone";
+  import { index } from "@/lib/api/pinecone";
 
   const openai = new OpenAI({
     apiKey: process.env.OPENAI_KEY,
