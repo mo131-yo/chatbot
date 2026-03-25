@@ -17,7 +17,11 @@ type Product = {
 export async function POST(request: NextRequest) {
   const { name, price, description, imageUrl } = await request.json();
 
+<<<<<<< HEAD
 
+=======
+  // Энд та бүтээгдэхүүнийг хадгалах логикыг нэмж болно (жишээ нь, өгөгдлийн сантай холбогдох)
+>>>>>>> 86a853c1f3333129e8261088d10bb481939eab57
 
   try {
     const newProduct: Product = {
@@ -34,7 +38,11 @@ export async function POST(request: NextRequest) {
       brand: "",
     };
 
+<<<<<<< HEAD
 
+=======
+    // Бүтээгдэхүүнийг хадгалах логикыг энд нэмж болно
+>>>>>>> 86a853c1f3333129e8261088d10bb481939eab57
 
     return new Response(JSON.stringify(newProduct), {
       status: 201,
