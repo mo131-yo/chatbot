@@ -1,6 +1,7 @@
 "use client";
 import React, { useRef } from "react";
 import AddToCartButton from "../../cart-inside/components/AddtoCartButton";
+import { useCart } from "@/app/context/CartContext";
 
 interface Product {
   id: string;
@@ -19,7 +20,8 @@ interface ProductCarouselProps {
 
 export const ProductCarousel = ({ products, onBuy, onSelect }: ProductCarouselProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
-
+  const { addToCart } = useCart();
+  
   const scroll = (direction: "left" | "right") => {
     if (scrollRef.current) {
       const { scrollLeft, clientWidth } = scrollRef.current;
@@ -55,14 +57,22 @@ export const ProductCarousel = ({ products, onBuy, onSelect }: ProductCarouselPr
                 <h3 className="text-white font-bold text-sm truncate">{product.name}</h3>
                 <div className="flex items-center justify-between pt-2">
                   <span className="text-[#C5A059] font-black text-sm">{product.price}</span>
-                  <AddToCartButton productId={product.id || i.toString()}/>
+                  {/* <AddToCartButton productId={product.id || i.toString()}/> */}
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      addToCart(product.id);
+                    }}
+                    className="px-3 py-1.5 bg-[#C5A059] text-black text-[10px] font-black rounded-lg uppercase hover:bg-white transition-all">
+                    Buy
+                  </button>
                   <button 
                     onClick={(e) => {
                       e.stopPropagation();
                       onBuy(product.name, product.price);
                     }}
                     className="px-3 py-1.5 bg-[#C5A059] text-black text-[10px] font-black rounded-lg uppercase hover:bg-white transition-all">
-                    Buy
+                    add card
                   </button>
                 </div>
               </div>

@@ -95,14 +95,15 @@ const aiReply = chatResponse.choices[0].message.content;
 if (userId && chatId) {
   try {
     const stringChatId = chatId.toString();
-
+    
     const dbUser = await prisma.user.upsert({
       where: { clerkUserId: userId },
-      update: {}, 
+      update: {},
       create: {
         clerkUserId: userId,
-        email: `${userId}@clerk.user`,
+        email: `${userId}@internal.user`, 
         password: "CLERK_MANAGED",
+        name: "User"
       }
     });
 
@@ -116,16 +117,15 @@ if (userId && chatId) {
       }
     });
 
-    await prisma.message.create({
-      data: { sessionId: session.id, role: "user", content: lastUserMessage }
-    });
-    
-    await prisma.message.create({
-      data: { sessionId: session.id, role: "assistant", content: aiReply || "" }
+    await prisma.message.createMany({
+      data: [
+        { sessionId: session.id, role: "user", content: lastUserMessage },
+        { sessionId: session.id, role: "assistant", content: aiReply || "" }
+      ]
     });
 
   } catch (dbError: any) {
-    console.error("PRISMA_DETAILED_ERROR:", dbError.message);
+    console.error("PRISMA_SAVE_ERROR:", dbError.message);
   }
 }
 
