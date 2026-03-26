@@ -14,6 +14,7 @@ interface ProductCarouselProps {
   products: Product[];
   onBuy: (name: string, price: string) => void;
   onSelect: (product: Product) => void;
+  // buyProduct:();
 }
 
 export const ProductCarousel = ({ products, onBuy, onSelect }: ProductCarouselProps) => {
