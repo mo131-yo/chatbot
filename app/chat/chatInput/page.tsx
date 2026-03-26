@@ -1,10 +1,11 @@
-"use client"
+"use client";
+
 import { SendButton } from "./components/SendButton";
 import { VoiceButton } from "./components/VoiceButton";
 import { Suggestions } from "./components/Suggestion";
 import { useState } from "react";
 import { useVoiceToText } from "../hooks/useVoiceToText";
-import { InputField } from "./components/InputField ";
+import { InputField } from "../input/components/InputField";
 
 
 interface ChatInputProps {
@@ -13,7 +14,7 @@ interface ChatInputProps {
   setIsTyping: (val: boolean) => void;
 }
 
-export const ChatInput = ({ onMessageReceived, history, setIsTyping }: ChatInputProps) => {
+export default function ChatInput({ onMessageReceived, history, setIsTyping }: ChatInputProps) {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { isRecording, isProcessing, startRecording, stopRecording } = useVoiceToText();
@@ -81,4 +82,4 @@ export const ChatInput = ({ onMessageReceived, history, setIsTyping }: ChatInput
       )}
     </footer>
   );
-};
+}
