@@ -1,3 +1,4 @@
+"use client"
 
 import { SendButton } from "./components/SendButton";
 import { VoiceButton } from "./components/VoiceButton";
