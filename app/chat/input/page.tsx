@@ -13,7 +13,7 @@ interface ChatInputProps {
   setIsTyping: (val: boolean) => void;
 }
 
-export const ChatInput = ({ onMessageReceived, history, setIsTyping }: ChatInputProps) => {
+export default function ChatInput({ onMessageReceived, history, setIsTyping }: ChatInputProps) {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { isRecording, isProcessing, startRecording, stopRecording } = useVoiceToText();

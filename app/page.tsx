@@ -5,10 +5,11 @@ import { SparklesCore } from "@/lib/utils/chat-animation/sparkles";
 import { useScrollEffect } from "./chat/hooks/useScrollEffect";
 import { MessageList } from "./chat/chat/product/message-list";
 import { WelcomeSection } from "./chat/chat/robot-text/welcome-section";
-import { ChatInput } from "./chat/input/page";
+
 import { ProductDetailSidebar } from "./chat/products/detail/ProductDetailSidebar";
 import Sidebar from "./chat/sidebar/page";
 import Header from "./chat/header/page";
+import ChatInput from "./chat/chatInput/page";
 
 export default function Home() {
   const {
