@@ -2,8 +2,6 @@
 
 import { NewChatBtn, ChatHistory, SidebarFooter } from "./components";
 
-
-
 interface SidebarProps {
   isCollapsed: boolean;
   history: { id: string; title: string }[];
@@ -11,7 +9,7 @@ interface SidebarProps {
   onSelectChat: (id: string) => void;
 }
 
-export const Sidebar = ({ isCollapsed, history, onNewChat, onSelectChat }: SidebarProps) => {
+export default function Sidebar ({ isCollapsed, history, onNewChat, onSelectChat }: SidebarProps){
   return (
     <aside 
       className={`flex flex-col h-screen relative z-20 transition-all duration-300 ease-in-out bg-white dark:bg-[#0D0D0D] border-r border-black/10 dark:border-white/5 ${
