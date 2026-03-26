@@ -53,7 +53,7 @@ export default function Home() {
 
       <Sidebar
         isCollapsed={isCollapsed}
-        history={sidebarHistory}
+        history={sidebarHistory || []}
         onNewChat={() => setActiveChatId(null)}
         onSelectChat={(id: string) => setActiveChatId(id)}
       />
