@@ -2,13 +2,14 @@ import { prisma } from "@/lib/prisma";
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { itemId: string } },
+  { params }: { params: Promise<{ itemId: string }> },
 ) {
+  const { itemId } = await params; 
   const { quantity } = await req.json();
 
   const updatedItem = await prisma.cartItem.update({
     where: {
-      id: params.itemId,
+      id: itemId,
     },
     data: {
       quantity,
@@ -20,11 +21,13 @@ export async function PATCH(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { itemId: string } },
+  { params }: { params: Promise<{ itemId: string }> }, 
 ) {
+  const { itemId } = await params; 
+
   await prisma.cartItem.delete({
     where: {
-      id: params.itemId,
+      id: itemId,
     },
   });
 
