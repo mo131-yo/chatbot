@@ -38,9 +38,7 @@ export default function Home() {
   await sendMessage(userMsg);
 };
 
-  // function toggleSidebar(): void {
-  //   throw new Error("Function not implemented.");
-  // }
+
   const toggleSidebar = () => {
   setIsCollapsed(!isCollapsed);
 };
