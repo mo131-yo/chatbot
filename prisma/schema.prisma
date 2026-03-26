@@ -42,14 +42,17 @@ enum PaymentStatus {
 
 model User {
     id       String   @id @default(uuid())
+    clerkUserId  String        @unique
     email    String?  @unique
     password String
-    name     String
+    name     String?
+    imageUrl     String?
     role     UserRole @default(USER)
 
     cart     Cart?
     orders   Order[]
-    sessions ChatSession[]
+
+    chats        ChatSession[]
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
@@ -60,25 +63,24 @@ model User {
 //////////////////////////////////////////////////////
 
 model ChatSession {
-    id String @id @default(uuid())
-
-    userId String
-    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-    title String?
-
-    messages Message[]
-
-    createdAt DateTime @default(now())
+  id           String        @id @default(cuid())
+  title        String?
+  userId       String?     
+  user         User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  messages     Message[]  
+  
+  chatMessages ChatMessage[]
+  
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 }
 
 //////////////////////////////////////////////////////
-// MESSAGE
 //////////////////////////////////////////////////////
 
 model Message {
-    id String @id @default(uuid())
-
+    id        String      @id @default(uuid())
     sessionId String
     session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
@@ -217,4 +219,16 @@ model ProductEmbedding {
     pineconeId String @unique
 
     createdAt DateTime @default(now())
+}
+
+//////////////////////////////////////////////////////
+//////////////////////////////////////////////////////
+
+model ChatMessage {
+  id            String       @id @default(cuid())
+  chatSessionId String
+  chatSession   ChatSession  @relation(fields: [chatSessionId], references: [id], onDelete: Cascade)
+  role          String
+  content       String
+  createdAt     DateTime     @default(now())
 }

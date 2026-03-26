@@ -38,9 +38,12 @@ export default function Home() {
   await sendMessage(userMsg);
 };
 
-  function toggleSidebar(): void {
-    throw new Error("Function not implemented.");
-  }
+  // function toggleSidebar(): void {
+  //   throw new Error("Function not implemented.");
+  // }
+  const toggleSidebar = () => {
+  setIsCollapsed(!isCollapsed);
+};
 
   return (
     <div className="flex min-h-screen bg-slate-50 dark:bg-[#0D0D0D] transition-colors duration-300 overflow-hidden text-slate-900 dark:text-white">

@@ -31,3 +31,4 @@ export const ChatHistory = ({ history, onSelectChat }: ChatHistoryProps) => (
     )}
   </div>
 );
+ 
