@@ -1,6 +1,7 @@
   import { NextResponse } from 'next/server';
   import OpenAI from 'openai';
   import { index } from "@/lib/api/pinecone";
+import { prisma } from '@/lib/prisma';
 
   const openai = new OpenAI({
     apiKey: process.env.OPENAI_KEY,
@@ -9,7 +10,8 @@
 
   export async function POST(req: Request) {
     try {
-      const { messages } = await req.json();
+      // const { messages } = await req.json();
+      const { messages, chatId, userId } = await req.json();
 
       if (!messages || !Array.isArray(messages) || messages.length === 0) {
         return NextResponse.json({ error: "Messages array is required" }, { status: 400 });
@@ -88,9 +90,48 @@
     temperature: 0.8,
   });
 
-      return NextResponse.json({ reply: chatResponse.choices[0].message.content });
-    } catch (error: any) {
-      console.error("Error:", error);
-      return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
-    }
+const aiReply = chatResponse.choices[0].message.content;
+
+if (userId && chatId) {
+  try {
+    const stringChatId = chatId.toString();
+
+    const dbUser = await prisma.user.upsert({
+      where: { clerkUserId: userId },
+      update: {}, 
+      create: {
+        clerkUserId: userId,
+        email: `${userId}@clerk.user`,
+        password: "CLERK_MANAGED",
+      }
+    });
+
+    const session = await prisma.chatSession.upsert({
+      where: { id: stringChatId },
+      update: { updatedAt: new Date() },
+      create: {
+        id: stringChatId,
+        userId: dbUser.id,
+        title: lastUserMessage.slice(0, 40)
+      }
+    });
+
+    await prisma.message.create({
+      data: { sessionId: session.id, role: "user", content: lastUserMessage }
+    });
+    
+    await prisma.message.create({
+      data: { sessionId: session.id, role: "assistant", content: aiReply || "" }
+    });
+
+  } catch (dbError: any) {
+    console.error("PRISMA_DETAILED_ERROR:", dbError.message);
   }
+}
+
+return NextResponse.json({ reply: aiReply });
+  } catch (error: any) {
+    console.error("API GLOBAL ERROR:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
+}
