@@ -11,10 +11,10 @@ export const ChatHistory = ({ history, onSelectChat }: ChatHistoryProps) => (
       </p>
     </div>
     
-    {history.length === 0 ? (
+   {!history || history.length === 0 ? (
       <p className="px-4 py-2 text-xs text-slate-600 italic">No chats</p>
     ) : (
-      history.map((chat) => (
+      history?.map((chat) => (
         <button 
           key={chat.id} 
           onClick={() => onSelectChat(chat.id)}
@@ -31,4 +31,3 @@ export const ChatHistory = ({ history, onSelectChat }: ChatHistoryProps) => (
     )}
   </div>
 );
-// Munkhorgil333@
