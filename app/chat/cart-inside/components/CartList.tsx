@@ -14,6 +14,10 @@ export default function CartList() {
     setCart(data);
   };
 
+  const totalPrice = cart.items.reduce((acc: number, item: any) => {
+  return acc + (item.price * item.quantity);
+}, 0);
+
   useEffect(() => {
     loadCart();
   }, []);
@@ -31,16 +35,18 @@ export default function CartList() {
   };
 
   return (
-    <div>
+    <div className="space-y-6">
       {cart.items.map((item: any) => (
         <CartItem key={item.id} item={item} refresh={loadCart} />
       ))}
-
-      <button
-        onClick={clearCart}
-        className="mt-4 bg-red-500 text-white px-4 py-2 rounded"
-      >
-        Clear Cart
+      
+      <div className="border-t border-white/10 pt-6 flex justify-between items-center">
+        <h2 className="text-xl font-bold text-white">Нийт дүн:</h2>
+        <p className="text-2xl font-black text-[#C5A059]">{totalPrice.toLocaleString()} ₮</p>
+      </div>
+      
+      <button className="w-full bg-[#C5A059] text-black font-bold py-4 rounded-xl hover:bg-white transition-all">
+        Захиалах
       </button>
     </div>
   );
