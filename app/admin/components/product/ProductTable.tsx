@@ -28,9 +28,9 @@ export default function ProductTable() {
     <table className="w-full">
       <thead>
         <tr className="text-left text-gray-400">
-          <th>Name</th>
-          <th>Price</th>
-          <th>Actions</th>
+          <th>Барааны нэр</th>
+          <th>Барааны үнэ</th>
+          <th>Үйлдлүүд</th>
         </tr>
       </thead>
 

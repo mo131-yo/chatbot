@@ -1,6 +1,5 @@
-import prisma from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
-import { stringify } from "querystring";
 
 export async function POST(req: Request) {
   const body = await req.json();
@@ -8,22 +7,34 @@ export async function POST(req: Request) {
   const product = await prisma.product.findUnique({
     where: { id: body.productId },
   });
+
   if (!product) {
-    NextResponse.json({ message: "Product not found" }, { status: 400 });
-    return;
+    return NextResponse.json({ message: "Product not found" }, { status: 400 });
   }
+
+  if (!product.storeId) {
+    return NextResponse.json(
+      { message: "Store not found for this product" },
+      { status: 400 },
+    );
+  }
+
+  const quantity = Number(body.quantity) || 1;
 
   const order = await prisma.order.create({
     data: {
-      productId: body.productId,
-      storeId: product.storeId || stringify({}),
-      quantity: body.quantity || 1,
+      productId: String(body.productId),
+      storeId: product.storeId,
+      userId: String(body.userId), // эсвэл Clerk
+      quantity,
       price: product.price,
-      customerPhone: body.phone,
-      customerName: body.name,
-      address: body.address,
+      totalAmount: product.price * quantity,
+      customerPhone: String(body.phone),
+      customerName: String(body.name),
+      address: String(body.address),
       status: "PENDING",
     },
   });
+
   return NextResponse.json(order);
 }
