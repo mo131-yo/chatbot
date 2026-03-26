@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import CartItem from "./AddtoCartButton";
+import CartItem from "./CartItem";
+
 
 export default function CartList() {
   const [cart, setCart] = useState<any>(null);

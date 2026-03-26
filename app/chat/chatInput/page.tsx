@@ -1,11 +1,11 @@
 "use client"
-
 import { SendButton } from "./components/SendButton";
 import { VoiceButton } from "./components/VoiceButton";
 import { Suggestions } from "./components/Suggestion";
 import { useState } from "react";
 import { useVoiceToText } from "../hooks/useVoiceToText";
 import { InputField } from "./components/InputField ";
+
 
 interface ChatInputProps {
   onMessageReceived: (userMessage: string, aiReply: string) => void;
