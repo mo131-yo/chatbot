@@ -1,3 +1,4 @@
+
 interface ChatHistoryProps {
   history: { id: string; title: string }[];
   onSelectChat: (id: string) => void;
