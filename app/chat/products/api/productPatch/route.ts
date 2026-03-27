@@ -13,7 +13,7 @@ export async function PATCH(
         id: Number(params.id),
       },
       data: {
-        ...body, // 👈 partial update (хамгийн гоё нь)
+        ...body,
       },
     });
 
