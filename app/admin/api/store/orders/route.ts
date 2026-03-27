@@ -1,4 +1,4 @@
-import prisma from "@/lib/prisma";
+import {prisma} from "@/lib/prisma";
 import { url } from "inspector";
 import { NextResponse } from "next/server";
 
