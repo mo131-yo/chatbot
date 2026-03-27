@@ -5,7 +5,7 @@ import ProductForm from "../components/product/ProductForm";
 
 export default function ProductsPage() {
   const refresh = () => {
-    window.location.reload(); // simple refresh
+    window.location.reload();
   };
 
   return (

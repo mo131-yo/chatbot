@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { ClerkProvider } from "@clerk/nextjs";
 import { CartProvider } from "./context/CartContext";
+import CartSidebar from "./chat/cart/frontend/components/CartSidebar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,9 +33,10 @@ export default function RootLayout({
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
           <CartProvider>
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            {children}
-          </ThemeProvider>
+            <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+              {children}
+              <CartSidebar />
+            </ThemeProvider>
           </CartProvider>
         </body>
       </html>
