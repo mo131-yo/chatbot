@@ -1,11 +1,12 @@
 "use client";
 
-import ProductTable from "@/components/product/ProductTable";
-import ProductForm from "@/components/product/ProductForm";
+import ProductForm from "../components/product/ProductForm";
+import ProductTable from "../components/product/ProductTable";
+
 
 export default function ProductsPage() {
   const refresh = () => {
-    window.location.reload(); // simple refresh
+    window.location.reload();
   };
 
   return (

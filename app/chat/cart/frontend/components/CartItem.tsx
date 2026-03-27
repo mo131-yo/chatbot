@@ -5,7 +5,7 @@ import { useState } from "react";
 
 export default function CartItem({ item, refresh }: any) {
   const [quantity, setQuantity] = useState(item.quantity);
-  const { refreshCart } = useCart();
+  // const { refreshCart } = useCart();
   
   const updateQuantity = async (value: number) => {
     setQuantity(value);
@@ -21,7 +21,7 @@ export default function CartItem({ item, refresh }: any) {
     });
 
     refresh();
-    refreshCart();
+    // refreshCart();
   };
 
   const removeItem = async () => {
@@ -34,7 +34,7 @@ export default function CartItem({ item, refresh }: any) {
 
  return (
     <div className="flex items-center gap-4 bg-[#161616] p-4 rounded-2xl border border-white/5 shadow-lg group">
-      <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 border border-white/10">
+      <div className="w-20 h-20 rounded-xl overflow-hidden shrink-0 border border-white/10">
         <img 
           src={item.product.images[0] || "/placeholder.png"} 
           alt={item.product.name} 
