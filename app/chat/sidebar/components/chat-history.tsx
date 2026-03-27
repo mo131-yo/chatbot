@@ -1,10 +1,10 @@
-
 interface ChatHistoryProps {
   history: { id: string; title: string }[];
   onSelectChat: (id: string) => void;
+  isLoading?: boolean;
 }
 
-export const ChatHistory = ({ history, onSelectChat }: ChatHistoryProps) => (
+export const ChatHistory = ({ history, onSelectChat, isLoading }: ChatHistoryProps) => (
   <div className="flex-1 overflow-y-auto px-4 space-y-1 custom-scrollbar">
     <div className="px-4 py-3">
       <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500 font-medium">
@@ -12,10 +12,19 @@ export const ChatHistory = ({ history, onSelectChat }: ChatHistoryProps) => (
       </p>
     </div>
     
-   {!history || history.length === 0 ? (
+    {isLoading ? (
+      <div className="space-y-2 px-4">
+        {[1, 2, 3, 4, 5].map((i) => (
+          <div key={i} className="flex items-center gap-3 animate-pulse py-2">
+            <div className="w-4 h-4 bg-white/10 rounded-full" />
+            <div className="h-3 bg-white/10 rounded w-full" />
+          </div>
+        ))}
+      </div>
+    ) : !history || history.length === 0 ? (
       <p className="px-4 py-2 text-xs text-slate-600 italic">No chats</p>
     ) : (
-      history?.map((chat) => (
+      history.map((chat) => (
         <button 
           key={chat.id} 
           onClick={() => onSelectChat(chat.id)}
@@ -32,4 +41,3 @@ export const ChatHistory = ({ history, onSelectChat }: ChatHistoryProps) => (
     )}
   </div>
 );
- 
