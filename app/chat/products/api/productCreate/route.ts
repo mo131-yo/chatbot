@@ -17,7 +17,7 @@ export async function POST(req: Request) {
       rating,
       reviews,
       category,
-      brand,
+      brand,  
     } = body;
 
     const product = await prisma.product.create({

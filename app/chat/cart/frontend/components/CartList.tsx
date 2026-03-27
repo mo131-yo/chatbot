@@ -1,36 +1,41 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useCallback, useState } from "react";
 import CartItem from "./CartItem";
-
 
 export default function CartList() {
   const [cart, setCart] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  const loadCart = async () => {
-    const res = await fetch("/api/cart");
-    const data = await res.json();
-
-    setCart(data);
-  };
-
-  const totalPrice = cart.items.reduce((acc: number, item: any) => {
-  return acc + (item.price * item.quantity);
-}, 0);
+  const loadCart = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/cart");
+      if (!res.ok) throw new Error("Failed to fetch");
+      const data = await res.json();
+      setCart(data);
+    } catch (error) {
+      console.error("Cart loading error:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     loadCart();
-  }, []);
+  }, [loadCart]);
 
-  if (!cart) return <p>Loading...</p>;
+  if (loading) return <p className="text-gray-500">Loading...</p>;
+  if (!cart || !cart.items || cart.items.length === 0) {
+    return <p className="text-gray-500 text-center py-10">Your cart is empty</p>;
+  }
 
-  if (!cart.items.length) return <p>Your cart is empty</p>;
+  const totalPrice = cart.items.reduce((acc: number, item: any) => {
+    return acc + (item.price * item.quantity);
+  }, 0);
 
   const clearCart = async () => {
-    await fetch("/api/cart/clear", {
-      method: "DELETE",
-    });
-
+    await fetch("/api/cart/clear", { method: "DELETE" });
     loadCart();
   };
 
