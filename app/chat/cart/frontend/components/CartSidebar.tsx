@@ -83,7 +83,7 @@ export default function CartSidebar() {
                   <span className="text-gray-400">Нийт дүн:</span>
                   <span className="text-[#C5A059]">{totalPrice.toLocaleString()}₮</span>
                 </div>
-                <button className="w-full py-4 bg-[#C5A059] text-black font-black rounded-xl uppercase hover:bg-white transition-all shadow-lg shadow-[#C5A059]/20">
+                <button onClick={handleCheckout} className="w-full py-4 bg-[#C5A059] text-black font-black rounded-xl uppercase hover:bg-white transition-all shadow-lg shadow-[#C5A059]/20">
                   Захиалга өгөх
                 </button>
               </div>
