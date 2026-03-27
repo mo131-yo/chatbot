@@ -1,10 +1,12 @@
 "use client";
 import React from "react";
 import { X, ShoppingBag } from "lucide-react";
+import { useCart } from "@/app/context/CartContext";
 
 export function ProductDetailSidebar({ product, onClose, onBuy }: any) {
   if (!product) return null;
-
+  const { addToCart } = useCart();
+  
   return (
     <>
       <div 
@@ -51,6 +53,16 @@ export function ProductDetailSidebar({ product, onClose, onBuy }: any) {
           >
             <ShoppingBag size={20} />
             Buy
+          </button>
+          <button 
+            onClick={() => {
+              addToCart(product.id);
+              onClose();
+            }}
+            className="w-full bg-[#C5A059] hover:bg-[#A88548] text-black font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+          >
+            <ShoppingBag size={20} />
+            Add card
           </button>
         </div>
       </div>
