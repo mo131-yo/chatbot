@@ -14,7 +14,7 @@ export const useChatLogic = () => {
     if (isSignedIn && user) {
       setIsLoading(true);
       try {
-        const res = await fetch("/api/chat/history");
+        const res = await fetch("/chat/api/history");
         if (res.ok) {
           const sessions = await res.json();
           const history = sessions.map((s: any) => ({ id: s.id, title: s.title || "Шинэ чат" }));
@@ -48,7 +48,7 @@ export const useChatLogic = () => {
       const guestId = localStorage.getItem("guest_id");
       if (isSignedIn && user?.id && guestId) {
         try {
-          const res = await fetch("/api/auth/migrate", {
+          const res = await fetch("/chat/api/auth/migrate", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ guestId, realUserId: user.id }),
@@ -119,9 +119,13 @@ export const useChatLogic = () => {
   };
 
   return {
-    activeChatId, setActiveChatId,
-    allChats, sidebarHistory,
-    isTyping, isLoading,
-    sendMessage
-  };
+  activeChatId, 
+  setActiveChatId,
+  allChats, 
+  sidebarHistory,
+  isTyping, 
+  setIsTyping,
+  isLoading,
+  sendMessage
+};
 };
