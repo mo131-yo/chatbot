@@ -18,7 +18,6 @@ export function ProductDetailSidebar({ product, onClose, onBuy }: any) {
         className="fixed inset-0 bg-black/60 backdrop-blur-sm z-90 transition-opacity animate-in fade-in"
         onClick={onClose}
       />
-
       <div className="fixed right-0 top-0 h-full w-full md:w-112.5 bg-[#111111] border-l border-white/10 z-100 shadow-2xl flex flex-col animate-in slide-in-from-right duration-300 text-white">
         
         <div className="p-6 flex justify-between items-center border-b border-white/5">
