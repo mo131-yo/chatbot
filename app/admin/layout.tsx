@@ -13,6 +13,7 @@ export default function AdminLayout({
       <main className="flex-1 p-6 bg-bg min-h-screen">
         <Header />
         <Toaster position="top-right" />
+        <div></div>
         {children}
       </main>
     </div>
