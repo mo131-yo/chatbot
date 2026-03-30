@@ -57,7 +57,7 @@ export default function ProductForm({ onSuccess }: any) {
 
       {open && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
-          <div className="bg-gray-900 p-6 rounded-xl w-[420px] max-h-[90vh] overflow-y-auto">
+          <div className="bg-gray-900 p-6 rounded-xl w-105 max-h-[90vh] overflow-y-auto">
             <h2 className="text-lg mb-4">Шинэ бараа нэмэх</h2>
 
             {/* NAME */}
