@@ -22,16 +22,26 @@ import { getUserFromToken } from "@/lib/auth";
 
 export async function GET() {
   try {
-    const user = await getUserFromToken().catch(() => null);
-    if (!user) return Response.json({ items: [] });
+    const user = await getUserFromToken();
+    
+    if (!user || !user.id) {
+      return Response.json({ items: [] });
+    }
 
     const cart = await prisma.cart.findUnique({
       where: { userId: user.id },
-      include: { items: { include: { product: true } } },
-    }); // Eniig bas bi haraahan testleegui bgaa
+      include: { 
+        items: { 
+          include: { 
+            product: true 
+          } 
+        } 
+      },
+    });
 
-    return Response.json(cart || { items: [] });
+    return Response.json(cart ?? { items: [] });
   } catch (error) {
-    return Response.json({ items: [] });
+    console.error("CART_GET_ERROR:", error);
+    return Response.json({ items: [], error: "Сагсны мэдээлэл авахад алдаа гарлаа" }, { status: 500 });
   }
 }

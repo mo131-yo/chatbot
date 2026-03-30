@@ -38,6 +38,8 @@ export default function ChatInput({ onMessageReceived, history, setIsTyping }: C
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: [...formattedHistory, { role: "user", content: finalInput }],
+          chatId: "current-session-id",
+          userid: "current-user-id",
         }),
       });
       const data = await response.json();
@@ -56,10 +58,18 @@ export default function ChatInput({ onMessageReceived, history, setIsTyping }: C
       
       <div className="relative flex items-center w-full gap-3 bg-white/5 backdrop-blur-xl p-2 rounded-2xl border border-white/10 shadow-2xl">
         <VoiceButton 
-          isRecording={isRecording} isProcessing={isProcessing} isLoading={isLoading}
-          onStart={() => startRecording((t) => t && handleSend(t))}
-          onStop={stopRecording}
-        />
+        isRecording={isRecording} 
+        isProcessing={isProcessing} 
+        isLoading={isLoading}
+        onStart={() => {  
+          startRecording((transcribedText) => {
+            if (transcribedText) {
+              handleSend(transcribedText); 
+            }
+          });
+        }}
+        onStop={stopRecording}
+      />
 
         <InputField 
           value={input} onChange={setInput} 
@@ -76,7 +86,7 @@ export default function ChatInput({ onMessageReceived, history, setIsTyping }: C
       </div>
 
       {isRecording && (
-        <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-xs text-red-500 font-medium animate-bounce">
+        <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-xs text-red-900 font-medium animate-bounce">
           Яриаг сонсож байна...
         </div>
       )}
