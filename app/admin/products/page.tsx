@@ -1,20 +1,16 @@
 "use client";
-
+ 
 import ProductTable from "@/app/admin/components/product/ProductTable";
-import ProductForm from "../components/product/ProductForm";
-
+import ProductForm from "@/app/admin/components/product/ProductForm";
+ 
 export default function ProductsPage() {
-  const refresh = () => {
-    window.location.reload();
-  };
-
   return (
     <div>
       <div className="flex justify-between mb-4">
         <h1 className="text-xl">Products</h1>
-        <ProductForm onSuccess={refresh} />
+        <ProductForm onSuccess={() => location.reload()} />
       </div>
-
+ 
       <ProductTable />
     </div>
   );
