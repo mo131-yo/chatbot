@@ -13,7 +13,7 @@ export default function DashboardPage() {
       <div className="bg-indigo-800 p-5 rounded-xl">
         Orders: 45
       </div>
-
+<div></div>
       <div className="col-span-2">
         <RevenueChart />
       </div>
