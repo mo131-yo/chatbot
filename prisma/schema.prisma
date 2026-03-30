@@ -101,6 +101,7 @@ model Message {
 model Product {
     id            String   @id @default(uuid())
     name          String
+    storeName     String   @unique
     slug          String   @unique
     description   String
     price         Float
