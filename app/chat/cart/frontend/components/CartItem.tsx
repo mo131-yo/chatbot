@@ -5,7 +5,6 @@ import { useState } from "react";
 
 export default function CartItem({ item, refresh }: any) {
   const [quantity, setQuantity] = useState(item.quantity);
-  // const { refreshCart } = useCart();
   
   const updateQuantity = async (value: number) => {
     setQuantity(value);
@@ -21,7 +20,6 @@ export default function CartItem({ item, refresh }: any) {
     });
 
     refresh();
-    // refreshCart();
   };
 
   const removeItem = async () => {

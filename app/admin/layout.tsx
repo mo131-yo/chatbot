@@ -1,5 +1,6 @@
-import Header from "./components/layout/Header";
-import Sidebar from "./components/layout/Sidebar";
+import Sidebar from "@/app/admin/components/layout/Sidebar";
+import Header from "@/app/admin/components/layout/Header";
+import { Toaster } from "react-hot-toast";
 
 export default function AdminLayout({
   children,
@@ -7,12 +8,25 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex">
+    <div
+      className="flex min-h-screen transition-colors duration-300
+      bg-[#0B132B] text-white
+      dark:bg-gray-50 dark:text-black"
+    >
       <Sidebar />
 
-      <main className="flex-1 p-6 bg-indigo-700">
+      <main
+        className="flex-1 p-6 min-h-screen transition-colors duration-300
+        bg-[#0B132B]
+        dark:bg-gray-100"
+      >
         <Header />
-        {children}
+
+        <Toaster position="top-right" />
+
+        <div className="mt-4">
+          {children}
+        </div>
       </main>
     </div>
   );

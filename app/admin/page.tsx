@@ -1,9 +1,41 @@
+"use client";
+
+import RevenueChart from "@/app/admin/components/dashboard/RevenueChart";
+
 export default function DashboardPage() {
   return (
-    <div className="grid grid-cols-3 gap-4">
-      <div className="bg-indigo-900 p-4 rounded-xl">Products: 120</div>
-      <div className="bg-indigo-900 p-4 rounded-xl">Orders: 45</div>
-      <div className="bg-indigo-900 p-4 rounded-xl">Users: 20</div>
+    <div className="grid grid-cols-2 gap-6">
+      <div
+        className="p-5 rounded-xl
+        bg-indigo-800 text-white
+        dark:bg-indigo-800 dark:text-white
+        transition-colors duration-300"
+      >
+        <p className="text-sm opacity-70">Products</p>
+        <h2 className="text-2xl font-bold">120</h2>
+      </div>
+
+      <div
+        className="p-5 rounded-xl
+        bg-indigo-800 text-white
+        dark:bg-indigo-800 dark:text-white
+        transition-colors duration-300"
+      >
+        <p className="text-sm opacity-70">Orders</p>
+        <h2 className="text-2xl font-bold">45</h2>
+      </div>
+
+      <div></div>
+
+      <div
+        className="col-span-2
+        bg-white/5 backdrop-blur-md
+        dark:bg-white
+        rounded-2xl p-4
+        transition-colors duration-300"
+      >
+        <RevenueChart />
+      </div>
     </div>
   );
 }

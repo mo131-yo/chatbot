@@ -23,6 +23,9 @@ export default function ChatInput({
   const { isRecording, isProcessing, startRecording, stopRecording } =
     useVoiceToText();
 
+  const lastMsg = history && history.length > 0 ? history[history.length - 1] : null;
+  const aiOptions = lastMsg?.role === "assistant" ? (lastMsg as any).options : [];
+
   const handleSend = async (textToSend?: string) => {
     const finalInput = textToSend || input;
     if (!finalInput.trim() || isLoading) return;
@@ -61,13 +64,19 @@ export default function ChatInput({
       <Suggestions visible={history?.length === 0} onSelect={handleSend} />
 
       <div className="relative flex items-center w-full gap-3 bg-white/5 backdrop-blur-xl p-2 rounded-2xl border border-white/10 shadow-2xl">
-        <VoiceButton
-          isRecording={isRecording}
-          isProcessing={isProcessing}
-          isLoading={isLoading}
-          onStart={() => startRecording((t) => t && handleSend(t))}
-          onStop={stopRecording}
-        />
+        <VoiceButton 
+        isRecording={isRecording} 
+        isProcessing={isProcessing} 
+        isLoading={isLoading}
+        onStart={() => {  
+          startRecording((transcribedText) => {
+            if (transcribedText) {
+              handleSend(transcribedText); 
+            }
+          });
+        }}
+        onStop={stopRecording}
+      />
 
         <InputField
           value={input}
@@ -85,7 +94,7 @@ export default function ChatInput({
       </div>
 
       {isRecording && (
-        <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-xs text-red-500 font-medium animate-bounce">
+        <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-xs text-red-900 font-medium animate-bounce">
           Яриаг сонсож байна...
         </div>
       )}

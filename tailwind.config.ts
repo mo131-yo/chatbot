@@ -1,3 +1,4 @@
+import { color } from "framer-motion";
 import type { Config } from "tailwindcss";
 
 const config: Config = {
@@ -7,8 +8,10 @@ const config: Config = {
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/**/*.{js,ts,jsx,tsx,mdx}", // Хэрэв src хавтас ашиглаж байгаа бол
   ],
+  darkMode: "class",
   theme: {
     extend: {
+      colors: { bg: "#020617" },
       // Spotlight анимейшн нэмэх хэсэг
       animation: {
         spotlight: "spotlight 2s ease .75s 1 forwards",

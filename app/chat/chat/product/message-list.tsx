@@ -11,6 +11,7 @@ interface MessageListProps {
   onProductClick: (product: any) => void;
   onBuy: (name: string, price: any) => void;
   messagesEndRef: React.RefObject<HTMLDivElement | null>;
+  onOptionClick?: (option: string) => void;
 }
 
 export const MessageList = ({ 
@@ -18,7 +19,8 @@ export const MessageList = ({
   isTyping, 
   onProductClick, 
   onBuy, 
-  messagesEndRef 
+  onOptionClick,
+  messagesEndRef,
 }: MessageListProps) => {
 
   return (
@@ -62,15 +64,11 @@ export const MessageList = ({
 
                       return (
                         <div className="flex flex-col gap-4 w-full my-2">
-                          {textElements.length > 0 && (
-                            <div className="text-slate-700 dark:text-slate-200 leading-relaxed px-1">
-                              {textElements}
-                            </div>
-                          )}
                           <ProductCarousel 
                             products={products} 
                             onBuy={onBuy} 
-                            onSelect={onProductClick} 
+                            onSelect={onProductClick}
+                            history={[]}
                           />
                         </div>
                       );
@@ -83,6 +81,21 @@ export const MessageList = ({
                 {message.content}
               </ReactMarkdown>
             </div>
+          {/* {message.role === "assistant" && message.options && message.options.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-4 mb-2">
+              {message.options.map((opt: string, i: number) => (
+                <button
+                  key={i}
+                  onClick={() => onOptionClick?.(opt)}
+                  className="px-4 py-2 bg-transparent border border-[#C5A059] text-[#C5A059] 
+                             rounded-full text-sm hover:bg-[#C5A059] hover:text-black 
+                             transition-all active:scale-95 duration-200 font-medium"
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>
+          )} */}
           </div>
         </motion.div>
       ))}
@@ -90,11 +103,11 @@ export const MessageList = ({
       <AnimatePresence mode="wait">
         {isTyping && (
           <motion.div 
-            key="loading-indicator"
-            initial={{ opacity: 0, y: 5 }} 
-            animate={{ opacity: 1, y: 0 }} 
-            exit={{ opacity: 0 }} 
-            className="flex items-center gap-3 py-4 px-2"
+          key="loading-indicator"
+          initial={{ opacity: 0, y: 5 }} 
+          animate={{ opacity: 1, y: 0 }} 
+          exit={{ opacity: 0 }} 
+          className="flex items-center gap-3 py-4 px-2"
           >
             <div className="bg-white dark:bg-[#161616] p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-white/5 flex items-center justify-center">
               <PulsatingDots />
