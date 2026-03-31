@@ -14,9 +14,10 @@ interface Product {
 
 interface ProductCarouselProps {
   products: Product[];
+  history: any[];
 }
 
-export const ProductCarousel = ({ products }: ProductCarouselProps) => {
+export const ProductCarousel = ({ products, history  }: ProductCarouselProps) => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const { addToCart } = useCart();
 
@@ -26,8 +27,12 @@ export const ProductCarousel = ({ products }: ProductCarouselProps) => {
     console.log(`Buy triggered for: ${name} at ${price}`);
   };
 
+  function handleSend(opt: string): void {
+    throw new Error("Function not implemented.");
+  }
+
   return (
-    <div className="w-full py-10">
+    <div className="w-full">
       <HorizontalProductStack 
         products={products} 
         onSelect={(product) => setSelectedProduct(product)} 

@@ -64,11 +64,6 @@ export const MessageList = ({
 
                       return (
                         <div className="flex flex-col gap-4 w-full my-2">
-                          {textElements.length > 0 && (
-                            <div className="text-slate-700 dark:text-slate-200 leading-relaxed px-1">
-                              {textElements}
-                            </div>
-                          )}
                           <ProductCarousel 
                             products={products} 
                             onBuy={onBuy} 

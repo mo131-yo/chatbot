@@ -10,13 +10,9 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { items, totalAmount, customerPhone, address } = body;
 
-    if (!items || items.length === 0) {
-      return NextResponse.json({ error: "Сагс хоосон байна" }, { status: 400 });
-    }
-
     const dbUser = await prisma.user.findUnique({ where: { clerkUserId: clerkId } });
     if (!dbUser) return NextResponse.json({ error: "User not found" }, { status: 404 });
-    try{
+
     const order = await prisma.order.create({
       data: {
         userId: dbUser.id,
@@ -35,14 +31,14 @@ export async function POST(req: Request) {
         },
       },
     });
-    }catch(error){
-      console.error("PRISMA ERROR:", error); 
-    return NextResponse.json({ error: "Захиалга үүсгэхэд алдаа гарлаа" }, { status: 500 });
-    }
 
-    // return NextResponse.json(order, { status: 201 });
+    return NextResponse.json(order, { status: 201 });
+
   } catch (error) {
     console.error("ORDER_CREATE_ERROR:", error);
-    return NextResponse.json({ error: "Захиалга үүсгэхэд алдаа гарлаа", details: String(error) }, { status: 500 });
+    return NextResponse.json({ 
+      error: "Захиалга үүсгэхэд алдаа гарлаа", 
+      details: String(error) 
+    }, { status: 500 });
   }
 }
