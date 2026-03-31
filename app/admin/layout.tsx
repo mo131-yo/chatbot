@@ -24,9 +24,7 @@ export default function AdminLayout({
 
         <Toaster position="top-right" />
 
-        <div className="mt-4">
-          {children}
-        </div>
+        <div className="mt-4">{children}</div>
       </main>
     </div>
   );
