@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
   LineChart,
   Line,
@@ -21,28 +22,48 @@ const data = [
 ];
 
 export default function RevenueChart() {
+  const [dark, setDark] = useState(true);
+
+  useEffect(() => {
+    const isDark = document.documentElement.classList.contains("dark");
+    setDark(isDark);
+  }, []);
+
   return (
-    <div className="bg-white/5 backdrop-blur-md p-6 rounded-2xl shadow-lg border border-white/10">
-      {/* GARCHIG */}
+    <div
+      className="p-6 rounded-2xl shadow-lg border transition-colors duration-300
+      bg-white/5 border-white/10 text-white
+      dark:bg-white dark:border-gray-200 dark:text-black"
+    >
+     
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold">Revenue</h2>
         <span className="text-green-400 text-sm">+12.5%</span>
       </div>
 
-      {/* DIAGRAM */}
+   
       <ResponsiveContainer width="100%" height={250}>
         <LineChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+          <CartesianGrid
+            strokeDasharray="3 3"
+            stroke={dark ? "#444" : "#ddd"}
+          />
 
-          <XAxis dataKey="day" stroke="#aaa" />
-          <YAxis stroke="#aaa" />
+          <XAxis
+            dataKey="day"
+            stroke={dark ? "#aaa" : "#555"}
+          />
+
+          <YAxis
+            stroke={dark ? "#aaa" : "#555"}
+          />
 
           <Tooltip
             contentStyle={{
-              backgroundColor: "#1e1b4b",
+              backgroundColor: dark ? "#1e1b4b" : "#ffffff",
               border: "none",
               borderRadius: "10px",
-              color: "white",
+              color: dark ? "white" : "black",
             }}
           />
 

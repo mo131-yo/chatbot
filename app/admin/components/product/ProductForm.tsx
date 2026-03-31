@@ -8,7 +8,8 @@ export default function ProductForm({ onSuccess }: any) {
 
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
-  const [images, setImages] = useState("");
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
   const [description, setDescription] = useState("");
 
   const [color, setColor] = useState("");
@@ -18,6 +19,19 @@ export default function ProductForm({ onSuccess }: any) {
   const [category, setCategory] = useState("");
 
   const handleSubmit = async () => {
+    const imagesBase64: string[] = [];
+
+    for (const file of imageFiles) {
+      const reader = new FileReader();
+
+      const base64 = await new Promise<string>((resolve) => {
+        reader.onload = () => resolve(reader.result as string);
+        reader.readAsDataURL(file);
+      });
+
+      imagesBase64.push(base64);
+    }
+
     await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products`, {
       method: "POST",
       headers: {
@@ -26,7 +40,7 @@ export default function ProductForm({ onSuccess }: any) {
       body: JSON.stringify({
         name,
         price: Number(price),
-        images,
+        images: imagesBase64,
         description,
         color,
         size,
@@ -36,19 +50,14 @@ export default function ProductForm({ onSuccess }: any) {
       }),
     });
 
-    // RESET
     setOpen(false);
-    setName("");
-    setPrice("");
-    setImages("");
-    setDescription("");
+    setImageFiles([]);
+    setPreviews([]);
+    onSuccess();
+    setBrand("");
+    setCategory("");
     setColor("");
     setSize("");
-    setBrand("");
-    setStock("");
-    setCategory("");
-
-    onSuccess();
   };
 
   return (
@@ -56,99 +65,166 @@ export default function ProductForm({ onSuccess }: any) {
       <Button onClick={() => setOpen(true)}>+ Бараа нэмэх</Button>
 
       {open && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
-          <div className="bg-gray-900 p-6 rounded-xl w-105 max-h-[90vh] overflow-y-auto">
-            <h2 className="text-lg mb-4">Шинэ бараа нэмэх</h2>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div
+            className="
+            w-120 max-h-[90vh] overflow-y-auto p-6 rounded-2xl
+            bg-gray-900 text-white
+            dark:bg-white dark:text-black
+            border border-white/10 dark:border-gray-200
+            shadow-2xl space-y-6 transition-all duration-300
+          "
+          >
+            <h2 className="text-xl font-bold">🛒 Шинэ бараа нэмэх</h2>
 
-            {/* NAME */}
-            <input
-              placeholder="Барааны нэр"
-              className="w-full mb-3 p-2 bg-gray-800"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-
-            {/* PRICE */}
-            <input
-              placeholder="Үнэ"
-              type="number"
-              className="w-full mb-3 p-2 bg-gray-800"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-            />
-
-            {/* IMAGE */}
-            <input
-              placeholder="Зураг URL"
-              className="w-full mb-3 p-2 bg-gray-800"
-              value={images}
-              onChange={(e) => setImages(e.target.value)}
-            />
-
-            {images && (
-              <img
-                src={images}
-                className="w-full h-40 object-cover rounded mb-3"
+            <Section title="Basic Info">
+              <Input label="Барааны нэр" value={name} set={setName} />
+              <Input
+                label="Барааны үнэ"
+                type="number"
+                value={price}
+                set={setPrice}
               />
-            )}
+            </Section>
 
-            {/* DESCRIPTION */}
-            <textarea
-              placeholder="Тайлбар"
-              className="w-full mb-3 p-2 bg-gray-800"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
+            <Section title="Зураг">
+              <div
+                className="
+    relative border-2 border-dashed rounded-xl p-4
+    bg-gray-800 dark:bg-gray-100
+    flex flex-col items-center justify-center
+    cursor-pointer hover:opacity-80 transition
+  "
+              >
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="absolute inset-0 opacity-0 cursor-pointer"
+                  onChange={(e) => {
+                    const files = Array.from(e.target.files || []);
+                    if (!files.length) return;
 
-            {/* BRAND */}
-            <input
-              placeholder="Brand"
-              className="w-full mb-3 p-2 bg-gray-800"
-              value={brand}
-              onChange={(e) => setBrand(e.target.value)}
-            />
+                    setImageFiles((prev) => [...prev, ...files]);
 
-            {/* CATEGORY */}
-            <input
-              placeholder="Category"
-              className="w-full mb-3 p-2 bg-gray-800"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-            />
+                    const newPreviews = files.map((file) =>
+                      URL.createObjectURL(file),
+                    );
 
-            {/* COLOR */}
-            <input
-              placeholder="Color (жишээ: red, black)"
-              className="w-full mb-3 p-2 bg-gray-800"
-              value={color}
-              onChange={(e) => setColor(e.target.value)}
-            />
+                    setPreviews((prev) => [...prev, ...newPreviews]);
+                  }}
+                />
 
-            {/* SIZE */}
-            <input
-              placeholder="Size (жишээ: S, M, L)"
-              className="w-full mb-3 p-2 bg-gray-800"
-              value={size}
-              onChange={(e) => setSize(e.target.value)}
-            />
+                <p className="text-sm text-gray-400 dark:text-gray-600">
+                  Click or drag multiple images
+                </p>
+              </div>
 
-            {/* STOCK */}
-            <input
-              placeholder="Stock (тоо ширхэг)"
-              type="number"
-              className="w-full mb-3 p-2 bg-gray-800"
-              value={stock}
-              onChange={(e) => setStock(e.target.value)}
-            />
+              <div className="grid grid-cols-3 gap-3 mt-4">
+                {previews.map((img, index) => (
+                  <div key={index} className="relative">
+                    <img
+                      src={img}
+                      className="w-full h-24 object-cover rounded-lg"
+                    />
 
-            {/* BUTTONS */}
-            <div className="flex gap-2 mt-4">
-              <Button onClick={handleSubmit}>Хадгалах</Button>
-              <Button onClick={() => setOpen(false)}>Болих</Button>
+                    <button
+                      onClick={() => {
+                        setPreviews((prev) =>
+                          prev.filter((_, i) => i !== index),
+                        );
+                        setImageFiles((prev) =>
+                          prev.filter((_, i) => i !== index),
+                        );
+                      }}
+                      className="
+          absolute top-1 right-1
+          bg-red-500 text-white text-xs px-2 py-1 rounded
+        "
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </Section>
+
+            <Section title="Тайлбар">
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="input min-h-22.5"
+              />
+            </Section>
+
+            <Section title="Дэлгэрэнгүй">
+              <Input label="Брэнд" value={brand} set={setBrand} />
+              <Input label="Категори" value={category} set={setCategory} />
+              <Input label="Color" value={color} set={setColor} />
+              <Input label="Size" value={size} set={setSize} />
+              <Input label="Stock" type="number" value={stock} set={setStock} />
+            </Section>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => setOpen(false)}
+                className="
+                flex-1 py-2 rounded-lg
+                bg-gray-700 text-white
+                dark:bg-gray-200 dark:text-black
+              "
+              >
+                Болих
+              </button>
+
+              <button
+                onClick={handleSubmit}
+                className="
+                flex-1 py-2 rounded-lg
+                bg-indigo-600 text-white hover:opacity-90
+              "
+              >
+                Хадгалах
+              </button>
             </div>
           </div>
         </div>
       )}
     </>
+  );
+}
+
+function Section({ title, children }: any) {
+  return (
+    <div className="p-4 rounded-xl bg-white/5 dark:bg-gray-100 space-y-3">
+      <h3 className="text-sm font-semibold text-gray-400 dark:text-gray-600">
+        {title}
+      </h3>
+      {children}
+    </div>
+  );
+}
+
+function Input({ label, value, set, type = "text" }: any) {
+  return (
+    <div>
+      <label className="text-xs text-gray-400 dark:text-gray-600">
+        {label}
+      </label>
+
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => set(e.target.value)}
+        className="
+        w-full mt-1 p-2 rounded-lg
+        bg-gray-800 text-white
+        dark:bg-white dark:text-black
+        border border-transparent
+        focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500
+        outline-none transition
+      "
+      />
+    </div>
   );
 }
