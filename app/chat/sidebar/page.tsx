@@ -1,6 +1,6 @@
 "use client";
 
-import { NewChatBtn, ChatHistory, SidebarFooter } from "./components";
+import { NewChatBtn, ChatHistory } from "./components";
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -20,7 +20,6 @@ export default function Sidebar ({ isCollapsed, history, onNewChat, onSelectChat
 
       <ChatHistory history={history} onSelectChat={onSelectChat} />
 
-      <SidebarFooter />
     </aside>
   );
 };
