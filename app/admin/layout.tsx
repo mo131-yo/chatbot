@@ -8,13 +8,25 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex bg-[#0B132B] text-white">
+    <div
+      className="flex min-h-screen transition-colors duration-300
+      bg-[#0B132B] text-white
+      dark:bg-gray-50 dark:text-black"
+    >
       <Sidebar />
-      <main className="flex-1 p-6 bg-bg min-h-screen">
+
+      <main
+        className="flex-1 p-6 min-h-screen transition-colors duration-300
+        bg-[#0B132B]
+        dark:bg-gray-100"
+      >
         <Header />
+
         <Toaster position="top-right" />
-        <div></div>
-        {children}
+
+        <div className="mt-4">
+          {children}
+        </div>
       </main>
     </div>
   );

@@ -123,8 +123,12 @@
   }
   body {
     @apply bg-background text-foreground;
+    @apply bg-white text-black;
   }
   html {
     @apply font-sans;
+  }
+  .dark body {
+    @apply bg-[#020617] text-white;
   }
 }

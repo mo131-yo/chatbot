@@ -3,18 +3,40 @@
 import { useEffect, useState } from "react";
 
 export default function ThemeToggle() {
-  const [dark, setDark] = useState(true);
+  const [theme, setTheme] = useState("dark");
 
+  // LOAD FROM STORAGE
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", dark);
-  }, [dark]);
+    const saved = localStorage.getItem("theme");
+
+    if (saved) {
+      setTheme(saved);
+      document.documentElement.classList.toggle(
+        "dark",
+        saved === "dark"
+      );
+    }
+  }, []);
+
+  // TOGGLE FUNCTION
+  const toggleTheme = () => {
+    const newTheme = theme === "dark" ? "light" : "dark";
+
+    setTheme(newTheme);
+    localStorage.setItem("theme", newTheme);
+
+    document.documentElement.classList.toggle(
+      "dark",
+      newTheme === "dark"
+    );
+  };
 
   return (
     <button
-      onClick={() => setDark(!dark)}
-      className="bg-gray-800 px-3 py-1 rounded"
+      onClick={toggleTheme}
+      className="w-full bg-gray-700 p-2 rounded text-sm"
     >
-      {dark ? "🌙 Dark" : "☀️ Light"}
+      {theme === "dark" ? "🌙 Dark Mode" : "☀️ Light Mode"}
     </button>
   );
 }
