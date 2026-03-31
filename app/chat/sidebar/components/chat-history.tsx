@@ -1,6 +1,10 @@
+import { FaTrash } from "react-icons/fa";
+
 interface ChatHistoryProps {
   history: { id: string; title: string }[];
   onSelectChat: (id: string) => void;
+  onDeleteChat?: (id: string) =>void | undefined;
+  activeChatId?:string | null;
   isLoading?: boolean;
 }
 
@@ -8,6 +12,8 @@ export const ChatHistory = ({
   history,
   onSelectChat,
   isLoading,
+  onDeleteChat,
+  activeChatId
 }: ChatHistoryProps) => (
   <div className="flex-1 overflow-y-auto px-4 space-y-1 custom-scrollbar">
     <div className="px-4 py-3">
@@ -29,18 +35,35 @@ export const ChatHistory = ({
       <p className="px-4 py-2 text-xs text-slate-600 italic">No chats</p>
     ) : (
       history.map((chat) => (
-        <button
-          key={chat.id}
-          onClick={() => onSelectChat(chat.id)}
-          className="w-full text-left px-4 py-3 rounded-lg hover:bg-white/10 dark:hover:bg-white/5 transition-all group flex items-center gap-3"
+        <div 
+          key={chat.id} 
+          className={`group relative flex items-center rounded-lg transition-all 
+            ${activeChatId === chat.id ? 'bg-white/10' : 'hover:bg-white/5'}`}
         >
-          <span className="material-symbols-outlined text-slate-600 group-hover:text-[#C5A059] text-sm transition-colors">
-            chat_bubble
-          </span>
-          <span className="text-sm font-light text-slate-400 group-hover:text-slate-200 transition-colors truncate">
-            {chat.title}
-          </span>
-        </button>
+          <button
+            onClick={() => onSelectChat(chat.id)}
+            className="flex-1 text-left px-4 py-3 flex items-center gap-3 min-w-0"
+          >
+            <span className="material-symbols-outlined text-slate-600 group-hover:text-[#C5A059] text-sm transition-colors">
+              chat_bubble
+            </span>
+            <span className="text-sm font-light text-slate-400 group-hover:text-slate-200 transition-colors truncate pr-6">
+              {chat.title}
+            </span>
+          </button>
+          <button
+           onClick={(e) => {
+            e.stopPropagation();
+            if (confirm("Энэ яриаг устгах уу?")) {
+              onDeleteChat?.(chat.id);
+            }
+            }}
+            className="absolute right-2 p-2 text-slate-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all z-10"
+            title="Delete chat"
+          >
+            <FaTrash size={12} />
+          </button>
+        </div>
       ))
     )}
   </div>

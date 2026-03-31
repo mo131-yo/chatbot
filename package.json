@@ -7,7 +7,7 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
-    "seed": "bun app/scripts/seed-products.ts"
+    "seed:pinecone": "bun app/chat/scripts/seed-pinecone.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.3.0",
@@ -29,6 +29,7 @@
     "@tsparticles/slim": "^3.9.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "dotenv": "^17.3.1",
     "framer-motion": "^12.38.0",
     "groq-sdk": "^1.1.1",
     "gsap": "^3.14.2",

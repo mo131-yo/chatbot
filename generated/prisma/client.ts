@@ -96,3 +96,8 @@ export type Payment = Prisma.PaymentModel
  * 
  */
 export type ProductEmbedding = Prisma.ProductEmbeddingModel
+/**
+ * Model Favorite
+ * 
+ */
+export type Favorite = Prisma.FavoriteModel

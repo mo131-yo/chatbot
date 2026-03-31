@@ -73,7 +73,7 @@ export async function POST(req: Request) {
       });
 
       context = (queryResponse.matches || [])
-        .map((m: any) => `Нэр: ${m?.metadata?.name}, Үнэ: ${m?.metadata?.price}, Тайлбар: ${m?.metadata?.description}`)
+        .map((m: any) => `ID: ${m.id}, Нэр: ${m?.metadata?.name}, Үнэ: ${m?.metadata?.price}, Тайлбар: ${m?.metadata?.description}`)
         .join("\n");
     } catch (err) {
       console.error("Vector Search Error:", err);
@@ -98,12 +98,15 @@ export async function POST(req: Request) {
         
         БҮТЭЦ:
         1. Хэрэв бараа санал болгох бол эхлээд найрсаг тайлбар бичээд, дараа нь бараануудаа Carousel форматаар харуул.
-        2. ![Нэр, Үнэ₮, Тайлбар](Зургийн_URL) - Энэ форматыг барааны дунд зай авалгүй ашигла.
+        2. ![Нэр, Үнэ, Тайлбар, ID](Зургийн_URL) - Энэ форматыг ашигла.
+        3.Бүтээгдэхүүн санал болгохдоо заавал дараах Markdown форматыг ашигла:
+          ![Нэр, Үнэ, Тайлбар, ProductID, StoreID](Зургийн_URL)
+           Жишээ: > ![L'Oreal шампунь, 25000, Гүн чийгшүүлэгч, beauty-1, store-001](https://example.com/shampoo.jpg)
         
         CAROUSEL БҮТЭЦ (ЗААВАЛ МӨРДӨХ):
-        1. Бараа бүрийг яг энэ форматаар бич: ![Нэр, Нарийн_Үнэ_Тоогоор, Тайлбар](Зургийн_URL)
-        - ЖИШЭЭ: ![Ном, 86450, Д.Нацагдоржийн бүтээл](url1) 
-        - АНХААР: Үнийг "86k" гэж товчилж болохгүй, яг Pinecone-оос ирсэн тоогоор нь (86450) бич.
+        1. Бараа бүрийг яг энэ форматаар бич: ![Нэр, Үнэ_Тоогоор, Тайлбар, ID](Зургийн_URL)
+          - ЖИШЭЭ: ![Ном, 86450, Д.Нацагдорж, 550e8400-e29b-41d4-a716-446655440000](url1)
+          - АНХААР: ID талбарт Pinecone-оос ирсэн бодит ID-г заавал бич.
         
         ТӨЛБӨРИЙН ҮЕД:
         1. "Buy now" гэвэл "Tulbur tuluh dansnii medeelel: 78xxxxxxx." гэх мэтээр харьцаарай.

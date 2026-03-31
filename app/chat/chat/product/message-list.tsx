@@ -51,15 +51,27 @@ export const MessageList = ({
                       const imageElements = childrenArray.filter((c: any) => c.type === 'img' || (c.props && c.props.src));
                       const textElements = childrenArray.filter((c: any) => c.type !== 'img' && !(c.props && c.props.src));
 
-                      const products = imageElements.map((img: any, idx: number) => {
-                        const [name, price] = (img.props.alt || "").split(",");
-                        return {
-                          id: img.props.src || `prod-${idx}`,
-                          name: name || "Нэргүй бараа",
-                          price: price || "Үнэ тодорхойгүй",
-                          image: img.props.src,
-                          description: "" 
-                        };
+                     const products = imageElements.map((img: any, idx: number) => {
+                      const altText = img.props.alt || "";
+                      const parts = altText.split(",");
+                      
+                      const name = parts[0]?.trim() || "Нэргүй";
+                      const price = parts[1]?.trim() || "0";
+                      const description = parts[2]?.trim() || "";
+                      const realId = parts[3]?.trim(); 
+                      const storeId = parts[4]?.trim();
+
+                      const imageSrc = img.props.src?.startsWith('http') 
+                        ? img.props.src 
+                        : `https://placehold.co/300x400?text=No+Image`;
+                      return {
+                        id: realId || `temp-${idx}`,
+                        name,
+                        price,
+                        image: imageSrc,
+                        description,
+                        storeId: storeId || `store-${idx}`
+                      };
                       });
 
                       return (
@@ -81,21 +93,6 @@ export const MessageList = ({
                 {message.content}
               </ReactMarkdown>
             </div>
-          {/* {message.role === "assistant" && message.options && message.options.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-4 mb-2">
-              {message.options.map((opt: string, i: number) => (
-                <button
-                  key={i}
-                  onClick={() => onOptionClick?.(opt)}
-                  className="px-4 py-2 bg-transparent border border-[#C5A059] text-[#C5A059] 
-                             rounded-full text-sm hover:bg-[#C5A059] hover:text-black 
-                             transition-all active:scale-95 duration-200 font-medium"
-                >
-                  {opt}
-                </button>
-              ))}
-            </div>
-          )} */}
           </div>
         </motion.div>
       ))}

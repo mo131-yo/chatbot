@@ -61,7 +61,8 @@ export const ModelName = {
   Order: 'Order',
   OrderItem: 'OrderItem',
   Payment: 'Payment',
-  ProductEmbedding: 'ProductEmbedding'
+  ProductEmbedding: 'ProductEmbedding',
+  Favorite: 'Favorite'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -234,6 +235,16 @@ export const ProductEmbeddingScalarFieldEnum = {
 } as const
 
 export type ProductEmbeddingScalarFieldEnum = (typeof ProductEmbeddingScalarFieldEnum)[keyof typeof ProductEmbeddingScalarFieldEnum]
+
+
+export const FavoriteScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  productId: 'productId',
+  createdAt: 'createdAt'
+} as const
+
+export type FavoriteScalarFieldEnum = (typeof FavoriteScalarFieldEnum)[keyof typeof FavoriteScalarFieldEnum]
 
 
 export const SortOrder = {

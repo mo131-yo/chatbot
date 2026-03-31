@@ -337,6 +337,7 @@ model User {
   orders Order[]
   chats  ChatSession[]
   stores Store[]
+  favorites Favorite[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -384,13 +385,13 @@ model Store {
 model Product {
   id            String   @id @default(uuid())
   name          String
-  slug          String   @unique
-  description   String
+  slug          String?   @unique
+  description   String?
   price         Float
   discountPrice Float?
   brand         String?
   images        String[]
-  category      String
+  category      String?
   subcategory   String?
   colors        String[]
   sizes         String[]
@@ -520,4 +521,16 @@ model ProductEmbedding {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+
+model Favorite {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  productId String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, productId])
+  @@index([userId])
 }
