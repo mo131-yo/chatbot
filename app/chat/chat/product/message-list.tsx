@@ -67,7 +67,8 @@ export const MessageList = ({
                           <ProductCarousel 
                             products={products} 
                             onBuy={onBuy} 
-                            onSelect={onProductClick} 
+                            onSelect={onProductClick}
+                            history={[]}
                           />
                         </div>
                       );
