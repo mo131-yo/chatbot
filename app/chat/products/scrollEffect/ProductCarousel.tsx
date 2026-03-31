@@ -13,7 +13,9 @@ interface Product {
 }
 
 interface ProductCarouselProps {
-  products: Product[];
+  products: any[]; 
+  onSelect: (product: any) => void;
+  onBuy: (name: string, price: any) => void;
   history: any[];
 }
 

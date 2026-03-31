@@ -19,7 +19,7 @@ export default function ChatInput({ onMessageReceived, history, setIsTyping }: C
   const [isLoading, setIsLoading] = useState(false);
   const { isRecording, isProcessing, startRecording, stopRecording } = useVoiceToText();
 
-  const lastMsg = history[history.length - 1];
+  const lastMsg = history && history.length > 0 ? history[history.length - 1] : null;
   const aiOptions = lastMsg?.role === "assistant" ? (lastMsg as any).options : [];
 
   const handleSend = async (textToSend?: string) => {
