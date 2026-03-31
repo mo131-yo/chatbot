@@ -1,13 +1,13 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 
-export async function GET() {
+export async function POST(req: NextRequest) {
   try {
     const { userId: clerkUserId } = await auth();
 
     if (!clerkUserId) {
-      return NextResponse.json({ error: "Нэвтэрнэ үү" }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const dbUser = await prisma.user.findUnique({
@@ -21,22 +21,22 @@ export async function GET() {
       );
     }
 
-    const sessions = await prisma.chatSession.findMany({
-      where: { userId: dbUser.id },
-      include: {
-        messages: {
-          orderBy: { createdAt: "asc" },
-        },
+    const body = await req.json();
+    const title = body?.title?.trim() || "New Chat";
+
+    const session = await prisma.chatSession.create({
+      data: {
+        title,
+        userId: dbUser.id,
       },
-      orderBy: { updatedAt: "desc" },
     });
 
-    return NextResponse.json(sessions);
+    return NextResponse.json(session, { status: 201 });
   } catch (error) {
-    console.error("history error:", error);
+    console.error("create session error:", error);
     return NextResponse.json(
       {
-        error: "Дата татахад алдаа гарлаа",
+        error: "Failed to create chat session",
         details: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 },

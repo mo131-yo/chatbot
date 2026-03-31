@@ -7,28 +7,32 @@ import { useState } from "react";
 import { useVoiceToText } from "../hooks/useVoiceToText";
 import { InputField } from "../input/components/InputField";
 
-
 interface ChatInputProps {
   onMessageReceived: (userMessage: string, aiReply: string) => void;
   history: { role: string; content: string }[];
   setIsTyping: (val: boolean) => void;
 }
 
-export default function ChatInput({ onMessageReceived, history, setIsTyping }: ChatInputProps) {
+export default function ChatInput({
+  onMessageReceived,
+  history,
+  setIsTyping,
+}: ChatInputProps) {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { isRecording, isProcessing, startRecording, stopRecording } = useVoiceToText();
+  const { isRecording, isProcessing, startRecording, stopRecording } =
+    useVoiceToText();
 
   const handleSend = async (textToSend?: string) => {
     const finalInput = textToSend || input;
     if (!finalInput.trim() || isLoading) return;
 
     setIsLoading(true);
-    setIsTyping(true);
     setInput("");
 
     const formattedHistory = history.map((h) => ({
-      role: h.role === "assistant" || h.role === "tuslah" ? "assistant" : "user",
+      role:
+        h.role === "assistant" || h.role === "tuslah" ? "assistant" : "user",
       content: h.content,
     }));
 
@@ -37,7 +41,10 @@ export default function ChatInput({ onMessageReceived, history, setIsTyping }: C
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: [...formattedHistory, { role: "user", content: finalInput }],
+          messages: [
+            ...formattedHistory,
+            { role: "user", content: finalInput },
+          ],
         }),
       });
       const data = await response.json();
@@ -46,32 +53,34 @@ export default function ChatInput({ onMessageReceived, history, setIsTyping }: C
       onMessageReceived(finalInput, "Холболтын алдаа гарлаа.");
     } finally {
       setIsLoading(false);
-      setIsTyping(false);
     }
   };
 
   return (
     <footer className="w-full max-w-4xl mx-auto p-4 relative z-50">
       <Suggestions visible={history?.length === 0} onSelect={handleSend} />
-      
+
       <div className="relative flex items-center w-full gap-3 bg-white/5 backdrop-blur-xl p-2 rounded-2xl border border-white/10 shadow-2xl">
-        <VoiceButton 
-          isRecording={isRecording} isProcessing={isProcessing} isLoading={isLoading}
+        <VoiceButton
+          isRecording={isRecording}
+          isProcessing={isProcessing}
+          isLoading={isLoading}
           onStart={() => startRecording((t) => t && handleSend(t))}
           onStop={stopRecording}
         />
 
-        <InputField 
-          value={input} onChange={setInput} 
+        <InputField
+          value={input}
+          onChange={setInput}
           onKeyDown={(e: any) => e.key === "Enter" && handleSend()}
           disabled={isLoading || isProcessing}
           isProcessing={isProcessing}
         />
 
-        <SendButton 
-          onClick={() => handleSend()} 
-          disabled={isLoading || isProcessing || !input.trim()} 
-          isLoading={isLoading} 
+        <SendButton
+          onClick={() => handleSend()}
+          disabled={isLoading || isProcessing || !input.trim()}
+          isLoading={isLoading}
         />
       </div>
 

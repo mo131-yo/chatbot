@@ -49,7 +49,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
           return { ...item, quantity: newQty };
         }
         return item;
-      })
+      }),
     );
   };
 
@@ -58,25 +58,28 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
       const existingItem = prev.find((item) => item.id === product.id);
       if (existingItem) {
         return prev.map((item) =>
-          item.id === product.id 
-            ? { ...item, quantity: item.quantity + quantity } 
-            : item
+          item.id === product.id
+            ? { ...item, quantity: item.quantity + quantity }
+            : item,
         );
       }
-      return [...prev, { 
-      id: product.id, 
-      name: product.name, 
-      price: Number(product.price), 
-      image: product.image, 
-      quantity,
-      product: {
-        name: product.name,
-        images: [product.image],
-        price: product.price
-      }
-    }];
-  });
-    
+      return [
+        ...prev,
+        {
+          id: product.id,
+          name: product.name,
+          price: Number(product.price),
+          image: product.image,
+          quantity,
+          product: {
+            name: product.name,
+            images: [product.image],
+            price: product.price,
+          },
+        },
+      ];
+    });
+
     setIsCartOpen(true);
   };
 
@@ -87,15 +90,17 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
   return (
-    <CartContext.Provider value={{ 
-      cartItems, 
-      cartCount, 
-      addToCart, 
-      removeFromCart, 
-      updateQuantity,
-      isCartOpen,
-      setIsCartOpen
-    }}>
+    <CartContext.Provider
+      value={{
+        cartItems,
+        cartCount,
+        addToCart,
+        removeFromCart,
+        updateQuantity,
+        isCartOpen,
+        setIsCartOpen,
+      }}
+    >
       {children}
     </CartContext.Provider>
   );
