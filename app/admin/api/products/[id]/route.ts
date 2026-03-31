@@ -1,7 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest } from "next/server";
 
-// ✅ GET by ID
 export async function GET(
   req: Request,
   { params }: { params: { id: string } },
