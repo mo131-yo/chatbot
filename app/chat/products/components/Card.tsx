@@ -109,10 +109,10 @@ export function VerticalImageStack() {
   return (
     <div className="relative flex h-screen w-full items-center justify-center overflow-hidden bg-background">
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-foreground/[0.02] blur-3xl" />
+        <div className="absolute left-1/2 top-1/2 h-150 w-150 -translate-x-1/2 -translate-y-1/2 rounded-full bg-foreground/2 blur-3xl" />
       </div>
 
-      <div className="relative flex h-[500px] w-[320px] items-center justify-center" style={{ perspective: "1200px" }}>
+      <div className="relative flex h-125 w-[320px] items-center justify-center" style={{ perspective: "1200px" }}>
         {images.map((image, index) => {
           if (!isVisible(index)) return null
           const style = getCardStyle(index)
@@ -145,14 +145,14 @@ export function VerticalImageStack() {
               }}
             >
               <div
-                className="relative h-[420px] w-[280px] overflow-hidden rounded-3xl bg-card ring-1 ring-border/20"
+                className="relative h-105 w-70 overflow-hidden rounded-3xl bg-card ring-1 ring-border/20"
                 style={{
                   boxShadow: isCurrent
                     ? "0 25px 50px -12px hsl(var(--foreground) / 0.15), 0 0 0 1px hsl(var(--foreground) / 0.05)"
                     : "0 10px 30px -10px hsl(var(--foreground) / 0.1)",
                 }}
               >
-                <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-foreground/10 via-transparent to-transparent" />
+                <div className="absolute inset-0 rounded-3xl bg-linear-to-b from-foreground/10 via-transparent to-transparent" />
 
                 <Image
                   src={image.src || "/placeholder.svg"}
@@ -163,7 +163,7 @@ export function VerticalImageStack() {
                   priority={isCurrent}
                 />
 
-                <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-background/60 to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 h-32 bg-linear-to-t from-background/60 to-transparent" />
               </div>
             </motion.div>
           )

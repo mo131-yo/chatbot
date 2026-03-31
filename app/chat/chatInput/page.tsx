@@ -19,6 +19,9 @@ export default function ChatInput({ onMessageReceived, history, setIsTyping }: C
   const [isLoading, setIsLoading] = useState(false);
   const { isRecording, isProcessing, startRecording, stopRecording } = useVoiceToText();
 
+  const lastMsg = history[history.length - 1];
+  const aiOptions = lastMsg?.role === "assistant" ? (lastMsg as any).options : [];
+
   const handleSend = async (textToSend?: string) => {
     const finalInput = textToSend || input;
     if (!finalInput.trim() || isLoading) return;
@@ -55,7 +58,7 @@ export default function ChatInput({ onMessageReceived, history, setIsTyping }: C
   return (
     <footer className="w-full max-w-4xl mx-auto p-4 relative z-50">
       <Suggestions visible={history?.length === 0} onSelect={handleSend} />
-      
+
       <div className="relative flex items-center w-full gap-3 bg-white/5 backdrop-blur-xl p-2 rounded-2xl border border-white/10 shadow-2xl">
         <VoiceButton 
         isRecording={isRecording} 

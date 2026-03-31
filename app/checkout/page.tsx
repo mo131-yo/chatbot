@@ -14,23 +14,17 @@ const handleFakePayment = async () => {
 
   try {
     const orderRes = await fetch('/chat/api/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            items: cartItems.map(item => ({
-            productId: item.id,
-            storeId: item.storeId || "dummy-store-id", 
-            quantity: item.quantity,
-            price: item.price
-            })),
-            totalAmount: totalPrice,
-        })
-        });
-
-    if (!orderRes.ok) {
-      const errorData = await orderRes.json();
-      throw new Error(errorData.error || "Захиалга үүсгэж чадсангүй");
-    }
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        items: cartItems.map(item => ({
+          productId: item.id,
+          quantity: item.quantity,
+          price: item.price
+        })),
+        totalAmount: totalPrice,
+      })
+    });
 
     const newOrder = await orderRes.json();
     console.log("Шинэ захиалга үүслээ:", newOrder);
@@ -39,16 +33,11 @@ const handleFakePayment = async () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        orderId: newOrder.id,
+        orderId: newOrder.id, 
         status: 'success',
         secret_token: 'demo_secret_123'
       })
     });
-
-    if (!webRes.ok) {
-      const webError = await webRes.json();
-      throw new Error(webError.error || "Төлбөр баталгаажуулахад алдаа гарлаа");
-    }
 
     const templateParams = {
       email: user.primaryEmailAddress?.emailAddress, 
