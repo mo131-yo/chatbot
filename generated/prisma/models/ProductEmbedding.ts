@@ -246,7 +246,7 @@ export type ProductEmbeddingCreateInput = {
   content?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  product: Prisma.ProductCreateNestedOneWithoutEmbeddingInput
+  product: Prisma.ProductCreateNestedOneWithoutProductEmbeddingInput
 }
 
 export type ProductEmbeddingUncheckedCreateInput = {
@@ -264,7 +264,7 @@ export type ProductEmbeddingUpdateInput = {
   content?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  product?: Prisma.ProductUpdateOneRequiredWithoutEmbeddingNestedInput
+  product?: Prisma.ProductUpdateOneRequiredWithoutProductEmbeddingNestedInput
 }
 
 export type ProductEmbeddingUncheckedUpdateInput = {

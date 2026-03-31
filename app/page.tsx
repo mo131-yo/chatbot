@@ -19,7 +19,8 @@ export default function Home() {
     sidebarHistory,
     isTyping, 
     setIsTyping, 
-    sendMessage 
+    sendMessage,
+    isLoading,
   } = useChatLogic();
 
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -51,12 +52,12 @@ export default function Home() {
         onClose={() => setSelectedProduct(null)}
         onBuy={(name: string) => buyProduct(name, selectedProduct?.price)}
       />
-
       <Sidebar
         isCollapsed={isCollapsed}
-        history={sidebarHistory || []}
+        history={sidebarHistory || []} 
         onNewChat={() => setActiveChatId(null)}
-        onSelectChat={(id: string) => setActiveChatId(id)}
+        onSelectChat={(id: string) => setActiveChatId(id)} 
+        isLoading={isLoading} 
       />
 
       <div className="flex-1 flex flex-col min-w-0 h-screen relative">
