@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef } from "react";
 import { AnimatePresence, motion, type PanInfo } from "framer-motion";
 import { useCart } from "@/app/context/CartContext";
-import { ShoppingBag, Info, ChevronLeft, ChevronRight } from "lucide-react";
+import { ShoppingBag, Info, Heart, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface Product {
   id: string;
@@ -18,9 +18,11 @@ interface HorizontalProductStackProps {
   products: Product[];
   onSelect: (product: Product) => void;
   onBuy: (name: string, price: string) => void;
+  onSave: (productId: string) => void;
+  savedIds?: string[];
 }
 
-export function HorizontalProductStack({ products, onSelect, onBuy }: HorizontalProductStackProps) {
+export function HorizontalProductStack({ products, onSelect, onBuy, onSave, savedIds = [] }: HorizontalProductStackProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const { addToCart } = useCart();
   const lastNavigationTime = useRef(0);
@@ -114,6 +116,15 @@ export function HorizontalProductStack({ products, onSelect, onBuy }: Horizontal
                         >
                           <ShoppingBag size={18} />
                           Нэмэх
+                        </button>
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSave(product.id);
+                          }}
+                          className="w-12 h-12 bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl flex items-center justify-center text-white active:scale-95 transition-transform hover:text-red-500"
+                        >
+                          <Heart size={18} fill={savedIds.includes(product.id) ? "currentColor" : "none"} />
                         </button>
                         <button 
                           onClick={() => onSelect(product)}

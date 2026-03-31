@@ -57,3 +57,38 @@ export async function GET(_req: NextRequest, { params }: Params) {
     );
   }
 }
+
+
+export async function DELETE(_req: NextRequest, { params }: Params) {
+  try {
+    const { userId: clerkUserId } = await auth();
+    if (!clerkUserId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id } = await params;
+
+    const dbUser = await prisma.user.findUnique({
+      where: { clerkUserId },
+    });
+
+    if (!dbUser) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    await prisma.chatSession.delete({
+      where: {
+        id,
+        userId: dbUser.id,
+      },
+    });
+
+    return NextResponse.json({ message: "Chat deleted successfully" });
+  } catch (error) {
+    console.error("delete session error:", error);
+    return NextResponse.json(
+      { error: "Failed to delete session" },
+      { status: 500 }
+    );
+  }
+}

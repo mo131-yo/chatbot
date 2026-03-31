@@ -26,6 +26,7 @@
     const [sidebarHistory, setSidebarHistory] = useState<SidebarChatItem[]>([]);
     const [isTyping, setIsTyping] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [savedIds, setSavedIds] = useState<string[]>([]);
 
     const { user, isSignedIn, isLoaded } = useUser();
 
@@ -228,6 +229,31 @@
       [activeChatId, allChats, createSession, isSignedIn, user?.id],
     );
 
+    const deleteChat = useCallback(async (chatId: string) => {
+  try {
+    const res = await fetch(`/chat/api/session/${chatId}`, {
+      method: "DELETE",
+    });
+
+    if (!res.ok) throw new Error("Устгаж чадсангүй");
+    setSidebarHistory((prev) => prev.filter((chat) => chat.id !== chatId));
+
+    setAllChats((prev) => {
+      const newChats = { ...prev };
+      delete newChats[chatId];
+      return newChats;
+    });
+    
+    if (activeChatId === chatId) {
+      setActiveChatIdState(null);
+    }
+    
+  } catch (error) {
+    console.error("deleteChat error:", error);
+    alert("Чат устгахад алдаа гарлаа.");
+  }
+}, [activeChatId]);
+
     const startNewChat = useCallback(() => {
       setActiveChatIdState(null);
     }, []);
@@ -243,6 +269,7 @@
       sendMessage,
       startNewChat,
       refetchHistory: fetchUserHistory,
+      deleteChat,
     };
   };
 

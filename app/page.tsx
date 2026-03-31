@@ -21,6 +21,7 @@ export default function Home() {
     setIsTyping, 
     sendMessage,
     isLoading,
+    deleteChat: handleDeleteChat,
   } = useChatLogic();
 
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -58,6 +59,7 @@ export default function Home() {
         onNewChat={() => setActiveChatId(null)}
         onSelectChat={(id: string) => setActiveChatId(id)} 
         isLoading={isLoading} 
+        onDeleteChat={handleDeleteChat}
       />
 
       <div className="flex-1 flex flex-col min-w-0 h-screen relative">
