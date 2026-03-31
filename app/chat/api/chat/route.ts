@@ -114,10 +114,13 @@ export async function POST(req: Request) {
         6. Хэрэглэгч "Үгүй" гэж хэлвэл "За, ойлголоо. Магадгүй өөр бараа сонирхох уу?" гэх мэтээр харьцаарай.`,
       },
       ...messages.map((m: any) => ({
-        role: m.role === "ASSISTANT" || m.role === "assistant" ? "assistant" : "user",
+      role: (m.role === "ASSISTANT" || m.role === "assistant" ? "assistant" : "user") as "assistant" | "user",
       content: m.content,
-      })),
-      { role: "system", content: `Одоо байгаа барааны мэдээлэл:\n${context}` }
+    })),
+      { 
+      role: "system" as const, 
+      content: `Одоо байгаа барааны мэдээлэл:\n${context}` 
+    }
     ],
     temperature: 0.8,
   });
