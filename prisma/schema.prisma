@@ -120,15 +120,15 @@
 //     storeId       String?
 //     store         Store?   @relation(fields: [storeId], references: [id])
 
-//     status ProductStatus @default(AVAILABLE)
+    // status ProductStatus @default(AVAILABLE)
 
 //     cartItems  CartItem[]
 //     orderItems OrderItem[]
-//     orders     Order[]
+    // orders     Order[]
 
 //     createdAt        DateTime          @default(now())
 //     updatedAt        DateTime          @updatedAt
-//     productEmbedding ProductEmbedding?
+    // productEmbedding ProductEmbedding?
 // }
 
 // //////////////////////////////////////////////////////
@@ -171,20 +171,20 @@
 
 // model Order {
 //     id        String  @id @default(uuid())
-//     productId String
-//     product   Product @relation(fields: [productId], references: [id])
+    // productId String
+    // product   Product @relation(fields: [productId], references: [id])
 //     storeId   String
 //     store     Store   @relation(fields: [storeId], references: [id])
 //     userId    String
 //     user      User    @relation(fields: [userId], references: [id])
 
-//     quantity      Int     @default(1)
-//     price         Float
+    // quantity      Int     @default(1)
+    // price         Float
 //     customerName  String?
 //     customerPhone String
 //     address       String?
 
-//     items OrderItem[]
+    // items OrderItem[]
 
 //     totalAmount Float
 
@@ -245,11 +245,11 @@
 
 //     pineconeId String @unique
 
-    productId String
-    product   Product @relation(fields: [productId], references: [id])
-    storeId   String
-    quantity Int
-    price    Float
+    // productId String
+    // product   Product @relation(fields: [productId], references: [id])
+    // storeId   String
+    // quantity Int
+    // price    Float
 
 // model ChatMessage {
 //     id            String      @id @default(cuid())
@@ -407,10 +407,13 @@ model Product {
 
   cartItems  CartItem[]
   orderItems OrderItem[]
-  embedding  ProductEmbedding?
+  orders     Order[]
+  // embedding  ProductEmbedding?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  productEmbedding ProductEmbedding?
+
 
   @@index([storeId])
   @@index([category])
@@ -450,9 +453,14 @@ model Order {
   id      String @id @default(uuid())
   userId  String
   user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
 
   storeId String?
   store   Store? @relation(fields: [storeId], references: [id], onDelete: SetNull)
+
+  quantity      Int     @default(1)
+  price         Float
 
   customerName  String?
   customerPhone String
