@@ -7,17 +7,21 @@ import { useState } from "react";
 import { useVoiceToText } from "../hooks/useVoiceToText";
 import { InputField } from "../input/components/InputField";
 
-
 interface ChatInputProps {
   onMessageReceived: (userMessage: string, aiReply: string) => void;
   history: { role: string; content: string }[];
   setIsTyping: (val: boolean) => void;
 }
 
-export default function ChatInput({ onMessageReceived, history, setIsTyping }: ChatInputProps) {
+export default function ChatInput({
+  onMessageReceived,
+  history,
+  setIsTyping,
+}: ChatInputProps) {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { isRecording, isProcessing, startRecording, stopRecording } = useVoiceToText();
+  const { isRecording, isProcessing, startRecording, stopRecording } =
+    useVoiceToText();
 
   const lastMsg = history && history.length > 0 ? history[history.length - 1] : null;
   const aiOptions = lastMsg?.role === "assistant" ? (lastMsg as any).options : [];
@@ -27,11 +31,11 @@ export default function ChatInput({ onMessageReceived, history, setIsTyping }: C
     if (!finalInput.trim() || isLoading) return;
 
     setIsLoading(true);
-    setIsTyping(true);
     setInput("");
 
     const formattedHistory = history.map((h) => ({
-      role: h.role === "assistant" || h.role === "tuslah" ? "assistant" : "user",
+      role:
+        h.role === "assistant" || h.role === "tuslah" ? "assistant" : "user",
       content: h.content,
     }));
 
@@ -40,9 +44,10 @@ export default function ChatInput({ onMessageReceived, history, setIsTyping }: C
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: [...formattedHistory, { role: "user", content: finalInput }],
-          chatId: "current-session-id",
-          userid: "current-user-id",
+          messages: [
+            ...formattedHistory,
+            { role: "user", content: finalInput },
+          ],
         }),
       });
       const data = await response.json();
@@ -51,7 +56,6 @@ export default function ChatInput({ onMessageReceived, history, setIsTyping }: C
       onMessageReceived(finalInput, "Холболтын алдаа гарлаа.");
     } finally {
       setIsLoading(false);
-      setIsTyping(false);
     }
   };
 
@@ -74,17 +78,18 @@ export default function ChatInput({ onMessageReceived, history, setIsTyping }: C
         onStop={stopRecording}
       />
 
-        <InputField 
-          value={input} onChange={setInput} 
+        <InputField
+          value={input}
+          onChange={setInput}
           onKeyDown={(e: any) => e.key === "Enter" && handleSend()}
           disabled={isLoading || isProcessing}
           isProcessing={isProcessing}
         />
 
-        <SendButton 
-          onClick={() => handleSend()} 
-          disabled={isLoading || isProcessing || !input.trim()} 
-          isLoading={isLoading} 
+        <SendButton
+          onClick={() => handleSend()}
+          disabled={isLoading || isProcessing || !input.trim()}
+          isLoading={isLoading}
         />
       </div>
 

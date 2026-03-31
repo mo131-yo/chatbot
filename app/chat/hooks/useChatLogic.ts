@@ -2,130 +2,247 @@
 import { useState, useEffect, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
 
+type ChatRole = "USER" | "ASSISTANT" | "SYSTEM";
+
+type ChatMessage = {
+  role: ChatRole;
+  content: string;
+};
+
+type SidebarChatItem = {
+  id: string;
+  title: string;
+};
+
+type HistorySession = {
+  id: string;
+  title: string | null;
+  messages: { role: ChatRole; content: string }[];
+};
+
 export const useChatLogic = () => {
-  const [activeChatId, setActiveChatId] = useState<string | null>(null);
-  const [allChats, setAllChats] = useState<Record<string, any[]>>({});
-  const [sidebarHistory, setSidebarHistory] = useState<any[]>([]);
+  const [activeChatId, setActiveChatIdState] = useState<string | null>(null);
+  const [allChats, setAllChats] = useState<Record<string, ChatMessage[]>>({});
+  const [sidebarHistory, setSidebarHistory] = useState<SidebarChatItem[]>([]);
   const [isTyping, setIsTyping] = useState(false);
-  const [isLoading, setIsLoading] = useState(false); 
-  const { user, isSignedIn } = useUser();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const fetchUserHistory = useCallback(async () => {
-    if (isSignedIn && user) {
+  const { user, isSignedIn, isLoaded } = useUser();
+
+  const loadChat = useCallback(async (chatId: string) => {
+    if (!chatId) return;
+
+    try {
       setIsLoading(true);
-      try {
-        const res = await fetch("/chat/api/history");
-        if (res.ok) {
-          const sessions = await res.json();
-          const history = sessions.map((s: any) => ({ id: s.id, title: s.title || "Шинэ чат" }));
-          const chatsMap: Record<string, any[]> = {};
-          sessions.forEach((s: any) => {
-            chatsMap[s.id] = s.messages.map((m: any) => ({ role: m.role, content: m.content }));
-          });
 
-          setSidebarHistory(history);
-          setAllChats(chatsMap);
-        }
-      } catch (err) {
-        console.error("History fetch error:", err);
-      } finally {
-        setIsLoading(false);
+      const res = await fetch(`/chat/api/session/${chatId}`, {
+        method: "GET",
+        cache: "no-store",
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        console.error("loadChat failed:", text);
+        return;
       }
-    } else {
-      const savedAllChats = localStorage.getItem("ai_all_chats");
-      const savedSidebar = localStorage.getItem("ai_sidebar_history");
-      if (savedAllChats) setAllChats(JSON.parse(savedAllChats));
-      if (savedSidebar) setSidebarHistory(JSON.parse(savedSidebar));
-    }
-  }, [isSignedIn, user]);
 
-  useEffect(() => {
-    fetchUserHistory();
-  }, [fetchUserHistory]);
+      const session = await res.json();
 
-  useEffect(() => {
-    const migrateHistory = async () => {
-      const guestId = localStorage.getItem("guest_id");
-      if (isSignedIn && user?.id && guestId) {
-        try {
-          const res = await fetch("/chat/api/auth/migrate", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ guestId, realUserId: user.id }),
-          });
+      setAllChats((prev) => ({
+        ...prev,
+        [chatId]: (session.messages || []).map((m: any) => ({
+          role: m.role,
+          content: m.content,
+        })),
+      }));
 
-          if (res.ok) {
-            localStorage.removeItem("guest_id");
-            localStorage.removeItem("ai_all_chats");
-            localStorage.removeItem("ai_sidebar_history");
-            fetchUserHistory(); 
-          }
-        } catch (err) {
-          console.error("Migration error:", err);
-        }
-      }
-    };
-    migrateHistory();
-  }, [isSignedIn, user?.id, fetchUserHistory]);
-
-  useEffect(() => {
-    if (typeof window !== "undefined" && !localStorage.getItem("guest_id")) {
-      localStorage.setItem("guest_id", `guest_${crypto.randomUUID()}`);
+      setActiveChatIdState(chatId);
+    } catch (error) {
+      console.error("loadChat error:", error);
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
-  useEffect(() => {
-    if (!isSignedIn) {
-      localStorage.setItem("ai_all_chats", JSON.stringify(allChats));
-      localStorage.setItem("ai_sidebar_history", JSON.stringify(sidebarHistory));
-    }
-  }, [allChats, sidebarHistory, isSignedIn]);
-
-  const sendMessage = async (message: string) => {
-    if (!message.trim()) return;
-    setIsTyping(true);
-
-    const userId = user?.id || localStorage.getItem("guest_id");
-    const chatId = activeChatId || Date.now().toString();
-    const userMessage = { role: "user", content: message };
-    
-    const updatedMessages = [...(allChats[chatId] || []), userMessage];
-    setAllChats(prev => ({ ...prev, [chatId]: updatedMessages }));
-
-    if (!activeChatId) {
-      setActiveChatId(chatId);
-      setSidebarHistory(prev => [{ id: chatId, title: message.slice(0, 20) }, ...prev]);
-    }
+  const syncUser = useCallback(async () => {
+    if (!isSignedIn || !user?.id) return;
 
     try {
-      const res = await fetch("/chat/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: updatedMessages, chatId, userId }),
+      const res = await fetch("/chat/api/sync-user", { method: "POST" });
+
+      if (!res.ok) {
+        const text = await res.text();
+        console.error("sync-user failed:", text);
+      }
+    } catch (error) {
+      console.error("sync-user error:", error);
+    }
+  }, [isSignedIn, user?.id]);
+
+  const fetchUserHistory = useCallback(async () => {
+    if (!isLoaded || !isSignedIn || !user?.id) return;
+
+    try {
+      setIsLoading(true);
+
+      const res = await fetch("/chat/api/history", {
+        method: "GET",
+        cache: "no-store",
       });
 
-      if (!res.ok) throw new Error("API холболт амжилтгүй");
-      const data = await res.json();
+      if (!res.ok) {
+        const text = await res.text();
+        console.error("History fetch failed:", text);
+        setSidebarHistory([]);
+        setAllChats({});
+        return;
+      }
 
-      setAllChats(prev => ({
-        ...prev,
-        [chatId]: [...(prev[chatId] || []), { role: "assistant", content: data.reply }]
+      const sessions: HistorySession[] = await res.json();
+
+      const history = sessions.map((s) => ({
+        id: s.id,
+        title: s.title || s.messages?.[0]?.content?.slice(0, 20) || "Шинэ чат",
       }));
+
+      const chatsMap: Record<string, ChatMessage[]> = {};
+      sessions.forEach((s) => {
+        chatsMap[s.id] = (s.messages || []).map((m) => ({
+          role: m.role,
+          content: m.content,
+        }));
+      });
+
+      setSidebarHistory(history);
+      setAllChats(chatsMap);
+
+      setActiveChatIdState((prev) => {
+        if (prev && chatsMap[prev]) return prev;
+        return history[0]?.id || null;
+      });
     } catch (error) {
-      console.error("Chat error:", error);
+      console.error("fetchUserHistory error:", error);
     } finally {
-      setIsTyping(false);
+      setIsLoading(false);
     }
-  };
+  }, [isLoaded, isSignedIn, user?.id]);
+
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn || !user?.id) return;
+
+    const run = async () => {
+      await syncUser();
+      await fetchUserHistory();
+    };
+
+    run();
+  }, [isLoaded, isSignedIn, user?.id, syncUser, fetchUserHistory]);
+
+  const createSession = useCallback(async (title: string) => {
+    const res = await fetch("/chat/api/session", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ title }),
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(text || "Failed to create session");
+    }
+
+    return res.json();
+  }, []);
+
+  const sendMessage = useCallback(
+    async (message: string) => {
+      if (!message.trim()) return;
+      if (!isSignedIn || !user?.id) return;
+
+      setIsTyping(true);
+
+      try {
+        let chatId = activeChatId;
+
+        if (!chatId) {
+          const session = await createSession(
+            message.slice(0, 20) || "Шинэ чат",
+          );
+          chatId = session.id;
+
+          setActiveChatIdState(chatId);
+          setSidebarHistory((prev) => [
+            {
+              id: session.id,
+              title: session.title || message.slice(0, 20) || "Шинэ чат",
+            },
+            ...prev,
+          ]);
+          setAllChats((prev) => ({
+            ...prev,
+            [chatId!]: [],
+          }));
+        }
+
+        const nextMessages: ChatMessage[] = [
+          ...(allChats[chatId!] || []),
+          { role: "USER", content: message },
+        ];
+
+        setAllChats((prev) => ({
+          ...prev,
+          [chatId as string]: nextMessages,
+        }));
+
+        const res = await fetch("/chat/api/chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            messages: nextMessages,
+            chatId,
+            userId: user.id,
+          }),
+        });
+
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(text || "Failed to send message");
+        }
+
+        const data = await res.json();
+
+        setAllChats((prev) => ({
+          ...prev,
+          [chatId!]: [
+            ...(prev[chatId!] || []),
+            { role: "ASSISTANT", content: data.reply },
+          ],
+        }));
+      } catch (error) {
+        console.error("sendMessage error:", error);
+      } finally {
+        setIsTyping(false);
+      }
+    },
+    [activeChatId, allChats, createSession, isSignedIn, user?.id],
+  );
+
+  const startNewChat = useCallback(() => {
+    setActiveChatIdState(null);
+  }, []);
 
   return {
-  activeChatId, 
-  setActiveChatId,
-  allChats, 
-  sidebarHistory,
-  isTyping, 
-  setIsTyping,
-  isLoading,
-  sendMessage
-};
+    activeChatId,
+    setActiveChatId: loadChat,
+    allChats,
+    sidebarHistory,
+    isTyping,
+    isLoading,
+    sendMessage,
+    startNewChat,
+    refetchHistory: fetchUserHistory,
+  };
 };

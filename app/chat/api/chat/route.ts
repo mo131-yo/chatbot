@@ -1,55 +1,257 @@
-  import { NextResponse } from 'next/server';
-  import OpenAI from 'openai';
-  import { index } from "@/lib/api/pinecone";
-import { prisma } from '@/lib/prisma';
+// import { NextResponse } from "next/server";
+// import OpenAI from "openai";
+// import { index } from "@/lib/api/pinecone";
+// import { prisma } from "@/lib/prisma";
 
-  const openai = new OpenAI({
-    apiKey: process.env.OPENAI_KEY,
-    timeout: 30000
-  });
+// const openai = new OpenAI({
+//   apiKey: process.env.OPENAI_KEY,
+//   timeout: 30000,
+// });
 
-  export async function POST(req: Request) {
+// export async function POST(req: Request) {
+//   try {
+//     const { messages, chatId, userId } = await req.json();
+
+//     if (!messages || !Array.isArray(messages) || messages.length === 0) {
+//       return NextResponse.json(
+//         { error: "Messages array is required" },
+//         { status: 400 },
+//       );
+//     }
+
+//     const lastUserMessage = messages[messages.length - 1].content;
+
+//     let maxPrice: number | null = null;
+//     const priceRegex =
+//       /(\d+(?:\.\d+)?)\s*(k|к|мянган|мян|төгрөг|төг|t|₮|tg|tugrug|say|сая|zuu|зуу)/gi;
+//     const matches = [...lastUserMessage.matchAll(priceRegex)];
+
+//     if (matches.length > 0) {
+//       const lastMatch = matches[matches.length - 1];
+//       let value = parseFloat(lastMatch[1]);
+//       const unit = (lastMatch[2] || "").toLowerCase();
+
+//       if (["k", "к", "мянган", "мян"].includes(unit)) value *= 1000;
+//       else if (["say", "сая"].includes(unit)) value *= 1000000;
+//       else if (value < 1000) value *= 1000;
+//       maxPrice = value;
+//     }
+
+//     const embeddingResponse = await openai.embeddings.create({
+//       model: "text-embedding-3-small",
+//       input: lastUserMessage,
+//     });
+
+//     const queryOptions: any = {
+//       vector: embeddingResponse.data[0].embedding,
+//       topK: 6,
+//       includeMetadata: true,
+//       filter: maxPrice ? { price: { $lte: maxPrice } } : undefined,
+//     };
+
+//     const queryResponse = await index.query(queryOptions);
+//     const context = queryResponse.matches
+//       .map(
+//         (m: any) =>
+//           `NAME: ${m.metadata.name}\nPRICE: ${m.metadata.price}\nIMG: ${m.metadata.image}\nDESC: ${m.metadata.description}`,
+//       )
+//       .join("\n---\n");
+
+//     const chatResponse = await openai.chat.completions.create({
+//       model: "gpt-4o-mini",
+//       messages: [
+//         {
+//           role: "system",
+//           content: `Чи бол маш найрсаг, туслах дуртай онлайн дэлгүүрийн борлуулалтын зөвлөх.
+
+//         ХАРИЛЦААНЫ ДҮРЭМ:
+//         1. Хэрэглэгч өмнө нь ямар нэгэн барааг сонирхсон бол, дараагийн удаа "та ямар бараа сонирхож байна" гэхэд нь шууд өмнө нь сонирхсон барааг санал болгодог байх.
+//         1. Хэзээ ч "1. Бараа, 2. Үнэ" гэж хөндий жагсаалт битгий бич. Түүний оронд "Энэ үнэхээр сонирхолтой ном, таныг сонирхон байх гэж бодож байна" гэх мэтээр сэтгэл хөдлөлөө илэрхийл.
+//         2. Хэрэглэгч ямар нэгэн барааний талаарх тодорхой мэдээлэл өгөөгүй үед шууд барааг санал болгохгуйгээр Та ямар бараа сонирхож байна? ямар төрөл? ямар үнэтэй гэх мэт лавлаж асуу.
+//         3. Ганцхан асуултанд хариулаад зогсохгүй, яриаг үргэлжлүүлж, сонирхолтой зүйлс асуу.
+//         4. Робот шиг "Дүрэм 1, Дүрэм 2" гэж битгий ярь.
+//         5. Хэрэглэгчтэй яг л найз шиг нь харьц. "За, одоохон", "Мэдээж хэрэг", "Ёстой гоё сонголт байна" гэх мэт үг хэрэглэ.
+//         6. Ганцхан асуултанд хариулаад зогсохгүй, яриаг үргэлжлүүлж, сонирхолтой зүйлс асуу.
+
+//         БҮТЭЦ:
+//         1. Хэрэв бараа санал болгох бол эхлээд найрсаг тайлбар бичээд, дараа нь бараануудаа Carousel форматаар харуул.
+//         2. ![Нэр, Үнэ₮, Тайлбар](Зургийн_URL) - Энэ форматыг барааны дунд зай авалгүй ашигла.
+
+//         CAROUSEL БҮТЭЦ (ЗААВАЛ МӨРДӨХ):
+//         1. Бараа бүрийг яг энэ форматаар бич: ![Нэр, Нарийн_Үнэ_Тоогоор, Тайлбар](Зургийн_URL)
+//         - ЖИШЭЭ: ![Ном, 86450, Д.Нацагдоржийн бүтээл](url1)
+//         - АНХААР: Үнийг "86k" гэж товчилж болохгүй, яг Pinecone-оос ирсэн тоогоор нь (86450) бич.
+//         ТӨЛБӨРИЙН ҮЕД:
+//         1. "Buy now" гэвэл "Tulbur tuluh dansnii medeelel: 78xxxxxxx." гэх мэтээр харьцаарай.
+//         2. Хэрэглэгч бараа авахаар шийдсэн бол тухайн барааны үнийг Pinecone-оос ирсэн яг тэр хэвээр нь (жишээ нь: 86,164₮) хэрэглэгчид хэлэх ёстой.
+//         3. Үнийг хэзээ ч товчилж (жишээ нь: 86к, 86) болохгүй.
+//         4. "Та энэ [Барааны нэр]-г [Яг ирсэн үнэ]-ээр авахад бэлэн үү?" гэж асуу.`,
+//         },
+//         ...messages.map((m: any) => ({
+//           role: m.role === "tuslah" ? "assistant" : m.role,
+//           content: m.content,
+//         })),
+//         {
+//           role: "system",
+//           content: `Одоо байгаа барааны мэдээлэл:\n${context}`,
+//         },
+//       ],
+//       temperature: 0.8,
+//     });
+
+//     const aiReply = chatResponse.choices[0].message.content;
+
+//     if (userId && chatId) {
+//       try {
+//         const stringChatId = chatId.toString();
+
+//         const dbUser = await prisma.user.upsert({
+//           where: { clerkUserId: userId },
+//           update: {},
+//           create: {
+//             clerkUserId: userId,
+//             email: `${userId}@internal.user`,
+//             password: "CLERK_MANAGED",
+//             name: "User",
+//           },
+//         });
+
+//         const session = await prisma.chatSession.upsert({
+//           where: { id: stringChatId },
+//           update: { updatedAt: new Date() },
+//           create: {
+//             id: stringChatId,
+//             userId: dbUser.id,
+//             title: lastUserMessage.slice(0, 40),
+//           },
+//         });
+
+//         prisma.chatMessage.createMany({
+//           data: [
+//             {
+//               chatSessionId: session.id,
+//               role: "USER",
+//               content: lastUserMessage,
+//             },
+//             {
+//               chatSessionId: session.id,
+//               role: "ASSISTANT",
+//               content: aiReply || "",
+//             },
+//           ],
+//         });
+//       } catch (dbError: any) {
+//         console.error("PRISMA_SAVE_ERROR:", dbError.message);
+//       }
+//     }
+
+//     return NextResponse.json({ reply: aiReply });
+//   } catch (error: any) {
+//     console.error("API GLOBAL ERROR:", error);
+//     return NextResponse.json(
+//       { error: "Internal Server Error" },
+//       { status: 500 },
+//     );
+//   }
+// }
+import { NextResponse } from "next/server";
+import OpenAI from "openai";
+import { auth } from "@clerk/nextjs/server";
+import { index } from "@/lib/api/pinecone";
+import { prisma } from "@/lib/prisma";
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_KEY,
+  timeout: 30000,
+});
+
+type IncomingMessage = {
+  role: "USER" | "ASSISTANT" | "SYSTEM" | "user" | "assistant" | "system";
+  content: string;
+};
+
+function normalizeOpenAIRole(
+  role: IncomingMessage["role"],
+): "user" | "assistant" | "system" {
+  if (role === "USER" || role === "user") return "user";
+  if (role === "ASSISTANT" || role === "assistant") return "assistant";
+  return "system";
+}
+
+function extractMaxPrice(text: string): number | null {
+  const priceRegex =
+    /(\d+(?:\.\d+)?)\s*(k|к|мянган|мян|төгрөг|төг|t|₮|tg|tugrug|say|сая|zuu|зуу)/gi;
+
+  const matches = [...text.matchAll(priceRegex)];
+  if (matches.length === 0) return null;
+
+  const lastMatch = matches[matches.length - 1];
+  let value = parseFloat(lastMatch[1]);
+  const unit = (lastMatch[2] || "").toLowerCase();
+
+  if (["k", "к", "мянган", "мян"].includes(unit)) value *= 1000;
+  else if (["say", "сая"].includes(unit)) value *= 1000000;
+  else if (value < 1000) value *= 1000;
+
+  return Number.isFinite(value) ? value : null;
+}
+
+export async function POST(req: Request) {
+  try {
+    const { userId: clerkUserId } = await auth();
+    const body = await req.json();
+
+    const messages = body?.messages as IncomingMessage[] | undefined;
+    const chatId = body?.chatId as string | undefined;
+    const fallbackUserId = body?.userId as string | undefined;
+
+    if (!messages || !Array.isArray(messages) || messages.length === 0) {
+      return NextResponse.json(
+        { error: "Messages array is required" },
+        { status: 400 },
+      );
+    }
+
+    const lastMessage = messages[messages.length - 1];
+    const lastUserMessage = lastMessage?.content?.trim();
+
+    if (!lastUserMessage) {
+      return NextResponse.json(
+        { error: "Last message content is required" },
+        { status: 400 },
+      );
+    }
+
+    if (!openai.apiKey) {
+      return NextResponse.json(
+        { error: "OpenAI API key is missing" },
+        { status: 500 },
+      );
+    }
+
+    const maxPrice = extractMaxPrice(lastUserMessage);
+
+    let context = "";
+
     try {
-      // const { messages } = await req.json();
-      const { messages, chatId, userId } = await req.json();
-
-      if (!messages || !Array.isArray(messages) || messages.length === 0) {
-        return NextResponse.json({ error: "Messages array is required" }, { status: 400 });
-      }
-
-      const lastUserMessage = messages[messages.length - 1].content;
-
-      let maxPrice: number | null = null;
-      const priceRegex = /(\d+(?:\.\d+)?)\s*(k|к|мянган|мян|төгрөг|төг|t|₮|tg|tugrug|say|сая|zuu|зуу)/gi;
-      const matches = [...lastUserMessage.matchAll(priceRegex)];
-
-      if (matches.length > 0) {
-        const lastMatch = matches[matches.length - 1];
-        let value = parseFloat(lastMatch[1]);
-        const unit = (lastMatch[2] || "").toLowerCase();
-
-        if (["k", "к", "мянган", "мян"].includes(unit)) value *= 1000;
-        else if (["say", "сая"].includes(unit)) value *= 1000000;
-        else if (value < 1000) value *= 1000;
-        maxPrice = value;
-      }
-
       const embeddingResponse = await openai.embeddings.create({
         model: "text-embedding-3-small",
         input: lastUserMessage,
       });
-      
-      const queryOptions: any = {
+
+      const queryResponse = await index.query({
         vector: embeddingResponse.data[0].embedding,
         topK: 10,
         includeMetadata: true,
-        filter: maxPrice ? { price: { "$lte": maxPrice } } : undefined
-      };
+        filter: maxPrice ? { price: { $lte: maxPrice } } : undefined,
+      });
 
-      const queryResponse = await index.query(queryOptions);
-      const context = queryResponse.matches.map((m: any) => 
-        `NAME: ${m.metadata.name}\nPRICE: ${m.metadata.price}\nIMG: ${m.metadata.image}\nDESC: ${m.metadata.description}`
-      ).join("\n---\n");
+      context = (queryResponse.matches || [])
+        .map((m: any) => {
+          const name = m?.metadata?.name ?? "Unknown";
+          const price = m?.metadata?.price ?? "";
+          const image = m?.metadata?.image ?? "";
+          const description = m?.metadata?.description ?? "";
 
   const chatResponse = await openai.chat.completions.create({
     model: "gpt-4o-mini",
@@ -120,31 +322,106 @@ if (userId && chatId) {
       }
     });
 
-    const session = await prisma.chatSession.upsert({
-      where: { id: stringChatId },
-      update: { updatedAt: new Date() },
-      create: {
-        id: stringChatId,
-        userId: dbUser.id,
-        title: lastUserMessage.slice(0, 40)
+    const chatResponse = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      temperature: 0.8,
+      messages: [
+        {
+          role: "system",
+          content: `Чи бол маш найрсаг, туслах дуртай онлайн дэлгүүрийн борлуулалтын зөвлөх.
+
+ХАРИЛЦААНЫ ДҮРЭМ:
+1. Хэрэглэгч өмнө нь ямар нэгэн бараа сонирхсон бол дараагийн удаа түүнд ойролцоо бараа санал болго.
+2. "1. Бараа, 2. Үнэ" гэх мэт хэт хөндий жагсаалт бүү бич.
+3. Хэрэглэгч тодорхой мэдээлэл өгөөгүй бол бараа шууд санал болгохоос өмнө лавлаж асуу.
+4. Найрсаг, энгийн, хүнлэг өнгө аясаар ярь.
+5. Яриаг үргэлжлүүлэх байдлаар хариул.
+6. Боломжтой үед барааг carousel маягийн markdown дүрслэлээр харуул.
+
+CAROUSEL FORMAT:
+![Нэр, НарийнҮнэТоогоор, Тайлбар](Зургийн_URL)
+
+АНХААР:
+- Үнийг товчилж болохгүй.
+- Pinecone-с ирсэн үнэн мэдээллийг ашигла.
+- "Buy now" гэхэд төлбөрийн дараагийн алхмыг тайлбарлаж болно.`,
+        },
+        ...messages.map((m) => ({
+          role: normalizeOpenAIRole(m.role),
+          content: m.content,
+        })),
+        {
+          role: "system",
+          content: context
+            ? `Одоо байгаа барааны мэдээлэл:\n${context}`
+            : "Одоогоор Pinecone context олдсонгүй. Хэрэглэгчээс тодруулж асуу эсвэл ерөнхий тусламж үзүүл.",
+        },
+      ],
+    });
+
+    const aiReply =
+      chatResponse.choices[0]?.message?.content?.trim() || "Хариу олдсонгүй.";
+
+    const effectiveUserId = clerkUserId || fallbackUserId;
+
+    if (effectiveUserId && chatId) {
+      try {
+        const stringChatId = String(chatId);
+
+        const dbUser = await prisma.user.upsert({
+          where: { clerkUserId: effectiveUserId },
+          update: {},
+          create: {
+            clerkUserId: effectiveUserId,
+            email: `${effectiveUserId}@internal.user`,
+            password: "CLERK_MANAGED",
+            name: "User",
+          },
+        });
+
+        const session = await prisma.chatSession.upsert({
+          where: { id: stringChatId },
+          update: {
+            updatedAt: new Date(),
+            userId: dbUser.id,
+            title: lastUserMessage.slice(0, 40),
+          },
+          create: {
+            id: stringChatId,
+            userId: dbUser.id,
+            title: lastUserMessage.slice(0, 40),
+          },
+        });
+
+        await prisma.chatMessage.createMany({
+          data: [
+            {
+              chatSessionId: session.id,
+              role: "USER",
+              content: lastUserMessage,
+            },
+            {
+              chatSessionId: session.id,
+              role: "ASSISTANT",
+              content: aiReply,
+            },
+          ],
+        });
+      } catch (dbError: any) {
+        console.error("PRISMA_SAVE_ERROR:", dbError);
       }
-    });
+    }
 
-    await prisma.message.createMany({
-      data: [
-        { sessionId: session.id, role: "user", content: lastUserMessage },
-        { sessionId: session.id, role: "assistant", content: aiReply || "" }
-      ]
-    });
-
-  } catch (dbError: any) {
-    console.error("PRISMA_SAVE_ERROR:", dbError.message);
-  }
-}
-
-return NextResponse.json({ reply: aiReply });
+    return NextResponse.json({ reply: aiReply });
   } catch (error: any) {
-    console.error("API GLOBAL ERROR:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    console.error("API_GLOBAL_ERROR:", error);
+
+    return NextResponse.json(
+      {
+        error: "Internal Server Error",
+        details: error?.message || "Unknown error",
+      },
+      { status: 500 },
+    );
   }
 }

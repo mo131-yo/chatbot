@@ -65,7 +65,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
           return { ...item, quantity: newQty };
         }
         return item;
-      })
+      }),
     );
   };
 
@@ -74,9 +74,9 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
       const existingItem = prev.find((item) => item.id === product.id);
       if (existingItem) {
         return prev.map((item) =>
-          item.id === product.id 
-            ? { ...item, quantity: item.quantity + quantity } 
-            : item
+          item.id === product.id
+            ? { ...item, quantity: item.quantity + quantity }
+            : item,
         );
       }
       
