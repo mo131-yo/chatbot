@@ -11,14 +11,13 @@ import {
 import ThemeToggle from "../ui/ThemeToggle";
 import { useState } from "react";
 
-const menu = [
-  { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
-  { name: "Products", href: "/admin/products", icon: Package },
-  { name: "Orders", href: "/admin/orders", icon: ShoppingCart },
-  { name: "Analytics", href: "/admin/analytics", icon: BarChart3 },
-];
-
 export default function Sidebar() {
+  const menu = [
+    { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
+    { name: "Products", href: "/admin/products", icon: Package },
+    { name: "Orders", href: "/admin/orders", icon: ShoppingCart },
+    { name: "Analytics", href: "/admin/analytics", icon: BarChart3 },
+  ];
   const [openSettings, setOpenSettings] = useState(false);
   const path = usePathname();
 
@@ -54,38 +53,35 @@ export default function Sidebar() {
         </nav>
       </div>
 
-      <div className="space-y-3">
+      <div className="relative">
         <button
           onClick={() => setOpenSettings(!openSettings)}
-          className="w-full p-3 rounded-xl text-left
-          bg-white/5 hover:bg-white/10
-          dark:bg-gray-200 dark:hover:bg-gray-300
-          transition-all duration-200"
+          className="w-full bg-white/5 p-3 rounded-xl text-left hover:bg-white/10 transition"
         >
           ⚙️ Settings
         </button>
 
         {openSettings && (
           <div
-            className="p-3 rounded-xl space-y-3 border
-            bg-gray-800 border-white/10
-            dark:bg-white dark:border-gray-300
-            transition-all duration-300"
+            className="
+      absolute bottom-14 left-0 w-65
+      p-4 rounded-2xl
+      bg-white/10 backdrop-blur-xl
+      text-white
+      dark:bg-white/70 dark:text-black
+      border border-white/20 dark:border-gray-300
+      shadow-2xl space-y-4
+      animate-dropdown
+    "
           >
             <div>
-              <p className="text-sm mb-1 text-gray-400 dark:text-gray-600">
+              <p className="text-xs text-gray-300 dark:text-gray-600 mb-1">
                 Theme
               </p>
               <ThemeToggle />
             </div>
-
-           
           </div>
         )}
-
-        <button className="w-full bg-primary/50 p-2 rounded transition hover:opacity-80">
-          Logout
-        </button>
       </div>
     </aside>
   );
