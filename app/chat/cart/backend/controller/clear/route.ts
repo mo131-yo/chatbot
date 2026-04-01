@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { getUserFromToken } from "@/lib/auth";
+import { getUserFromToken } from "@/lib/service/auth";
 
 export async function DELETE() {
   const user = await getUserFromToken();
