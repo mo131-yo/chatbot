@@ -1,5 +1,5 @@
 "use client";
-import { useCart } from "@/app/context/CartContext";
+
 import { useState } from "react";
 import { FaShoppingCart } from "react-icons/fa";
 
@@ -11,7 +11,6 @@ export default function AddToCartButton({
   storeId: string; 
 }) {
   const [loading, setLoading] = useState(false);
-  // const { refreshCart } = useCart(); 
 
   const addToCart = async (e: React.MouseEvent) => {
     e.stopPropagation();

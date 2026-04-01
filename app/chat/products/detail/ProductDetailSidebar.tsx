@@ -7,11 +7,20 @@ export function ProductDetailSidebar({ product, onClose, onBuy }: any) {
   if (!product) return null;
   const { addToCart , setIsCartOpen} = useCart();
   
-  const handleAddCart = async ()=>{
-    await addToCart( product.id);
+  const handleAddCart = async () => {
+    const cleanPrice = typeof product.price === 'string' 
+      ? parseFloat(product.price.replace(/[^0-9.]/g, '')) 
+      : product.price;
+
+    const productWithCleanPrice = {
+      ...product,
+      price: cleanPrice
+    };
+
+    await addToCart(productWithCleanPrice); 
     onClose();
     setIsCartOpen(true);
-  }
+  };
   return (
     <>
       <div 

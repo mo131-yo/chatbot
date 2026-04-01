@@ -94,9 +94,40 @@ export function HorizontalProductStack({ products, onSelect, onBuy, onSave, save
               <div className={`relative mx-auto h-105 w-70 md:h-120 md:w-[320px] overflow-hidden rounded-[2.5rem] bg-[#121212] border transition-all duration-700 ${
                 isCurrent ? 'border-[#C5A059] shadow-[0_0_50px_rgba(197,160,89,0.2)]' : 'border-white/5 shadow-none'
               }`}>
-                <div className="h-full w-full relative">
-                  <img src={product.image} alt={product.name} className="h-full w-full object-cover select-none" />
-                  <div className="absolute inset-0 bg-linear-to-t from-black via-black/20 to-transparent" />
+                <div className="h-full w-full relative group overflow-hidden rounded-3xl">
+                  <img 
+                    src={product.image} 
+                    alt={product.name} 
+                    className="h-full w-full object-cover select-none transition-transform duration-500 group-hover:scale-110" 
+                  />
+                  <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
+
+                  <div className="absolute top-4 right-4 z-10">
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onSave(product.id);
+                      }}
+                      className="p-3 rounded-full bg-black/30 backdrop-blur-md border border-white/10 hover:border-white/40 hover:scale-110 active:scale-90 transition-all duration-300 group/heart"
+                    >
+                      <Heart 
+                        size={20} 
+                        className={`transition-colors duration-300 ${
+                          savedIds.includes(product.id) 
+                            ? "text-red-500 fill-red-500" 
+                            : "text-white group-hover/heart:text-red-400"
+                        }`}
+                      />
+                    </button>
+                  </div>
+                  
+                  <div className="absolute bottom-6 left-6 right-6">
+                    <p className="text-white text-lg font-bold truncate">{product.name}</p>
+                    <div className="flex justify-between items-end">
+                      <p className="text-[#C5A059] text-xl font-black">{product.price}₮</p>
+                      <span className="text-white/40 text-[10px] uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity underline">Дэлгэрэнгүй</span>
+                    </div>
+                  </div>
                 </div>
 
                 <AnimatePresence>
@@ -116,15 +147,6 @@ export function HorizontalProductStack({ products, onSelect, onBuy, onSave, save
                         >
                           <ShoppingBag size={18} />
                           Нэмэх
-                        </button>
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onSave(product.id);
-                          }}
-                          className="w-12 h-12 bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl flex items-center justify-center text-white active:scale-95 transition-transform hover:text-red-500"
-                        >
-                          <Heart size={18} fill={savedIds.includes(product.id) ? "currentColor" : "none"} />
                         </button>
                         <button 
                           onClick={() => onSelect(product)}
