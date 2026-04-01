@@ -13,18 +13,18 @@ import ChatInput from "./chat/chatInput/page";
 
 export default function Home() {
   const {
-    activeChatId, 
-    setActiveChatId, 
-    allChats, 
+    activeChatId,
+    setActiveChatId,
+    allChats,
     sidebarHistory,
-    isTyping, 
-    setIsTyping, 
-    sendMessage 
+    isTyping,
+    setIsTyping,
+    sendMessage,
   } = useChatLogic();
 
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
-  
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const currentChatMessages = activeChatId ? allChats[activeChatId] || [] : [];
@@ -32,20 +32,18 @@ export default function Home() {
   useScrollEffect(messagesEndRef, [currentChatMessages, isTyping]);
 
   const buyProduct = async (productName: string, productPrice?: any) => {
-  const exactPrice = Number(productPrice).toLocaleString();
-  const userMsg = `Bi яг ${exactPrice}₮ үнэтэй "${productName}"-г авмаар байна. Төлбөрөө яаж төлөх вэ?`;
-  
-  await sendMessage(userMsg);
-};
+    const exactPrice = Number(productPrice).toLocaleString();
+    const userMsg = `Bi яг ${exactPrice}₮ үнэтэй "${productName}"-г авмаар байна. Төлбөрөө яаж төлөх вэ?`;
 
+    await sendMessage(userMsg);
+  };
 
   const toggleSidebar = () => {
-  setIsCollapsed(!isCollapsed);
-};
+    setIsCollapsed(!isCollapsed);
+  };
 
   return (
     <div className="flex min-h-screen bg-slate-50 dark:bg-[#0D0D0D] transition-colors duration-300 overflow-hidden text-slate-900 dark:text-white">
-      
       <ProductDetailSidebar
         product={selectedProduct}
         onClose={() => setSelectedProduct(null)}
@@ -60,13 +58,14 @@ export default function Home() {
       />
 
       <div className="flex-1 flex flex-col min-w-0 h-screen relative">
-
-        <Header toggleSidebar={toggleSidebar}/>
+        <Header toggleSidebar={toggleSidebar} />
         <div className="absolute inset-0 z-0 pointer-events-none">
           <SparklesCore
             id="tsparticlesfullpage"
             background="transparent"
-            minSize={0.6} maxSize={1.4} particleDensity={30}
+            minSize={0.6}
+            maxSize={1.4}
+            particleDensity={30}
             className="w-full h-full"
             particleColor="#0A84FF"
           />
@@ -80,14 +79,13 @@ export default function Home() {
               isTyping={isTyping}
               onProductClick={setSelectedProduct}
               onBuy={buyProduct}
-              messagesEndRef={messagesEndRef} 
+              messagesEndRef={messagesEndRef}
             />
           )}
         </main>
 
-
         <ChatInput
-          onMessageReceived={sendMessage} 
+          onMessageReceived={sendMessage}
           history={currentChatMessages}
           setIsTyping={setIsTyping}
         />

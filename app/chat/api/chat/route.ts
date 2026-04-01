@@ -161,17 +161,25 @@ import { index } from "@/lib/api/pinecone";
 import { prisma } from "@/lib/prisma";
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_KEY,
+  apiKey: process.env.OPENAI_API_KEY || process.env.OPENAI_KEY,
   timeout: 30000,
 });
 
+type IncomingRole =
+  | "USER"
+  | "ASSISTANT"
+  | "SYSTEM"
+  | "user"
+  | "assistant"
+  | "system";
+
 type IncomingMessage = {
-  role: "USER" | "ASSISTANT" | "SYSTEM" | "user" | "assistant" | "system";
+  role: IncomingRole;
   content: string;
 };
 
 function normalizeOpenAIRole(
-  role: IncomingMessage["role"],
+  role: IncomingRole,
 ): "user" | "assistant" | "system" {
   if (role === "USER" || role === "user") return "user";
   if (role === "ASSISTANT" || role === "assistant") return "assistant";
@@ -222,7 +230,8 @@ export async function POST(req: Request) {
       );
     }
 
-    if (!openai.apiKey) {
+    const apiKey = process.env.OPENAI_API_KEY || process.env.OPENAI_KEY;
+    if (!apiKey) {
       return NextResponse.json(
         { error: "OpenAI API key is missing" },
         { status: 500 },
@@ -253,74 +262,13 @@ export async function POST(req: Request) {
           const image = m?.metadata?.image ?? "";
           const description = m?.metadata?.description ?? "";
 
-  const chatResponse = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    messages: [
-      {
-        role: "system",
-        content: `Чи бол найрсаг, туслах дуртай онлайн дэлгүүрийн борлуулалтын зөвлөх. 
-
-        ХАРИЛЦААНЫ ДҮРЭМ:
-        1. Хэрэглэгч өмнө нь ямар нэгэн барааны талаар дэлгэрэнгүй мэдээлэл (Жишээ нь барааны төрөл, үнэ, брэнд гэх мэт мэдээллүүд ) өгөөгүй үед шууд бараа санал болгохгүйгээр эхлээд
-        1. Хэрэглэгч өмнө нь ямар нэгэн барааг сонирхсон бол, дараагийн удаа "та ямар бараа сонирхож байна" гэхэд нь шууд өмнө нь сонирхсон барааг санал болгодог байх.
-        1. Хэзээ ч "1. Бараа, 2. Үнэ" гэж хөндий жагсаалт битгий бич. Түүний оронд "Энэ үнэхээр сонирхолтой ном, таныг сонирхох байх гэж бодож байна" гэх мэтээр сэтгэл хөдлөлөө илэрхийл.
-        2. Хэрэглэгч ямар нэгэн барааний талаарх тодорхой мэдээлэл өгөөгүй үед шууд барааг санал болгохгуйгээр Та ямар бараа сонирхож байна? ямар төрөл? ямар үнэтэй гэх мэт лавлаж асуу.
-        3. Ганцхан асуултанд хариулаад зогсохгүй, яриаг үргэлжлүүлж, сонирхолтой зүйлс асуу.
-        4. Робот шиг "Дүрэм 1, Дүрэм 2" гэж битгий ярь. 
-        5. Хэрэглэгчтэй яг л найз шиг нь харьц. "За, одоохон", "Мэдээж хэрэг", "Ёстой гоё сонголт байна" гэх мэт үг хэрэглэ.
-        6. Ганцхан асуултанд хариулаад зогсохгүй, яриаг үргэлжлүүлж, сонирхолтой зүйлс асуу.
-        
-        БҮТЭЦ:
-        1. Хэрэв бараа санал болгох бол эхлээд найрсаг тайлбар бичээд, дараа нь бараануудаа Carousel форматаар харуул.
-        2. ![Нэр, Үнэ₮, Тайлбар](Зургийн_URL) - Энэ форматыг барааны дунд зай авалгүй ашигла.
-        
-        CAROUSEL БҮТЭЦ (ЗААВАЛ МӨРДӨХ):
-        1. Бараа бүрийг яг энэ форматаар бич: ![Нэр, Нарийн_Үнэ_Тоогоор, Тайлбар](Зургийн_URL)
-        - ЖИШЭЭ: ![Ном, 86450, Д.Нацагдоржийн бүтээл](url1) 
-        - АНХААР: Үнийг "86k" гэж товчилж болохгүй, яг Pinecone-оос ирсэн тоогоор нь (86450) бич.
-        
-        ТӨЛБӨРИЙН ҮЕД:
-        1. "Buy now" гэвэл "Tulbur tuluh dansnii medeelel: 78xxxxxxx." гэх мэтээр харьцаарай.
-        2. Хэрэглэгч бараа авахаар шийдсэн бол тухайн барааны үнийг Pinecone-оос ирсэн яг тэр хэвээр нь (жишээ нь: 86,164₮) хэрэглэгчид хэлэх ёстой. 
-        3. Үнийг хэзээ ч товчилж (жишээ нь: 86к, 86) болохгүй. 
-        4. "Та энэ [Барааны нэр]-г [Яг ирсэн үнэ]-ээр авахад бэлэн үү?" гэж асуу.
-        5. Хэрэглэгч "Тийм" гэж хэлвэл "Төлбөрийн заавар: 78xxxxxxx" гэх мэтээр харьцаарай.
-        6. Хэрэглэгч "Үгүй" гэж хэлвэл "За, ойлголоо. Магадгүй өөр бараа сонирхох уу?" гэх мэтээр харьцаарай.`,
-      },
-      ...messages.map((m: any) => ({
-        role: m.role === "tuslah" ? "assistant" : m.role,
-        content: m.content
-      })),
-      { role: "system", content: `Одоо байгаа барааны мэдээлэл:\n${context}` }
-    ],
-    temperature: 0.8,
-  });
-
-// const aiReply = chatResponse.choices[0].message.content;
-const aiReply = chatResponse.choices[0].message.content || "";
-
-const optionsMatch = aiReply.match(/\[OPTIONS:\s*(.*?)\]/);
-    const cleanContent = aiReply.replace(/\[OPTIONS:\s*.*?\]/g, "").trim();
-    let suggestions: string[] = [];
-
-    if (optionsMatch) {
-      suggestions = optionsMatch[1].split(",").map(item => item.trim());
+          return `NAME: ${name}\nPRICE: ${price}\nIMG: ${image}\nDESC: ${description}`;
+        })
+        .join("\n---\n");
+    } catch (pineconeError) {
+      console.error("PINECONE_ERROR:", pineconeError);
+      context = "";
     }
-
-if (userId && chatId) {
-  try {
-    const stringChatId = chatId.toString();
-    
-    const dbUser = await prisma.user.upsert({
-      where: { clerkUserId: userId },
-      update: {},
-      create: {
-        clerkUserId: userId,
-        email: `${userId}@internal.user`, 
-        password: "CLERK_MANAGED",
-        name: "User"
-      }
-    });
 
     const chatResponse = await openai.chat.completions.create({
       model: "gpt-4o-mini",
@@ -328,23 +276,23 @@ if (userId && chatId) {
       messages: [
         {
           role: "system",
-          content: `Чи бол маш найрсаг, туслах дуртай онлайн дэлгүүрийн борлуулалтын зөвлөх.
+          content: `Чи бол найрсаг, туслах дуртай онлайн дэлгүүрийн борлуулалтын зөвлөх.
 
 ХАРИЛЦААНЫ ДҮРЭМ:
-1. Хэрэглэгч өмнө нь ямар нэгэн бараа сонирхсон бол дараагийн удаа түүнд ойролцоо бараа санал болго.
-2. "1. Бараа, 2. Үнэ" гэх мэт хэт хөндий жагсаалт бүү бич.
-3. Хэрэглэгч тодорхой мэдээлэл өгөөгүй бол бараа шууд санал болгохоос өмнө лавлаж асуу.
+1. Хэрэглэгч өмнө нь барааны төрөл, үнэ, брэнд зэрэг мэдээлэл өгөөгүй бол шууд бараа санал болгохгүй, эхлээд тодруулж асуу.
+2. Хэрэглэгч өмнө нь ямар нэгэн бараа сонирхсон бол дараагийн удаа ойролцоо сонголт санал болго.
+3. "1. Бараа, 2. Үнэ" гэх мэт хөндий жагсаалт бүү бич.
 4. Найрсаг, энгийн, хүнлэг өнгө аясаар ярь.
 5. Яриаг үргэлжлүүлэх байдлаар хариул.
-6. Боломжтой үед барааг carousel маягийн markdown дүрслэлээр харуул.
+6. Боломжтой үед барааг дараах markdown carousel хэлбэрээр харуул:
 
-CAROUSEL FORMAT:
 ![Нэр, НарийнҮнэТоогоор, Тайлбар](Зургийн_URL)
 
 АНХААР:
 - Үнийг товчилж болохгүй.
-- Pinecone-с ирсэн үнэн мэдээллийг ашигла.
-- "Buy now" гэхэд төлбөрийн дараагийн алхмыг тайлбарлаж болно.`,
+- Pinecone-оос ирсэн үнэн мэдээллийг ашигла.
+- "Buy now" гэхэд төлбөрийн дараагийн алхмыг тайлбарлаж болно.
+- Хэрэв context байхгүй бол эхлээд хэрэглэгчээс тодруулж асуу.`,
         },
         ...messages.map((m) => ({
           role: normalizeOpenAIRole(m.role),
@@ -354,13 +302,24 @@ CAROUSEL FORMAT:
           role: "system",
           content: context
             ? `Одоо байгаа барааны мэдээлэл:\n${context}`
-            : "Одоогоор Pinecone context олдсонгүй. Хэрэглэгчээс тодруулж асуу эсвэл ерөнхий тусламж үзүүл.",
+            : "Одоогоор Pinecone context олдсонгүй. Хэрэглэгчээс ямар бараа, ямар үнэ, ямар төрөл сонирхож байгааг лавлаж асуу.",
         },
       ],
     });
 
     const aiReply =
       chatResponse.choices[0]?.message?.content?.trim() || "Хариу олдсонгүй.";
+
+    const optionsMatch = aiReply.match(/\[OPTIONS:\s*(.*?)\]/);
+    const cleanReply = aiReply.replace(/\[OPTIONS:\s*.*?\]/g, "").trim();
+    let suggestions: string[] = [];
+
+    if (optionsMatch) {
+      suggestions = optionsMatch[1]
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
+    }
 
     const effectiveUserId = clerkUserId || fallbackUserId;
 
@@ -403,16 +362,19 @@ CAROUSEL FORMAT:
             {
               chatSessionId: session.id,
               role: "ASSISTANT",
-              content: aiReply,
+              content: cleanReply,
             },
           ],
         });
-      } catch (dbError: any) {
+      } catch (dbError) {
         console.error("PRISMA_SAVE_ERROR:", dbError);
       }
     }
 
-    return NextResponse.json({ reply: aiReply });
+    return NextResponse.json({
+      reply: cleanReply,
+      suggestions,
+    });
   } catch (error: any) {
     console.error("API_GLOBAL_ERROR:", error);
 

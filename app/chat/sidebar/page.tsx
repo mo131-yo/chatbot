@@ -7,19 +7,28 @@ interface SidebarProps {
   history: { id: string; title: string }[];
   onNewChat: () => void;
   onSelectChat: (id: string) => void;
+  isLoading?: boolean;
 }
 
-export default function Sidebar ({ isCollapsed, history, onNewChat, onSelectChat }: SidebarProps){
+export default function Sidebar({
+  isCollapsed,
+  history,
+  onNewChat,
+  onSelectChat,
+  isLoading = false,
+}: SidebarProps) {
   return (
-    <aside 
+    <aside
       className={`flex flex-col h-screen relative z-20 transition-all duration-300 ease-in-out bg-white dark:bg-[#0D0D0D] border-r border-black/10 dark:border-white/5 ${
         isCollapsed ? "w-0 overflow-hidden border-r-0" : "w-72"
       }`}
     >
       <NewChatBtn onClick={onNewChat} />
-
-      <ChatHistory history={history} onSelectChat={onSelectChat} />
-
+      <ChatHistory
+        history={history}
+        onSelectChat={onSelectChat}
+        isLoading={isLoading}
+      />
     </aside>
   );
-};
+}

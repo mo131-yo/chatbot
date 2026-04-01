@@ -245,11 +245,11 @@
 
 //     pineconeId String @unique
 
-    productId String
-    product   Product @relation(fields: [productId], references: [id])
-    storeId   String
-    quantity Int
-    price    Float
+    // productId String
+    // product   Product @relation(fields: [productId], references: [id])
+    // storeId   String
+    // quantity Int
+    // price    Float
 
 // model ChatMessage {
 //     id            String      @id @default(cuid())
