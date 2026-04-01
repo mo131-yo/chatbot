@@ -3,7 +3,10 @@
 import { useState, useCallback, useRef } from "react";
 import { AnimatePresence, motion, type PanInfo } from "framer-motion";
 import { useCart } from "@/app/context/CartContext";
-import { ShoppingBag, Info, Heart, ChevronLeft, ChevronRight } from "lucide-react";
+import { ShoppingBag, Info, Heart, ChevronLeft, ChevronRight, Share2 } from "lucide-react";
+import QPayPayment from "../../payment/components/QPayPayment ";
+import { useUser } from "@clerk/nextjs";
+import { sendOrderEmail } from "@/lib/service/email";
 
 interface Product {
   id: string;
@@ -26,6 +29,10 @@ export function HorizontalProductStack({ products, onSelect, onBuy, onSave, save
   const [currentIndex, setCurrentIndex] = useState(0);
   const { addToCart } = useCart();
   const lastNavigationTime = useRef(0);
+  const [isShared, setIsShared] = useState(false);
+  const [showPayment, setShowPayment] = useState(false); 
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const { user } = useUser();
 
   const navigate = useCallback((newDirection: number) => {
     const now = Date.now();
@@ -37,6 +44,11 @@ export function HorizontalProductStack({ products, onSelect, onBuy, onSave, save
       return prev === 0 ? products.length - 1 : prev - 1;
     });
   }, [products.length]);
+
+  const handleOrderClick = (product: Product) => {
+    setSelectedProduct(product);
+    setShowPayment(true);
+  };
 
   const handleDragEnd = (_: any, info: PanInfo) => {
     const threshold = 40;
@@ -63,9 +75,92 @@ export function HorizontalProductStack({ products, onSelect, onBuy, onSave, save
     return { x: diff > 0 ? 500 : -500, scale: 0.5, opacity: 0, zIndex: 0 };
   };
 
+  const handleShare = async (e: React.MouseEvent, product: any) => {
+    e.stopPropagation();
+
+    const shareData = {
+      title: product.name,
+      text: `${product.name} - ${product.price}₮. Энийг хараарай!`,
+      url: `${window.location.origin}/product/${product.id}`,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(shareData.url);
+        setIsShared(true);
+        setTimeout(() => setIsShared(false), 2000);
+      }
+    } catch (err) {
+      console.error("Share хийхэд алдаа гарлаа:", err);
+    }
+  };
+
+
+const handlePaymentSuccess = async (details: any) => {
+  if (!user) {
+    console.error("Хэрэглэгч нэвтрээгүй байна");
+    return;
+  }
+
+  try {
+    const orderData = {
+      id: details.transactionId || `INV-${Math.floor(Math.random() * 10000)}`,
+      amount: details.amount,
+    };
+
+    const orderItems = [{ 
+      name: selectedProduct?.name || "Бүтээгдэхүүн", 
+      quantity: 1,
+      price: Number(selectedProduct?.price.replace(/,/g, '')),
+      thumbnail: selectedProduct?.image
+    }];
+
+    const emailSent = await sendOrderEmail(user, orderData, orderItems);
+
+    if (emailSent) {
+      console.log("Баталгаажуулах имэйл амжилттай илгээгдлээ.");
+    }
+
+    setTimeout(() => {
+      setShowPayment(false);
+    }, 2500);
+
+  } catch (error) {
+    console.error("Төлбөрийн дараах үйлдлүүдэд алдаа гарлаа:", error);
+  }
+};
+
   return (
     <div className="relative flex h-137.5 w-full items-center justify-center overflow-visible bg-transparent group select-none touch-none">
-      
+
+      <AnimatePresence>
+        {showPayment && selectedProduct && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center">
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setShowPayment(false)}
+              className="absolute inset-0 bg-black/80 backdrop-blur-md"
+            />
+            
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="relative z-10"
+            >
+              <QPayPayment 
+                amount={Number(selectedProduct.price.replace(/,/g, ''))} 
+                orderId={`INV-${Math.floor(Math.random() * 10000)}`}
+                onSuccess={handlePaymentSuccess}
+                onCancel={() => setShowPayment(false)}
+              />
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       <div className="absolute left-2 md:left-6 z-50 transition-all duration-300">
         <button 
           onClick={() => navigate(-1)} 
@@ -142,8 +237,17 @@ export function HorizontalProductStack({ products, onSelect, onBuy, onSave, save
                       <p className="text-[#C5A059] text-2xl font-black">{product.price}₮</p>
                       
                       <div className="flex gap-2.5">
-                        <button className="flex-1 h-12 bg-[#C5A059] backdrop-blur-xl border border-white/10 rounded-2xl flex items-center justify-center text-white active:scale-95 transition-transform">
+                        <button 
+                          onClick={() => handleOrderClick(product)}
+                          className="flex-1 h-12 bg-[#C5A059] border border-white/10 rounded-2xl flex items-center justify-center text-white font-bold active:scale-95 transition-transform"
+                        >
                           Захиалах
+                        </button>
+                        <button 
+                          onClick={(e) => handleShare(e, product)} 
+                          className="p-3 rounded-full bg-black/30 backdrop-blur-md border border-white/10 hover:border-[#C5A059] hover:bg-[#C5A059]/20 active:scale-90 transition-all"
+                        >
+                          <Share2 size={20} className="text-white" />
                         </button>
                         <button 
                           onClick={() => addToCart(product)}

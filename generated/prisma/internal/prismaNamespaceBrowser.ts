@@ -100,6 +100,8 @@ export const ChatSessionScalarFieldEnum = {
   id: 'id',
   title: 'title',
   userId: 'userId',
+  isPinned: 'isPinned',
+  isPublic: 'isPublic',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

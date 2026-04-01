@@ -38,6 +38,8 @@ export const WelcomeSection = () => {
 
       <div className="w-full h-full pt-8">
         <SplineScene scene="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode" className="w-full h-full" />
+        {/* https://prod.spline.design/iK7697Ic6v1C8XbI/scene.splinecode */}
+        {/* https://prod.spline.design/OT-uL-mZ-Y7T-9-T/scene.splinecode */}
       </div>
     </div>
   );

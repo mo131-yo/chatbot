@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { prisma } from "@/lib/prisma";
-import { getUserFromToken } from "@/lib/auth";
+import { getUserFromToken } from "@/lib/service/auth";
 
 // export async function GET() {
 //   const user = await getUserFromToken();

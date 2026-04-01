@@ -10,6 +10,7 @@ import { ProductDetailSidebar } from "./chat/products/detail/ProductDetailSideba
 import Sidebar from "./chat/sidebar/page";
 import Header from "./chat/header/page";
 import ChatInput from "./chat/chatInput/page";
+import ChatRobot from "@/lib/utils/chat-animation/ChatRobot";
 
 export default function Home() {
   const {
@@ -60,6 +61,7 @@ export default function Home() {
         onSelectChat={(id: string) => setActiveChatId(id)} 
         isLoading={isLoading} 
         onDeleteChat={handleDeleteChat}
+        activeChatId={activeChatId}
       />
 
       <div className="flex-1 flex flex-col min-w-0 h-screen relative">
@@ -88,6 +90,7 @@ export default function Home() {
           )}
         </main>
 
+        <ChatRobot />
 
         <ChatInput
           onMessageReceived={sendMessage} 
