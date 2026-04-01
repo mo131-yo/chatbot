@@ -90,6 +90,7 @@ export function HorizontalProductStack({ products, onSelect, onBuy, onSave, save
               drag="x"
               dragConstraints={{ left: 0, right: 0 }}
               onDragEnd={handleDragEnd}
+              onClick={() => onSelect(product)}
             >
               <div className={`relative mx-auto h-105 w-70 md:h-120 md:w-[320px] overflow-hidden rounded-[2.5rem] bg-[#121212] border transition-all duration-700 ${
                 isCurrent ? 'border-[#C5A059] shadow-[0_0_50px_rgba(197,160,89,0.2)]' : 'border-white/5 shadow-none'
@@ -141,12 +142,14 @@ export function HorizontalProductStack({ products, onSelect, onBuy, onSave, save
                       <p className="text-[#C5A059] text-2xl font-black">{product.price}₮</p>
                       
                       <div className="flex gap-2.5">
+                        <button className="flex-1 h-12 bg-[#C5A059] backdrop-blur-xl border border-white/10 rounded-2xl flex items-center justify-center text-white active:scale-95 transition-transform">
+                          Захиалах
+                        </button>
                         <button 
                           onClick={() => addToCart(product)}
-                          className="flex-1 bg-[#C5A059] text-black h-12 rounded-2xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                          className="bg-[#C5A059] text-black h-12 w-12 rounded-2xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
                         >
                           <ShoppingBag size={18} />
-                          Нэмэх
                         </button>
                         <button 
                           onClick={() => onSelect(product)}
