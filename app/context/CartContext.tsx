@@ -69,33 +69,32 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     );
   };
 
-  const addToCart = async (product: any, quantity: number = 1) => {
-    setCartItems((prev) => {
-      const existingItem = prev.find((item) => item.id === product.id);
-      if (existingItem) {
-        return prev.map((item) =>
-          item.id === product.id
-            ? { ...item, quantity: item.quantity + quantity }
-            : item,
-        );
-      }
-      
-      return [...prev, { 
-        id: product.id, 
-        name: product.name, 
-        price: Number(product.price),
-        image: product.images?.[0] || product.image,
-        quantity,
-        storeId: product.storeId,
-        product: {
-          name: product.name,
-          images: product.images || [product.image],
-          price: product.price
-        }
-      }];
-    });
-    setIsCartOpen(true);
-  };
+ const addToCart = async (product: any, quantity: number = 1) => {
+  setCartItems((prev) => {
+    const existingItem = prev.find((item) => item.id === product.id);
+    if (existingItem) {
+      return prev.map((item) =>
+        item.id === product.id
+          ? { ...item, quantity: item.quantity + quantity }
+          : item,
+      );
+    }
+    
+    const price = Number(product.price) || 0; 
+    const image = product.image || (product.images && product.images[0]) || "/placeholder.png";
+
+    return [...prev, { 
+      id: product.id, 
+      name: product.name || "Unknown Product", 
+      price: price,
+      image: image,
+      quantity,
+      storeId: product.storeId || "",
+      product: product
+    }];
+  });
+  setIsCartOpen(true);
+};
 
   const removeFromCart = async (id: string) => {
     setCartItems((prev) => prev.filter((item) => item.id !== id));

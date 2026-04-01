@@ -44,9 +44,6 @@ export const ChatHistory = ({
             onClick={() => onSelectChat(chat.id)}
             className="flex-1 text-left px-4 py-3 flex items-center gap-3 min-w-0"
           >
-            <span className="material-symbols-outlined text-slate-600 group-hover:text-[#C5A059] text-sm transition-colors">
-              chat_bubble
-            </span>
             <span className="text-sm font-light text-slate-400 group-hover:text-slate-200 transition-colors truncate pr-6">
               {chat.title}
             </span>
@@ -58,7 +55,7 @@ export const ChatHistory = ({
               onDeleteChat?.(chat.id);
             }
             }}
-            className="absolute right-2 p-2 text-slate-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all z-10"
+            className="absolute right-2 p-2 text-slate-600 hover:text-red-500 group-hover:opacity-100 transition-all z-10"
             title="Delete chat"
           >
             <FaTrash size={12} />

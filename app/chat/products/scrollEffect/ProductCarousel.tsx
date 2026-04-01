@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useCart } from "@/app/context/CartContext";
 import { ProductDetailSidebar } from "../detail/ProductDetailSidebar";
 import { HorizontalProductStack } from "../components/HorizontalProductStack";
+import { Heart, X } from "lucide-react";
+import { useFavoriteStore } from "@/app/store/useFavoriteStore";
 interface Product {
   id: string;
   name: string;
@@ -19,11 +21,12 @@ interface ProductCarouselProps {
   history: any[];
 }
 
-export const ProductCarousel = ({ products, history  }: ProductCarouselProps) => {
+export const ProductCarousel = ({ products, history, onSelect, onBuy }: ProductCarouselProps) => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const { addToCart } = useCart();
   const [savedProducts, setSavedProducts] = useState<string[]>([]);
-
+  const { savedIds, toggleFavorite } = useFavoriteStore();
+  
   if (!products || products.length === 0) return null;
 
   const handleBuy = (name: string, price: string) => {
@@ -35,46 +38,79 @@ export const ProductCarousel = ({ products, history  }: ProductCarouselProps) =>
   }
 
   
-  const handleSaveProduct = async (product: any) => {
-    const isAlreadySaved = savedProducts.includes(product.id);
-    if (isAlreadySaved) {
-      setSavedProducts(prev => prev.filter(id => id !== product.id));
-    } else {
-      setSavedProducts(prev => [...prev, product.id]);
-    }
+  const handleSave = async (productId: string) => {
+    const targetProduct = products.find(p => p.id === productId);
     try {
-      await fetch("/chat/api/favorites", {
+      const res = await fetch("/chat/api/favorites", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          productId: product.id,
-          name: product.name,
-          price: product.price,
-          image: product.image,
-          description: product.description,
-          storeId: product.storeId 
+          productId: productId,
+          name: targetProduct?.name || "Product",
+          price: targetProduct?.price || 0,
+          image: targetProduct?.image || ""
         }),
       });
-    } catch (error) {
-      console.error("Save error:", error);
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.saved) {
+          setSavedProducts(prev => [...prev, productId]);
+        } else {
+          setSavedProducts(prev => prev.filter(id => id !== productId));
+        }
+      }
+    } catch (err) {
+      console.error(err);
     }
   };
   
   return (
-    <div className="w-full">
+    <div className="w-full space-y-8">
       <HorizontalProductStack 
         products={products} 
         onSelect={(product) => setSelectedProduct(product)} 
-        onBuy={handleBuy}
-        onSave={handleSaveProduct}
+        onBuy={onBuy}
+        onSave={(id) => {
+          const product = products.find(p => p.id === id);
+          toggleFavorite(product);
+        }}
         savedIds={savedProducts}
       />
+
+      {savedProducts.length > 0 && (
+        <div className="mt-10 p-6 bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md">
+          <div className="flex items-center gap-2 mb-6">
+            <Heart size={20} className="text-red-500" fill="currentColor" />
+            <h3 className="text-lg font-bold text-white">Миний хадгалсан бараанууд</h3>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {products
+              .filter(p => savedProducts.includes(p.id))
+              .map(product => (
+                <div key={product.id} className="bg-[#1a1a1a] p-3 rounded-2xl border border-white/5 relative group">
+                  <img src={product.image} className="w-full h-32 object-cover rounded-xl mb-2" />
+                  <p className="text-white text-xs font-medium truncate">{product.name}</p>
+                  <p className="text-[#C5A059] text-sm font-bold">{product.price}₮</p>
+                  
+                  <button 
+                    onClick={() => handleSave(product.id)}
+                    className="absolute top-2 right-2 p-1 bg-black/60 rounded-full hover:bg-red-500 transition-colors"
+                  >
+                    <X size={14} className="text-white" />
+                  </button>
+                </div>
+              ))}
+          </div>
+        </div>
+      )}
 
       {selectedProduct && (
         <ProductDetailSidebar 
           product={selectedProduct}
           onClose={() => setSelectedProduct(null)}
-          onBuy={handleBuy}
+          onBuy={onBuy}
         />
       )}
     </div>

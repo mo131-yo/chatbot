@@ -46,8 +46,8 @@ export default function CartSidebar() {
                   <p>Сагс хоосон байна</p>
                 </div>
               ) : (
-                cartItems.map((item) => (
-                  <div key={item.id} className="flex gap-4 bg-white/5 p-3 rounded-xl border border-white/5">
+                cartItems.map((item, idx) => (
+                  <div key={item.id || `cart-item-${idx}`} className="flex gap-4 bg-white/5 p-3 rounded-xl border border-white/5">
                     <img src={item.image} className="w-20 h-20 object-cover rounded-lg" alt={item.name} />
                     
                     <div className="flex-1 flex flex-col justify-between">

@@ -229,14 +229,25 @@
       [activeChatId, allChats, createSession, isSignedIn, user?.id],
     );
 
-    const deleteChat = useCallback(async (chatId: string) => {
+  const deleteChat = useCallback(async (chatId: string) => {
+  if (!confirm("Та энэ чатыг устгахдаа итгэлтэй байна уу?")) return;
+
   try {
     const res = await fetch(`/chat/api/session/${chatId}`, {
       method: "DELETE",
     });
 
     if (!res.ok) throw new Error("Устгаж чадсангүй");
-    setSidebarHistory((prev) => prev.filter((chat) => chat.id !== chatId));
+
+    setSidebarHistory((prev) => {
+      const updatedHistory = prev.filter((chat) => chat.id !== chatId);
+      
+      if (activeChatId === chatId) {
+        setActiveChatIdState(updatedHistory[0]?.id || null);
+      }
+      
+      return updatedHistory;
+    });
 
     setAllChats((prev) => {
       const newChats = { ...prev };
@@ -244,13 +255,8 @@
       return newChats;
     });
     
-    if (activeChatId === chatId) {
-      setActiveChatIdState(null);
-    }
-    
   } catch (error) {
     console.error("deleteChat error:", error);
-    alert("Чат устгахад алдаа гарлаа.");
   }
 }, [activeChatId]);
 

@@ -1449,6 +1449,7 @@ export const OrderScalarFieldEnum = {
   storeId: 'storeId',
   quantity: 'quantity',
   price: 'price',
+  paidAt: 'paidAt',
   customerName: 'customerName',
   customerPhone: 'customerPhone',
   address: 'address',
