@@ -4,7 +4,7 @@ import { useState, useCallback, useRef } from "react";
 import { AnimatePresence, motion, type PanInfo } from "framer-motion";
 import { useCart } from "@/app/context/CartContext";
 import { ShoppingBag, Info, Heart, ChevronLeft, ChevronRight, Share2 } from "lucide-react";
-import QPayPayment from "../../payment/components/QPayPayment ";
+// import QPayPayment from "../../payment/components/QPayPayment ";
 import { useUser } from "@clerk/nextjs";
 import { sendOrderEmail } from "@/lib/service/email";
 
@@ -75,27 +75,28 @@ export function HorizontalProductStack({ products, onSelect, onBuy, onSave, save
     return { x: diff > 0 ? 500 : -500, scale: 0.5, opacity: 0, zIndex: 0 };
   };
 
-  const handleShare = async (e: React.MouseEvent, product: any) => {
-    e.stopPropagation();
-
-    const shareData = {
-      title: product.name,
-      text: `${product.name} - ${product.price}₮. Энийг хараарай!`,
-      url: `${window.location.origin}/product/${product.id}`,
-    };
-
-    try {
-      if (navigator.share) {
-        await navigator.share(shareData);
-      } else {
-        await navigator.clipboard.writeText(shareData.url);
-        setIsShared(true);
-        setTimeout(() => setIsShared(false), 2000);
-      }
-    } catch (err) {
-      console.error("Share хийхэд алдаа гарлаа:", err);
-    }
+ const handleShare = async (chatId: string) => {
+  const shareData = {
+    title: "Чат хуваалцах",
+    text: "Энэхүү сонирхолтой яриаг үзээрэй!",
+    url: `${window.location.origin}/chat/${chatId}`,
   };
+  try {
+    if (navigator.share) {
+      await navigator.share(shareData);
+      console.log("Амжилттай хуваалцлаа");
+    } else {
+      await navigator.clipboard.writeText(shareData.url);
+      alert("Холбоосыг хууллаа!");
+    }
+  } catch (error: any) {
+    if (error.name === 'AbortError') {
+      console.log('Хэрэглэгч хуваалцахыг цуцаллаа.');
+      return;
+    }
+    console.error("Хуваалцахад алдаа гарлаа:", error);
+  }
+};
 
 
 const handlePaymentSuccess = async (details: any) => {
@@ -137,7 +138,7 @@ const handlePaymentSuccess = async (details: any) => {
 
       <AnimatePresence>
         {showPayment && selectedProduct && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center">
+          <div className="fixed inset-0 z-100 flex items-center justify-center">
             <motion.div 
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setShowPayment(false)}
@@ -178,7 +179,7 @@ const handlePaymentSuccess = async (details: any) => {
 
           return (
             <motion.div
-              key={product.id}
+              key={`${product.id}-${index}`}
               className="absolute"
               animate={style}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
@@ -244,7 +245,7 @@ const handlePaymentSuccess = async (details: any) => {
                           Захиалах
                         </button>
                         <button 
-                          onClick={(e) => handleShare(e, product)} 
+                          onClick={() => handleShare(product.id)} 
                           className="p-3 rounded-full bg-black/30 backdrop-blur-md border border-white/10 hover:border-[#C5A059] hover:bg-[#C5A059]/20 active:scale-90 transition-all"
                         >
                           <Share2 size={20} className="text-white" />
