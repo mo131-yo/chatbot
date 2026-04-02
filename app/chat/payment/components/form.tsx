@@ -47,7 +47,6 @@ export default function OrderAddress({ onClose }: Props) {
     setLoading(true);
 
     try {
-      // Nominatim API ашиглан хаягийн мэдээлэл авах
       const response = await fetch(
         `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&accept-language=mn`
       );
@@ -56,17 +55,13 @@ export default function OrderAddress({ onClose }: Props) {
       if (data.address) {
         const addr = data.address;
         
-        // API-аас ирж буй утгуудыг өөрийн LOCATION_DATA-тай тааруулах
-        // Жишээ нь: 'Ulaanbaatar' -> 'Улаанбаатар'
         let detectedCity = "";
         if (addr.city === "Ulaanbaatar" || addr.state === "Ulaanbaatar") detectedCity = "Улаанбаатар";
         else if (addr.city === "Darkhan" || addr.state === "Darkhan-Uul") detectedCity = "Дархан";
         else if (addr.city === "Erdenet" || addr.state === "Orkhon") detectedCity = "Эрдэнэт";
 
-        // Дүүрэг/Сум - Nominatim ихэвчлэн 'suburb' эсвэл 'county' дээр дүүргийг өгдөг
         const detectedDistrict = addr.suburb || addr.district || addr.county || "";
 
-        // Дэлгэрэнгүй хаяг (Гудамж, хороолол)
         const detailedAddress = [
           addr.road,
           addr.neighbourhood,
@@ -76,7 +71,6 @@ export default function OrderAddress({ onClose }: Props) {
         setFormData(prev => ({
           ...prev,
           city: detectedCity || prev.city,
-          // Хэрэв дүүрэг манай жагсаалтад байвал шууд сонгоно
           district: detectedDistrict,
           address: detailedAddress || prev.address
         }));
@@ -104,7 +98,6 @@ export default function OrderAddress({ onClose }: Props) {
         exit={{ scale: 0.9, opacity: 0, y: 20 }}
         className="relative bg-[#121212] border border-white/10 rounded-[32px] overflow-hidden w-full max-w-lg z-10 shadow-2xl"
       >
-        {/* Header */}
         <div className="p-6 border-b border-white/5 bg-white/5">
           <h2 className="text-xl font-bold text-white">Хүргэлтийн хаяг тохируулах</h2>
           <p className="text-sm text-slate-400">Газрын зураг дээр байршлаа заана уу</p>
@@ -112,7 +105,6 @@ export default function OrderAddress({ onClose }: Props) {
 
         <div className="p-6 flex flex-col gap-5 max-h-[80vh] overflow-y-auto custom-scrollbar">
           
-          {/* Map Section */}
           <div className="w-full">
             <LocationPicker 
               onLocationSelect={handleMapChange} 
@@ -121,7 +113,6 @@ export default function OrderAddress({ onClose }: Props) {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            {/* Хот / Аймаг */}
             <div className="flex flex-col gap-1.5">
               <label className="text-[10px] font-bold text-slate-500 px-1 uppercase tracking-widest">Хот / Аймаг</label>
               <select
@@ -137,7 +128,6 @@ export default function OrderAddress({ onClose }: Props) {
               </select>
             </div>
 
-            {/* Дүүрэг / Сум */}
             <div className="flex flex-col gap-1.5">
               <label className="text-[10px] font-bold text-slate-500 px-1 uppercase tracking-widest">Дүүрэг / Сум</label>
               <select
@@ -155,7 +145,6 @@ export default function OrderAddress({ onClose }: Props) {
             </div>
           </div>
 
-          {/* Хаяг & Утас */}
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
               <label className="text-[10px] font-bold text-slate-500 px-1 uppercase tracking-widest">Дэлгэрэнгүй хаяг</label>
