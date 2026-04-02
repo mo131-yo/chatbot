@@ -11,11 +11,11 @@ import {
   ChevronRight,
   Share2,
 } from "lucide-react";
-// import QPayPayment from "../../payment/components/QPayPayment ";
 import { useUser } from "@clerk/nextjs";
 import { sendOrderEmail } from "@/lib/service/email";
 import { useRouter } from "next/navigation";
 import LocationForm from "../../payment/components/form";
+import QPayPayment from "../../payment/components/QPayPayment ";
 
 interface Product {
   id: string;
@@ -183,12 +183,12 @@ export function HorizontalProductStack({
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
               className="relative z-10"
             >
-              {/* <QPayPayment
+              <QPayPayment
                 amount={Number(selectedProduct.price.replace(/,/g, ""))}
                 orderId={`INV-${Math.floor(Math.random() * 10000)}`}
                 onSuccess={handlePaymentSuccess}
                 onCancel={() => setShowPayment(false)}
-              /> */}
+              />
             </motion.div>
           </div>
         )}
@@ -304,12 +304,6 @@ export function HorizontalProductStack({
                           className="bg-[#C5A059] text-black h-12 w-12 rounded-2xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
                         >
                           <ShoppingBag size={18} />
-                        </button>
-                        <button
-                          onClick={() => onSelect(product)}
-                          className="w-12 h-12 bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl flex items-center justify-center text-white active:scale-95 transition-transform"
-                        >
-                          <Info size={18} />
                         </button>
                       </div>
                     </motion.div>
