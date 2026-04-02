@@ -18,46 +18,108 @@ export default function ProductForm({ onSuccess }: any) {
   const [stock, setStock] = useState("");
   const [category, setCategory] = useState("");
 
+  // const handleSubmit = async () => {
+  //   const imagesBase64: string[] = [];
+
+  //   for (const file of imageFiles) {
+  //     const reader = new FileReader();
+
+  //     const base64 = await new Promise<string>((resolve) => {
+  //       reader.onload = () => resolve(reader.result as string);
+  //       reader.readAsDataURL(file);
+  //     });
+
+  //     imagesBase64.push(base64);
+  //   }
+
+  //   await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products`, {
+  //     method: "POST",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+  //     body: JSON.stringify({
+  //       name,
+  //       price: Number(price),
+  //       images: imagesBase64,
+  //       description,
+  //       color,
+  //       size,
+  //       brand,
+  //       stock: Number(stock),
+  //       category,
+  //     }),
+  //   });
+
+  //   setOpen(false);
+  //   setImageFiles([]);
+  //   setPreviews([]);
+  //   onSuccess();
+  //   setBrand("");
+  //   setCategory("");
+  //   setColor("");
+  //   setSize("");
+  // };
+  //
   const handleSubmit = async () => {
-    const imagesBase64: string[] = [];
+    try {
+      const imagesBase64 = await Promise.all(
+        imageFiles.map((file) => {
+          return new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.readAsDataURL(file);
+          });
+        }),
+      );
 
-    for (const file of imageFiles) {
-      const reader = new FileReader();
-
-      const base64 = await new Promise<string>((resolve) => {
-        reader.onload = () => resolve(reader.result as string);
-        reader.readAsDataURL(file);
+      const response = await fetch("/admin/api/productCreate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          price: Number(price),
+          // images: imagesBase64,
+          description,
+          color,
+          size,
+          brand,
+          stock: Number(stock),
+          category,
+        }),
       });
 
-      imagesBase64.push(base64);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Хадгалахад алдаа гарлаа");
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert("Бараа амжилттай нэмэгдлээ!");
+        setOpen(false);
+        resetForm();
+        onSuccess();
+      }
+    } catch (error: any) {
+      console.error("Фронт дээрх алдаа:", error);
+      alert("Алдаа: " + error.message);
     }
+  };
 
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        name,
-        price: Number(price),
-        images: imagesBase64,
-        description,
-        color,
-        size,
-        brand,
-        stock: Number(stock),
-        category,
-      }),
-    });
-
-    setOpen(false);
+  const resetForm = () => {
+    setName("");
+    setPrice("");
     setImageFiles([]);
     setPreviews([]);
-    onSuccess();
+    setDescription("");
     setBrand("");
     setCategory("");
     setColor("");
     setSize("");
+    setStock("");
   };
 
   return (
