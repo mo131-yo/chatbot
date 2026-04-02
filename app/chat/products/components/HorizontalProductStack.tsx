@@ -4,7 +4,7 @@ import { useState, useCallback, useRef } from "react";
 import { AnimatePresence, motion, type PanInfo } from "framer-motion";
 import { useCart } from "@/app/context/CartContext";
 import { ShoppingBag, Info, Heart, ChevronLeft, ChevronRight, Share2 } from "lucide-react";
-// import QPayPayment from "../../payment/components/QPayPayment ";
+import QPayPayment from "../../payment/components/QPayPayment ";
 import { useUser } from "@clerk/nextjs";
 import { sendOrderEmail } from "@/lib/service/email";
 
@@ -186,7 +186,6 @@ const handlePaymentSuccess = async (details: any) => {
               drag="x"
               dragConstraints={{ left: 0, right: 0 }}
               onDragEnd={handleDragEnd}
-              onClick={() => onSelect(product)}
             >
               <div className={`relative mx-auto h-105 w-70 md:h-120 md:w-[320px] overflow-hidden rounded-[2.5rem] bg-[#121212] border transition-all duration-700 ${
                 isCurrent ? 'border-[#C5A059] shadow-[0_0_50px_rgba(197,160,89,0.2)]' : 'border-white/5 shadow-none'
@@ -196,6 +195,7 @@ const handlePaymentSuccess = async (details: any) => {
                     src={product.image} 
                     alt={product.name} 
                     className="h-full w-full object-cover select-none transition-transform duration-500 group-hover:scale-110" 
+                    onClick={() => onSelect(product)}
                   />
                   <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
 
@@ -255,12 +255,6 @@ const handlePaymentSuccess = async (details: any) => {
                           className="bg-[#C5A059] text-black h-12 w-12 rounded-2xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
                         >
                           <ShoppingBag size={18} />
-                        </button>
-                        <button 
-                          onClick={() => onSelect(product)}
-                          className="w-12 h-12 bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl flex items-center justify-center text-white active:scale-95 transition-transform"
-                        >
-                          <Info size={18} />
                         </button>
                       </div>
                     </motion.div>

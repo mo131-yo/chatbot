@@ -56,13 +56,16 @@ export default function Home() {
       />
       <Sidebar
         isCollapsed={isCollapsed}
-        history={sidebarHistory || []} 
+        history={sidebarHistory || []}
         onNewChat={() => setActiveChatId(null)}
-        onSelectChat={(id: string) => setActiveChatId(id)} 
-        isLoading={isLoading} 
+        onSelectChat={(id: string) => setActiveChatId(id)}
+        isLoading={isLoading}
         onDeleteChat={handleDeleteChat}
-        activeChatId={activeChatId}
-      />
+        activeChatId={activeChatId} onPinChat={function (id: string): void {
+          throw new Error("Function not implemented.");
+        } } onRenameChat={function (id: string, title: string): void {
+          throw new Error("Function not implemented.");
+        } }      />
 
       <div className="flex-1 flex flex-col min-w-0 h-screen relative">
 

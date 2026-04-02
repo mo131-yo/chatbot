@@ -74,14 +74,19 @@ export const ChatHistory = ({
         ${activeChatId === chat.id ? 'bg-white/10 text-white' : 'hover:bg-white/5 text-slate-400'}`}
     >
       <button
-        onClick={() => onSelectChat(chat.id)}
-        className="flex-1 text-left px-4 py-2.5 flex items-center gap-3 min-w-0"
-      >
-        {chat.isPinned && <Pin size={12} className="text-blue-400 fill-blue-400 shrink-0" />}
-        <span className="text-sm font-light truncate pr-8 group-hover:text-slate-200">
-          {chat.title || "New Chat"}
-        </span>
-      </button>
+  onClick={() => onSelectChat(chat.id)}
+  className="flex-1 text-left px-4 py-2.5 flex items-center gap-3 min-w-0"
+>
+  {/* Бэхэлсэн үед иконыг алтлаг өнгөтэй болгох */}
+  {chat.isPinned && (
+    <Pin size={12} className="text-[#C5A059] fill-[#C5A059] shrink-0" />
+  )}
+  <span className={`text-sm font-light truncate pr-8 ${
+    chat.isPinned ? "text-slate-200" : "text-slate-400 group-hover:text-slate-200"
+  }`}>
+    {chat.title || "New Chat"}
+  </span>
+</button>
 
       <div className="absolute right-1">
         <DropdownMenu>

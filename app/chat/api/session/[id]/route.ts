@@ -92,3 +92,52 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
     );
   }
 }
+
+
+export async function PATCH(req: NextRequest, { params }: Params) {
+  try {
+    const { userId: clerkUserId } = await auth();
+    if (!clerkUserId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id } = await params;
+    const body = await req.json();
+    const { action, title } = body;
+
+    const dbUser = await prisma.user.findUnique({
+      where: { clerkUserId },
+    });
+
+    if (!dbUser) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    const chat = await prisma.chatSession.findFirst({
+      where: { id, userId: dbUser.id }
+    });
+
+    if (!chat) {
+      return NextResponse.json({ error: "Chat not found" }, { status: 404 });
+    }
+
+    let updateData = {};
+    if (action === "pin") {
+      updateData = { isPinned: !chat.isPinned };
+    } else if (action === "rename") {
+      updateData = { title: title?.trim() || "Untitled" };
+    } else if (action === "share") {
+      updateData = { isPublic: true };
+    }
+
+    const updated = await prisma.chatSession.update({
+      where: { id },
+      data: updateData,
+    });
+
+    return NextResponse.json(updated);
+  } catch (error) {
+    console.error("PATCH error:", error);
+    return NextResponse.json({ error: "Update failed" }, { status: 500 });
+  }
+}

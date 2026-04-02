@@ -27,16 +27,16 @@ export default function RobotModel() {
           
           <mesh position={[-0.4, 0.1, 0.6]}>
             <sphereGeometry args={[0.15, 16, 16]} />
-            <meshBasicMaterial color="#6c63ff" />
+            <meshBasicMaterial color="white" />
           </mesh>
           <mesh position={[0.4, 0.1, 0.6]}>
             <sphereGeometry args={[0.15, 16, 16]} />
-            <meshBasicMaterial color="#6c63ff" />
+            <meshBasicMaterial color="white" />
           </mesh>
 
           <mesh position={[0, 0.1, 0.55]}>
             <boxGeometry args={[1.2, 0.5, 0.1]} />
-            <meshStandardMaterial color="#6c63ff" transparent opacity={0.3} />
+            <meshStandardMaterial color="white" transparent opacity={0.3} />
           </mesh>
         </group>
 
@@ -47,16 +47,16 @@ export default function RobotModel() {
 
         <mesh position={[-1, -0.8, 0]}>
           <sphereGeometry args={[0.2, 16, 16]} />
-          <meshStandardMaterial color="#6c63ff" />
+          <meshStandardMaterial color="white" />
         </mesh>
         <mesh position={[1, -0.8, 0]}>
           <sphereGeometry args={[0.2, 16, 16]} />
-          <meshStandardMaterial color="#6c63ff" />
+          <meshStandardMaterial color="white" />
         </mesh>
 
         <Sphere args={[0.4, 16, 16]} position={[0, -1.8, 0]}>
           <MeshDistortMaterial
-            color="#6c63ff"
+            color="white"
             attach="material"
             distort={0.4}
             speed={2}
