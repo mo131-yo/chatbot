@@ -21,6 +21,7 @@ export default function OrderAddress({ onClose }: Props) {
   const [formData, setFormData] = useState({
     city: "",
     district: "",
+    street:"",
     address: "",
     phone: "",
     lat: 47.9188,
@@ -127,7 +128,24 @@ export default function OrderAddress({ onClose }: Props) {
           </div>
 
           <div className="flex flex-col gap-4">
-            <input name="address" placeholder="Байр, орц, тоот..." value={formData.address} onChange={(e) => setFormData({...formData, address: e.target.value})} className="w-full p-3.5 rounded-xl bg-white/5 border border-white/10 text-white outline-none focus:border-[#C5A059]" />
+           <input
+              name="street"
+              placeholder="Гудамж.."
+              value={formData.address}
+              onChange={(e) =>
+                setFormData({ ...formData, address: e.target.value })
+              }
+              className="w-full p-3.5 rounded-xl bg-white/5 border border-white/10 text-white outline-none focus:border-[#C5A059]"
+            />
+            <input
+              name="address"
+              placeholder="Байр, Орц, Тоот.."
+              value={formData.street}
+              onChange={(e) =>
+                setFormData({ ...formData, street: e.target.value })
+              }
+              className="w-full p-3.5 rounded-xl bg-white/5 border border-white/10 text-white outline-none focus:border-[#C5A059]"
+            />
             <input name="phone" type="tel" placeholder="Утасны дугаар" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="w-full p-3.5 rounded-xl bg-white/5 border border-white/10 text-white outline-none focus:border-[#C5A059]" />
           </div>
 
