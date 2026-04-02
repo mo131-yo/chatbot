@@ -11,7 +11,7 @@
 
 // const QPayPayment = ({ amount, orderId, onSuccess, onCancel }: QPayPaymentProps) => {
 //   const [status, setStatus] = useState<'QR' | 'PROCESSING' | 'SUCCESS'>('QR');
-//   const [timeLeft, setTimeLeft] = useState(300); 
+//   const [timeLeft, setTimeLeft] = useState(300);
 
 //   useEffect(() => {
 //     if (status === 'QR' && timeLeft > 0) {
@@ -22,7 +22,7 @@
 
 //   const handleVerify = async () => {
 //     setStatus('PROCESSING');
-    
+
 //     setTimeout(() => {
 //       setStatus('SUCCESS');
 //       onSuccess({
@@ -42,10 +42,10 @@
 //   return (
 //     <div className="flex items-center justify-center p-4">
 //       <div className="w-full max-w-85 bg-[#13131a] border border-white/10 rounded-[24px] overflow-hidden shadow-2xl">
-        
+
 //         <AnimatePresence mode="wait">
 //           {status === 'QR' && (
-//             <motion.div 
+//             <motion.div
 //               key="qr"
 //               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
 //               className="p-6"
@@ -74,13 +74,13 @@
 //                   <span className={timeLeft < 60 ? "text-red-500" : ""}>{formatTime(timeLeft)}</span>
 //                 </div>
 //                 <div className="h-1 bg-[#1c1c27] rounded-full overflow-hidden">
-//                   <motion.div 
+//                   <motion.div
 //                     initial={{ width: "100%" }}
 //                     animate={{ width: `${(timeLeft / 300) * 100}%` }}
 //                     className="h-full bg-[#6c63ff]"
 //                   />
 //                 </div>
-//                 <button 
+//                 <button
 //                   onClick={handleVerify}
 //                   className="w-full py-4 bg-green-500 hover:bg-green-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-green-500/20 transition-all active:scale-95"
 //                 >
@@ -91,7 +91,7 @@
 //           )}
 
 //           {status === 'PROCESSING' && (
-//             <motion.div 
+//             <motion.div
 //               key="processing"
 //               initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
 //               className="p-12 text-center"
@@ -103,7 +103,7 @@
 //           )}
 
 //           {status === 'SUCCESS' && (
-//             <motion.div 
+//             <motion.div
 //               key="success"
 //               initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
 //               className="text-center"
@@ -124,7 +124,7 @@
 //                   <span className="text-[#5c5c72]">Огноо</span>
 //                   <span className="text-white font-mono text-xs">{new Date().toLocaleDateString()}</span>
 //                 </div>
-//                 <button 
+//                 <button
 //                   onClick={onCancel}
 //                   className="w-full mt-4 py-3 bg-[#1c1c27] text-white rounded-xl text-sm font-medium hover:bg-[#242432]"
 //                 >
