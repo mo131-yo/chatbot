@@ -3,23 +3,18 @@
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import { useState } from "react";
+import { LOCATION_DATA } from "./form1";
 
 interface Props {
   onClose: () => void;
 }
 
-const LocationPicker = dynamic(
-  () => import('./LocationPicker'),
-  { 
-    ssr: false,
-    loading: () => <div className="h-300px w-full bg-white/5 animate-pulse rounded-xl" /> 
-  }
-);
-const LOCATION_DATA: Record<string, string[]> = {
-  "Улаанбаатар": ["Баянгол", "Баянзүрх", "Сонгинохайрхан", "Чингэлтэй", "Хан-Уул", "Сүхбаатар", "Налайх", "Багануур"],
-  "Дархан": ["Дархан сум", "Орхон сум", "Шарын гол", "Хонгор"],
-  "Эрдэнэт": ["Баян-Өндөр", "Жаргалант"]
-};
+const LocationPicker = dynamic(() => import("./LocationPicker"), {
+  ssr: false,
+  loading: () => (
+    <div className="h-[300px] w-full bg-white/5 animate-pulse rounded-xl" />
+  ),
+});
 
 export default function OrderAddress({ onClose }: Props) {
   const [formData, setFormData] = useState({
@@ -28,51 +23,72 @@ export default function OrderAddress({ onClose }: Props) {
     address: "",
     phone: "",
     lat: 47.9188,
-    lng: 106.9176
+    lng: 106.9176,
   });
 
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value } = e.target;
+
     if (name === "city") {
-      setFormData(prev => ({ ...prev, city: value, district: "" }));
-    } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
+      setFormData((prev) => ({
+        ...prev,
+        city: value,
+        district: "",
+      }));
+      return;
     }
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const handleMapChange = async (lat: number, lng: number) => {
-    setFormData(prev => ({ ...prev, lat, lng }));
+    setFormData((prev) => ({ ...prev, lat, lng }));
     setLoading(true);
 
     try {
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&accept-language=mn`
+        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&accept-language=mn`,
       );
       const data = await response.json();
 
       if (data.address) {
         const addr = data.address;
-        
-        let detectedCity = "";
-        if (addr.city === "Ulaanbaatar" || addr.state === "Ulaanbaatar") detectedCity = "Улаанбаатар";
-        else if (addr.city === "Darkhan" || addr.state === "Darkhan-Uul") detectedCity = "Дархан";
-        else if (addr.city === "Erdenet" || addr.state === "Orkhon") detectedCity = "Эрдэнэт";
 
-        const detectedDistrict = addr.suburb || addr.district || addr.county || "";
+        let detectedCity = "";
+
+        if (addr.city === "Ulaanbaatar" || addr.state === "Ulaanbaatar") {
+          detectedCity = "Улаанбаатар";
+        } else if (addr.city === "Darkhan" || addr.state === "Darkhan-Uul") {
+          detectedCity = "ДарханУул";
+        } else if (addr.city === "Erdenet" || addr.state === "Orkhon") {
+          detectedCity = "Орхон";
+        } else if (addr.city === "Zuunmod" || addr.state === "Tov") {
+          detectedCity = "Төв";
+        }
+
+        const detectedDistrict =
+          addr.suburb || addr.district || addr.county || "";
 
         const detailedAddress = [
           addr.road,
           addr.neighbourhood,
-          addr.house_number
-        ].filter(Boolean).join(", ");
+          addr.house_number,
+        ]
+          .filter(Boolean)
+          .join(", ");
 
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
           city: detectedCity || prev.city,
           district: detectedDistrict,
-          address: detailedAddress || prev.address
+          address: detailedAddress || prev.address,
         }));
       }
     } catch (error) {
@@ -99,37 +115,48 @@ export default function OrderAddress({ onClose }: Props) {
         className="relative bg-[#121212] border border-white/10 rounded-[32px] overflow-hidden w-full max-w-lg z-10 shadow-2xl"
       >
         <div className="p-6 border-b border-white/5 bg-white/5">
-          <h2 className="text-xl font-bold text-white">Хүргэлтийн хаяг тохируулах</h2>
-          <p className="text-sm text-slate-400">Газрын зураг дээр байршлаа заана уу</p>
+          <h2 className="text-xl font-bold text-white">
+            Хүргэлтийн хаяг тохируулах
+          </h2>
+          <p className="text-sm text-slate-400">
+            Газрын зураг дээр байршлаа заана уу
+          </p>
         </div>
 
         <div className="p-6 flex flex-col gap-5 max-h-[80vh] overflow-y-auto custom-scrollbar">
-          
           <div className="w-full">
-            <LocationPicker 
-              onLocationSelect={handleMapChange} 
-              initialPos={[formData.lat, formData.lng]} 
+            <LocationPicker
+              onLocationSelect={handleMapChange}
+              initialPos={[formData.lat, formData.lng]}
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-bold text-slate-500 px-1 uppercase tracking-widest">Хот / Аймаг</label>
+              <label className="text-[10px] font-bold text-slate-500 px-1 uppercase tracking-widest">
+                Хот / Аймаг
+              </label>
               <select
                 name="city"
                 value={formData.city}
                 onChange={handleChange}
                 className="w-full p-3.5 rounded-xl bg-white/5 border border-white/10 text-white outline-none focus:border-[#C5A059] appearance-none cursor-pointer"
               >
-                <option value="" disabled className="bg-[#121212]">Сонгох</option>
-                {Object.keys(LOCATION_DATA).map(city => (
-                  <option key={city} value={city} className="bg-[#121212]">{city}</option>
+                <option value="" disabled className="bg-[#121212]">
+                  Сонгох
+                </option>
+                {Object.keys(LOCATION_DATA).map((city) => (
+                  <option key={city} value={city} className="bg-[#121212]">
+                    {city}
+                  </option>
                 ))}
               </select>
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-bold text-slate-500 px-1 uppercase tracking-widest">Дүүрэг / Сум</label>
+              <label className="text-[10px] font-bold text-slate-500 px-1 uppercase tracking-widest">
+                Дүүрэг / Сум
+              </label>
               <select
                 name="district"
                 value={formData.district}
@@ -137,17 +164,24 @@ export default function OrderAddress({ onClose }: Props) {
                 disabled={!formData.city}
                 className="w-full p-3.5 rounded-xl bg-white/5 border border-white/10 text-white outline-none focus:border-[#C5A059] disabled:opacity-30 appearance-none cursor-pointer"
               >
-                <option value="" disabled className="bg-[#121212]">Сонгох</option>
-                {formData.city && LOCATION_DATA[formData.city].map(dist => (
-                  <option key={dist} value={dist} className="bg-[#121212]">{dist}</option>
-                ))}
+                <option value="" disabled className="bg-[#121212]">
+                  Сонгох
+                </option>
+                {formData.city &&
+                  LOCATION_DATA[formData.city]?.map((dist) => (
+                    <option key={dist} value={dist} className="bg-[#121212]">
+                      {dist}
+                    </option>
+                  ))}
               </select>
             </div>
           </div>
 
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-bold text-slate-500 px-1 uppercase tracking-widest">Дэлгэрэнгүй хаяг</label>
+              <label className="text-[10px] font-bold text-slate-500 px-1 uppercase tracking-widest">
+                Дэлгэрэнгүй хаяг
+              </label>
               <input
                 name="address"
                 placeholder="Байр, орц, тоот..."
@@ -158,7 +192,9 @@ export default function OrderAddress({ onClose }: Props) {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-bold text-slate-500 px-1 uppercase tracking-widest">Утасны дугаар</label>
+              <label className="text-[10px] font-bold text-slate-500 px-1 uppercase tracking-widest">
+                Утасны дугаар
+              </label>
               <input
                 name="phone"
                 type="tel"
@@ -175,9 +211,10 @@ export default function OrderAddress({ onClose }: Props) {
               console.log("Final Order Data:", formData);
               onClose();
             }}
-            className="mt-2 w-full py-4 bg-[#C5A059] hover:bg-[#d4b476] text-black font-bold rounded-2xl active:scale-95 transition-all shadow-lg shadow-[#C5A059]/10"
+            disabled={loading}
+            className="mt-2 w-full py-4 bg-[#C5A059] hover:bg-[#d4b476] disabled:opacity-50 text-black font-bold rounded-2xl active:scale-95 transition-all shadow-lg shadow-[#C5A059]/10"
           >
-            ХАЯГ БАТАЛГААЖУУЛАХ
+            {loading ? "Уншиж байна..." : "ХАЯГ БАТАЛГААЖУУЛАХ"}
           </button>
         </div>
       </motion.div>
