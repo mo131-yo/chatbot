@@ -3,8 +3,8 @@ import React, { useState, useRef, useLayoutEffect } from "react";
 import { useChatLogic } from "./chat/hooks/useChatLogic";
 import { SparklesCore } from "@/lib/utils/chat-animation/sparkles";
 import { useScrollEffect } from "./chat/hooks/useScrollEffect";
-import { MessageList } from "./chat/chat/product/message-list";
-import { WelcomeSection } from "./chat/chat/robot-text/welcome-section";
+import { MessageList } from "./chat/homeChat/product/message-list";
+import { WelcomeSection } from "./chat/homeChat/robot-text/welcome-section";
 
 import { ProductDetailSidebar } from "./chat/products/detail/ProductDetailSidebar";
 import Sidebar from "./chat/sidebar/page";

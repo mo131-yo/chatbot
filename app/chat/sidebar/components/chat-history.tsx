@@ -8,7 +8,6 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
 
 interface Chat {
   id: string;
@@ -41,6 +40,33 @@ export const ChatHistory = ({
   const pinnedChats = history.filter(chat => chat.isPinned);
   const recentChats = history.filter(chat => !chat.isPinned);
 
+  const handleShareClick = async (e: React.MouseEvent, chat: Chat) => {
+    e.stopPropagation();
+
+    const shareData = {
+      title: "AI Chat Хуваалцах",
+      text: `"${chat.title || 'Шинэ чат'}" яриаг үзээрэй.`,
+      url: `${window.location.origin}/chat/${chat.id}`,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+        console.log("Амжилттай хуваалцлаа");
+      } else {
+        await navigator.clipboard.writeText(shareData.url);
+        alert("Холбоосыг санамжинд (clipboard) хууллаа!");
+      }
+      onShareChat(chat.id);
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        console.log('Хэрэглэгч хуваалцахыг цуцаллаа.');
+        return;
+      }
+      console.error("Хуваалцахад алдаа гарлаа:", error);
+    }
+  };
+
   const renderChatItem = (chat: Chat) => (
     <div 
       key={chat.id} 
@@ -59,14 +85,10 @@ export const ChatHistory = ({
 
       <div className="absolute right-1">
         <DropdownMenu>
-          <DropdownMenuTrigger>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 rounded-full hover:bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"
-            >
-              <Ellipsis size={14} />
-            </Button>
+          <DropdownMenuTrigger
+            className="h-7 w-7 rounded-full hover:bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center outline-none border-none bg-transparent cursor-pointer text-slate-400 hover:text-white"
+          >
+            <Ellipsis size={14} />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-44 bg-slate-900 border-slate-800 text-slate-200">
             <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => onPinChat(chat.id)}>
@@ -78,10 +100,13 @@ export const ChatHistory = ({
               const newTitle = prompt("Шинэ нэр:", chat.title);
               if (newTitle) onRenameChat(chat.id, newTitle);
             }}>
-              <Edit2 size={14} /> Нэр өөрчлөх
+              <Edit2 size={14} /> Нэр өөрчлөх 
             </DropdownMenuItem>
 
-            <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => onShareChat(chat.id)}>
+            <DropdownMenuItem 
+              className="gap-2 cursor-pointer" 
+              onClick={(e) => handleShareClick(e, chat)}
+            >
               <Share2 size={14} /> Хуваалцах
             </DropdownMenuItem>
 
@@ -100,28 +125,27 @@ export const ChatHistory = ({
   );
 
   return (
-    <div className="flex-1 overflow-y-auto px-3 space-y-4 py-4 custom-scrollbar">
-      {isLoading ? (
-        <div className="animate-pulse space-y-3 px-2">
-          {[1, 2, 3].map(i => <div key={i} className="h-9 bg-white/5 rounded-lg" />)}
+    <div className="flex-1 overflow-y-auto px-3 space-y-6 py-4 custom-scrollbar">
+      {pinnedChats.length > 0 && (
+        <div className="space-y-1">
+          <p className="px-4 text-[10px] uppercase tracking-widest text-[#C5A059] font-bold mb-2">
+            Бэхэлсэн
+          </p>
+          {pinnedChats.map(chat => renderChatItem(chat))}
+          <div className="h-px bg-white/5 mx-4 my-4" />
         </div>
-      ) : (
-        <>
-          {pinnedChats.length > 0 && (
-            <div>
-              <p className="px-4 text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-2">Save</p>
-              {pinnedChats.map(renderChatItem)}
-            </div>
-          )}
-          
-          <div>
-            <p className="px-4 text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-2">Сүүлийн</p>
-            {recentChats.length > 0 ? recentChats.map(renderChatItem) : (
-              <p className="px-4 py-2 text-xs text-slate-600 italic">Түүх байхгүй</p>
-            )}
-          </div>
-        </>
       )}
+      
+      <div className="space-y-1">
+        <p className="px-4 text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-2">
+          Сүүлийн ярианууд
+        </p>
+        {recentChats.length > 0 ? (
+          recentChats.map(chat => renderChatItem(chat))
+        ) : (
+          pinnedChats.length === 0 && <p className="px-4 py-2 text-xs text-slate-600 italic">Түүх байхгүй</p>
+        )}
+      </div>
     </div>
   );
 };

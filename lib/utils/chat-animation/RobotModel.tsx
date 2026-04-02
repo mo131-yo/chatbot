@@ -8,7 +8,6 @@ import * as THREE from "three";
 export default function RobotModel() {
   const headRef = useRef<THREE.Group>(null);
 
-  // Хулганы хөдөлгөөнийг дагуулж толгойг нь хөдөлгөх
   useFrame((state) => {
     if (headRef.current) {
       const { x, y } = state.mouse;
@@ -20,15 +19,12 @@ export default function RobotModel() {
   return (
     <Float speed={3} rotationIntensity={0.5} floatIntensity={1}>
       <group>
-        {/* Толгой хэсэг */}
         <group ref={headRef}>
-          {/* Нүүрний хэлбэр */}
           <mesh>
             <boxGeometry args={[1.5, 1.2, 1.2]} />
             <meshStandardMaterial color="#1c1c27" roughness={0.1} metalness={0.8} />
           </mesh>
           
-          {/* Нүднүүд (Neon эффекттэй) */}
           <mesh position={[-0.4, 0.1, 0.6]}>
             <sphereGeometry args={[0.15, 16, 16]} />
             <meshBasicMaterial color="#6c63ff" />
@@ -38,20 +34,17 @@ export default function RobotModel() {
             <meshBasicMaterial color="#6c63ff" />
           </mesh>
 
-          {/* Нүүрний шил */}
           <mesh position={[0, 0.1, 0.55]}>
             <boxGeometry args={[1.2, 0.5, 0.1]} />
             <meshStandardMaterial color="#6c63ff" transparent opacity={0.3} />
           </mesh>
         </group>
 
-        {/* Бие хэсэг (Base) */}
         <mesh position={[0, -1.2, 0]}>
           <cylinderGeometry args={[0.8, 0.5, 1, 32]} />
           <meshStandardMaterial color="#13131a" metalness={0.9} />
         </mesh>
 
-        {/* Гарнууд */}
         <mesh position={[-1, -0.8, 0]}>
           <sphereGeometry args={[0.2, 16, 16]} />
           <meshStandardMaterial color="#6c63ff" />
@@ -61,7 +54,6 @@ export default function RobotModel() {
           <meshStandardMaterial color="#6c63ff" />
         </mesh>
 
-        {/* Доод талын "Aura" эффект */}
         <Sphere args={[0.4, 16, 16]} position={[0, -1.8, 0]}>
           <MeshDistortMaterial
             color="#6c63ff"
