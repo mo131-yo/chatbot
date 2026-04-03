@@ -9,19 +9,35 @@ export default function Sidebar() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
+  // const fetchHistory = useCallback(async () => {
+  //   try {
+  //     setLoading(true);
+  //     const res = await fetch("/api/chat/history", { cache: "no-store" });
+  //     const data = await res.json();
+  //     setHistory(Array.isArray(data) ? data : []);
+  //   } catch (error) {
+  //     console.error("Fetch error:", error);
+  //     setHistory([]);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }, []);
+
   const fetchHistory = useCallback(async () => {
-    try {
-      setLoading(true);
-      const res = await fetch("/api/chat/history", { cache: "no-store" });
-      const data = await res.json();
-      setHistory(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.error("Fetch error:", error);
-      setHistory([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  try {
+    const res = await fetch("/api/chat/history", { 
+      cache: "no-store",
+      headers: {
+        'Pragma': 'no-cache',
+        'Cache-Control': 'no-cache'
+      }
+    });
+    const data = await res.json();
+    setHistory(Array.isArray(data) ? data : []);
+  } catch (error) {
+    console.error("Fetch error:", error);
+  }
+}, []);
 
   useEffect(() => {
     fetchHistory();
@@ -29,29 +45,74 @@ export default function Sidebar() {
 
 
 const handleRename = async (id: string, title: string) => {
+  try {
   const response = await fetch(`/chat/api/chat/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ action: "rename", title }),
   });
-  if (response.ok) router.refresh();
+  if (response.ok){
+    await fetchHistory();
+    router.refresh();
+  }
+  } catch (error) {  console.error("Rename error:", error);
+};
+};
+
+const handleShare = async (id: string) => {
+  try {
+    const response = await fetch(`/chat/api/chat/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "share" }),
+    });
+    if (response.ok){
+      await fetchHistory();
+      router.refresh();
+    }
+  } catch (error) {
+    console.error("Share error:", error);
+  }
 };
 
 const handlePin = async (id: string) => {
-  const response = await fetch(`/chat/api/chat/${id}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ action: "pin" }),
+  setHistory((prevHistory) => {
+    const updated = prevHistory.map((chat) =>
+      chat.id === id ? { ...chat, isPinned: !chat.isPinned } : chat
+    );
+    return [...updated].sort((a, b) => (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0));
   });
-  if (response.ok) router.refresh();
+
+  try {
+    const res = await fetch(`/chat/api/chat/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "pin" }),
+    });
+
+    if (!res.ok) {
+      fetchHistory();
+    } else {
+      router.refresh();
+    }
+  } catch (err) {
+    console.error("Pin error:", err);
+    fetchHistory();
+  }
 };
+
 
   const handleDeleteChat = async (id: string) => {
     try {
       const res = await fetch(`/chat/api/chat/${id}`, {
         method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "delete" })
       });
-      if (res.ok) fetchHistory();
+      if (res.ok) {
+        await fetchHistory();
+        router.refresh();
+      }
     } catch (error) {
       console.error("Delete error:", error);
     }
@@ -66,7 +127,7 @@ const handlePin = async (id: string) => {
       onPinChat={handlePin}
       onRenameChat={handleRename}
       onDeleteChat={handleDeleteChat}
-      onShareChat={(id) => console.log("Shared:", id)}
+      onShareChat={handleShare}
     />
   );
 }

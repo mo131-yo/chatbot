@@ -8,6 +8,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
+import { GiPin } from "react-icons/gi";
 
 interface Chat {
   id: string;
@@ -76,30 +77,30 @@ export const ChatHistory = ({
   };
 
   const renderChatItem = (chat: Chat) => (
-    <div 
-      key={chat.id} 
-      className={`group relative flex items-center rounded-lg transition-all mb-1
-        ${activeChatId === chat.id ? 'bg-black/5 dark:bg-white/10 text-black dark:text-white' : 'hover:bg-black/5 dark:hover:bg-white/5 text-slate-500 dark:text-slate-400'}`}
+  <div 
+    key={chat.id} 
+    className={`group relative flex items-center rounded-lg transition-all mb-1
+      ${activeChatId === chat.id ? 'bg-black/5 dark:bg-white/10' : 'hover:bg-black/5'}`}
+  >
+    <button
+      onClick={() => onSelectChat(chat.id)}
+      className="flex-1 text-left px-3 py-2.5 flex items-center gap-2 min-w-0"
     >
-      <button
-        onClick={() => onSelectChat(chat.id)}
-        className="flex-1 text-left px-3 py-2.5 flex items-center gap-2 min-w-0"
-      >
-        {chat.isPinned && (
-          <Pin size={12} className="text-[#C5A059] fill-[#C5A059] shrink-0" />
-        )}
-        <span className="text-sm font-medium truncate pr-6 group-hover:text-[#C5A059] transition-colors">
-          {chat.title || "New Chat"}
-        </span>
-      </button>
+      {chat.isPinned && (
+        <GiPin size={16} className="text-[#C5A059] rotate-45 shrink-0" />
+      )}
+      
+      <span className="text-sm font-medium truncate pr-6 group-hover:text-[#C5A059]">
+        {chat.title || "New Chat"}
+      </span>
+    </button>
 
       <div className="absolute right-1">
         <DropdownMenu>
-          <DropdownMenuTrigger>
-            <button className="h-7 w-7 rounded-md hover:bg-black/10 dark:hover:bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center outline-none border-none bg-transparent cursor-pointer">
-              <Ellipsis size={14} />
-            </button>
-          </DropdownMenuTrigger>
+          <DropdownMenuTrigger
+          className="h-7 w-7 rounded-md hover:bg-black/10 dark:hover:bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center outline-none border-none bg-transparent cursor-pointer text-slate-400 hover:text-white">
+          <Ellipsis size={14} />
+        </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
             <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => onPinChat(chat.id)}>
               {chat.isPinned ? <PinOff size={14} /> : <Pin size={14} />}
