@@ -2,10 +2,12 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { ChatHistory } from "./chat-history";
+import { useRouter } from "next/dist/client/components/navigation";
 
 export default function Sidebar() {
   const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   const fetchHistory = useCallback(async () => {
     try {
@@ -25,35 +27,28 @@ export default function Sidebar() {
     fetchHistory();
   }, [fetchHistory]);
 
-  const handlePinChat = async (id: string) => {
-    try {
-      const res = await fetch(`/api/chat/session/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "pin" }),
-      });
-      if (res.ok) fetchHistory();
-    } catch (error) {
-      console.error("Pin error:", error);
-    }
-  };
 
-  const handleRenameChat = async (id: string, newTitle: string) => {
-    try {
-      const res = await fetch(`/api/chat/session/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "rename", title: newTitle }),
-      });
-      if (res.ok) fetchHistory();
-    } catch (error) {
-      console.error("Rename error:", error);
-    }
-  };
+const handleRename = async (id: string, title: string) => {
+  const response = await fetch(`/chat/api/chat/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "rename", title }),
+  });
+  if (response.ok) router.refresh();
+};
+
+const handlePin = async (id: string) => {
+  const response = await fetch(`/chat/api/chat/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "pin" }),
+  });
+  if (response.ok) router.refresh();
+};
 
   const handleDeleteChat = async (id: string) => {
     try {
-      const res = await fetch(`/api/chat/session/${id}`, {
+      const res = await fetch(`/chat/api/chat/${id}`, {
         method: "DELETE",
       });
       if (res.ok) fetchHistory();
@@ -68,8 +63,8 @@ export default function Sidebar() {
     <ChatHistory 
       history={history} 
       onSelectChat={(id) => console.log("Selected:", id)}
-      onPinChat={handlePinChat}
-      onRenameChat={handleRenameChat}
+      onPinChat={handlePin}
+      onRenameChat={handleRename}
       onDeleteChat={handleDeleteChat}
       onShareChat={(id) => console.log("Shared:", id)}
     />

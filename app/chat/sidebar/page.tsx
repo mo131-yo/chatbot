@@ -23,13 +23,14 @@ export default function Sidebar({
 }: SidebarProps) {
   const router = useRouter();
 
-  const handlePin = async (id: string) => {
+ const handlePin = async (id: string) => {
     try {
-      await fetch(`/api/chats/${id}`, {
+      const res = await fetch(`/chat/api/chat/${id}`, {
         method: "PATCH",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "pin" })
       });
-      router.refresh();
+      if (res.ok) router.refresh();
     } catch (err) {
       console.error("Pin error:", err);
     }
@@ -37,11 +38,12 @@ export default function Sidebar({
 
   const handleRename = async (id: string, title: string) => {
     try {
-      await fetch(`/api/chats/${id}`, {
+      const res = await fetch(`/chat/api/chat/${id}`, {
         method: "PATCH",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "rename", title })
       });
-      router.refresh();
+      if (res.ok) router.refresh();
     } catch (err) {
       console.error("Rename error:", err);
     }
@@ -49,13 +51,17 @@ export default function Sidebar({
 
   const handleShare = async (id: string) => {
     try {
-      await fetch(`/api/chats/${id}`, {
+      const res = await fetch(`/chat/api/chat/${id}`, {
         method: "PATCH",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "share" })
       });
-      const url = `${window.location.origin}/share/chat/${id}`;
-      await navigator.clipboard.writeText(url);
-      alert("Хуваалцах линк хуулагдлаа!");
+      
+      if (res.ok) {
+        const url = `${window.location.origin}/share/chat/${id}`;
+        await navigator.clipboard.writeText(url);
+        alert("Хуваалцах линк хуулагдлаа!");
+      }
     } catch (err) {
       console.error("Share error:", err);
     }
@@ -63,12 +69,17 @@ export default function Sidebar({
 
   const handleDelete = async (id: string) => {
     try {
-      const response = await fetch(`/api/chats/${id}`, { method: "DELETE" });
+      const response = await fetch(`/chat/api/chat/${id}`, { 
+        method: "DELETE" 
+      });
+      
       if (response.ok) {
         router.refresh();
         if (activeChatId === id) {
           router.push("/");
         }
+      } else {
+        console.error("Устгахад алдаа гарлаа");
       }
     } catch (err) {
       console.error("Delete error:", err);
