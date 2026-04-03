@@ -7,7 +7,10 @@ export async function GET(req: NextRequest) {
     const storeId = searchParams.get("storeId");
 
     if (!storeId) {
-      return NextResponse.json({ error: "storeId шаардлагатай" }, { status: 400 });
+      return NextResponse.json(
+        { error: "storeId шаардлагатай" },
+        { status: 400 },
+      );
     }
 
     const products = await prisma.product.findMany({

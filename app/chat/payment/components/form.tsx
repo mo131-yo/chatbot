@@ -472,11 +472,11 @@ interface FormErrors {
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
               <label className="px-1 text-[10px] font-bold uppercase tracking-widest text-slate-500">
-                Гудамж
+                Байр / Орц / Тоот
               </label>
               <input
                 name="street"
-                placeholder="Гудамж.."
+                placeholder="Байр, Орц, Тоот"
                 value={formData.street}
                 onChange={(e) => setFieldValue("street", e.target.value)}
                 onBlur={() => handleBlur("street")}
@@ -489,11 +489,11 @@ interface FormErrors {
 
             <div className="flex flex-col gap-1.5">
               <label className="px-1 text-[10px] font-bold uppercase tracking-widest text-slate-500">
-                Байр / Орц / Тоот
+                Гудамж
               </label>
               <input
                 name="address"
-                placeholder="Байр, Орц, Тоот.."
+                placeholder="Гудамж.."
                 value={formData.address}
                 onChange={(e) => setFieldValue("address", e.target.value)}
                 onBlur={() => handleBlur("address")}
