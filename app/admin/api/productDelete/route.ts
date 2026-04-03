@@ -1,26 +1,21 @@
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
 
-export async function DELETE(
-  req: Request,
-  { params }: { params: { id: string } },
-) {
+export async function DELETE(req: NextRequest) {
   try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json({ error: "ID шаардлагатай" }, { status: 400 });
+    }
+
     const product = await prisma.product.delete({
-      where: {
-        id: Number(params.id),
-      },
+      where: { id: id },
     });
 
-    return NextResponse.json({
-      message: "Бараа амжилттай устлаа",
-      product,
-    });
+    return NextResponse.json({ message: "Устлаа", product });
   } catch (error) {
-    console.error(error);
-    return NextResponse.json(
-      { error: "Бараа устгахад алдаа гарлаа" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Алдаа гарлаа" }, { status: 500 });
   }
 }

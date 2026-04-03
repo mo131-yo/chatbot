@@ -1,27 +1,27 @@
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function PATCH(
-  req: Request,
-  { params }: { params: { id: string } },
-) {
+export async function PATCH(req: NextRequest) {
   try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json({ error: "ID шаардлагатай" }, { status: 400 });
+    }
+
     const body = await req.json();
 
     const product = await prisma.product.update({
-      where: {
-        id: Number(params.id),
-      },
-      data: {
-        ...body,
-      },
+      where: { id },
+      data: { ...body },
     });
 
     return NextResponse.json(product);
   } catch (error) {
     console.error(error);
     return NextResponse.json(
-      { error: "Бараа update хийхэд алдаа гарлаа" },
+      { error: "Бараа шинэчлэхэд алдаа гарлаа" },
       { status: 500 },
     );
   }

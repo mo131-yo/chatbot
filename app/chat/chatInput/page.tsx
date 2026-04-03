@@ -3,8 +3,8 @@
 import { SendButton } from "./components/SendButton";
 import { Suggestions } from "./components/Suggestion";
 import { useState, useRef } from "react";
-import { InputField } from "../input/components/InputField";
 import { ImagePlus, Loader2 } from "lucide-react"; 
+import { InputField } from "./components";
 
 interface ChatInputProps {
   onMessageReceived: (userMessage: any, aiReply: any) => void;

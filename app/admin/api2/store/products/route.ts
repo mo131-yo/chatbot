@@ -1,13 +1,21 @@
-import {prisma} from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(
-  req: Request,
-  { params }: { params: { storeId: string } },
-) {
-  const storeId = params.storeId;
-  const products = await prisma.product.findMany({
-    where: { storeId },
-  });
-  return NextResponse.json(products);
+export async function GET(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const storeId = searchParams.get("storeId");
+
+    if (!storeId) {
+      return NextResponse.json({ error: "storeId шаардлагатай" }, { status: 400 });
+    }
+
+    const products = await prisma.product.findMany({
+      where: { storeId: storeId },
+    });
+
+    return NextResponse.json(products);
+  } catch (error) {
+    return NextResponse.json({ error: "Алдаа гарлаа" }, { status: 500 });
+  }
 }
