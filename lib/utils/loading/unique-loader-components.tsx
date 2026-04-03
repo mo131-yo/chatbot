@@ -9,7 +9,7 @@ export const LoaderOne = () => {
       repeat: Infinity,
       repeatType: "loop" as const,
       delay: x * 0.2,
-      ease: "easeInOut",
+      ease: "easeInOut" as const,
     };
   };
   return (
@@ -22,7 +22,7 @@ export const LoaderOne = () => {
           y: [0, 10, 0],
         }}
         transition={transition(0)}
-        className="h-4 w-4 rounded-full border border-neutral-300 bg-gradient-to-b from-neutral-400 to-neutral-300"
+        className="h-4 w-4 rounded-full border border-neutral-300 bg-linear-to-b from-neutral-400 to-neutral-300"
       />
       <motion.div
         initial={{
@@ -32,7 +32,7 @@ export const LoaderOne = () => {
           y: [0, 10, 0],
         }}
         transition={transition(1)}
-        className="h-4 w-4 rounded-full border border-neutral-300 bg-gradient-to-b from-neutral-400 to-neutral-300"
+        className="h-4 w-4 rounded-full border border-neutral-300 bg-linear-to-b from-neutral-400 to-neutral-300"
       />
       <motion.div
         initial={{
@@ -42,7 +42,7 @@ export const LoaderOne = () => {
           y: [0, 10, 0],
         }}
         transition={transition(2)}
-        className="h-4 w-4 rounded-full border border-neutral-300 bg-gradient-to-b from-neutral-400 to-neutral-300"
+        className="h-4 w-4 rounded-full border border-neutral-300 bg-linear-to-b from-neutral-400 to-neutral-300"
       />
     </div>
   );
@@ -55,7 +55,7 @@ export const LoaderTwo = () => {
       repeat: Infinity,
       repeatType: "loop" as const,
       delay: x * 0.2,
-      ease: "easeInOut",
+      ease: "easeInOut" as const,
     };
   };
   return (
@@ -126,18 +126,18 @@ export const LoaderThree = () => {
 
 export const LoaderFour = ({ text = "Loading..." }: { text?: string }) => {
   return (
-    <div className="relative font-bold text-black [perspective:1000px] dark:text-white">
+    <div className="relative font-bold text-black perspective-[1000px] dark:text-white">
       <motion.span
         animate={{
-          skew: [0, -40, 0],
+          skewX: [0, -40, 0],
           scaleX: [1, 2, 1],
         }}
         transition={{
           duration: 0.05,
           repeat: Infinity,
-          repeatType: "reverse",
+          repeatType: "reverse" as const,
           repeatDelay: 2,
-          ease: "linear",
+          ease: "linear" as const,
           times: [0, 0.2, 0.5, 0.8, 1],
         }}
         className="relative z-20 inline-block"
@@ -154,8 +154,8 @@ export const LoaderFour = ({ text = "Loading..." }: { text?: string }) => {
         transition={{
           duration: 0.5,
           repeat: Infinity,
-          repeatType: "reverse",
-          ease: "linear",
+          repeatType: "reverse" as const,
+          ease: "linear" as const,
           times: [0, 0.2, 0.5, 0.8, 1],
         }}
       >
@@ -171,8 +171,8 @@ export const LoaderFour = ({ text = "Loading..." }: { text?: string }) => {
         transition={{
           duration: 0.8,
           repeat: Infinity,
-          repeatType: "reverse",
-          ease: "linear",
+          repeatType: "reverse" as const,
+          ease: "linear" as const,
           times: [0, 0.3, 0.6, 0.8, 1],
         }}
       >
@@ -202,9 +202,9 @@ export const LoaderFive = ({ text }: { text: string }) => {
           transition={{
             duration: 0.5,
             repeat: Infinity,
-            repeatType: "loop",
+            repeatType: "loop" as const,
             delay: i * 0.05,
-            ease: "easeInOut",
+            ease: "easeInOut" as const,
             repeatDelay: 2,
           }}
         >
