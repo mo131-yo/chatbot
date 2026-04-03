@@ -1,16 +1,19 @@
-import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(req: NextRequest) {
   try {
-    const resolvedParams = await params;
-    const id = resolvedParams.id;
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json({ error: "ID шаардлагатай" }, { status: 400 });
+    }
 
     const product = await prisma.product.findUnique({
-      where: { id },
+      where: { 
+        id: id
+      },
     });
 
     if (!product) {
@@ -19,6 +22,10 @@ export async function GET(
 
     return NextResponse.json(product);
   } catch (error) {
-    return NextResponse.json({ error: "Сүлжээний алдаа гарлаа" }, { status: 500 });
+    console.error(error);
+    return NextResponse.json(
+      { error: "Сүлжээний алдаа гарлаа" },
+      { status: 500 }
+    );
   }
 }
