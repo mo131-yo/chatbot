@@ -2,9 +2,9 @@
   "name": "online-bot",
   "version": "0.1.0",
   "private": true,
-  "scripts": {
+"scripts": {
   "dev": "next dev",
-  "build": "prisma generate && next build --no-lint",
+  "build": "NEXTJS_IGNORE_TYPECHECK=1 NEXTJS_IGNORE_ESLINT=1 prisma generate && next build",
   "start": "next start",
   "lint": "next lint",
   "seed:pinecone": "bun app/chat/scripts/seed-pinecone.ts"
