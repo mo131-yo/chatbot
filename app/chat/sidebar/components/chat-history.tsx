@@ -27,7 +27,7 @@ interface ChatHistoryProps {
 }
 
 export const ChatHistory = ({
-  history,
+  history = [], 
   onSelectChat,
   isLoading,
   onDeleteChat,
@@ -37,8 +37,16 @@ export const ChatHistory = ({
   activeChatId
 }: ChatHistoryProps) => {
   
-  const pinnedChats = history.filter(chat => chat.isPinned);
-  const recentChats = history.filter(chat => !chat.isPinned);
+  if (!history || !Array.isArray(history)) {
+    return (
+      <div className="flex-1 px-4 py-6 text-xs text-slate-500 italic">
+        Түүх байхгүй
+      </div>
+    );
+  }
+
+  const pinnedChats = history.filter(chat => chat?.isPinned);
+  const recentChats = history.filter(chat => !chat?.isPinned);
 
   const handleShareClick = async (e: React.MouseEvent, chat: Chat) => {
     e.stopPropagation();
