@@ -76,7 +76,7 @@ export const ChatHistory = ({
     }
   };
 
-  const renderChatItem = (chat: Chat) => (
+const renderChatItem = (chat: Chat) => (
   <div 
     key={chat.id} 
     className={`group relative flex items-center rounded-lg transition-all mb-1
@@ -86,6 +86,7 @@ export const ChatHistory = ({
       onClick={() => onSelectChat(chat.id)}
       className="flex-1 text-left px-3 py-2.5 flex items-center gap-2 min-w-0"
     >
+      {/* PIN ICON: Хэрэв бэхэлсэн бол GiPin харуулна */}
       {chat.isPinned && (
         <GiPin size={16} className="text-[#C5A059] rotate-45 shrink-0" />
       )}

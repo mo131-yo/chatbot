@@ -162,10 +162,16 @@ export function HorizontalProductStack({
   };
 
   return (
-    <div className="relative flex h-137.5 w-full items-center justify-center overflow-visible bg-transparent group select-none touch-none">
+    <div className="relative flex h-137.5 w-full items-center justify-center ...">
       <AnimatePresence>
         {showLocationForm && (
-          <LocationForm onClose={() => setShowLocationForm(false)} />
+          <LocationForm 
+            onClose={() => setShowLocationForm(false)} 
+            onConfirm={() => {
+              setShowLocationForm(false);
+              setShowPayment(true);
+            }}
+          />
         )}
         {showPayment && selectedProduct && (
           <div className="fixed inset-0 z-100 flex items-center justify-center">
@@ -183,7 +189,7 @@ export function HorizontalProductStack({
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
               className="relative z-10"
             >
-              <QPayPayment
+              <QPayPayment 
                 amount={Number(selectedProduct.price.replace(/,/g, ""))}
                 orderId={`INV-${Math.floor(Math.random() * 10000)}`}
                 onSuccess={handlePaymentSuccess}

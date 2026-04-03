@@ -7,6 +7,7 @@ import { LOCATION_DATA } from "./form1";
 
 interface Props {
   onClose: () => void;
+  onConfirm: () => void;
 }
 
 const LocationPicker = dynamic(
@@ -17,7 +18,7 @@ const LocationPicker = dynamic(
   }
 );
 
-export default function OrderAddress({ onClose }: Props) {
+export default function OrderAddress({ onClose, onConfirm }: Props) {
   const [formData, setFormData] = useState({
     city: "",
     district: "",
@@ -149,7 +150,11 @@ export default function OrderAddress({ onClose }: Props) {
             <input name="phone" type="tel" placeholder="Утасны дугаар" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="w-full p-3.5 rounded-xl bg-white/5 border border-white/10 text-white outline-none focus:border-[#C5A059]" />
           </div>
 
-          <button onClick={() => onClose()} disabled={loading} className="w-full py-4 bg-[#C5A059] hover:bg-[#d4b476] disabled:opacity-50 text-black font-bold rounded-2xl transition-all">
+          <button 
+            onClick={() => onConfirm()}
+            disabled={loading} 
+            className="w-full py-4 bg-[#C5A059] hover:bg-[#d4b476] text-black font-bold rounded-2xl transition-all"
+          >
             {loading ? "Уншиж байна..." : "ХАЯГ БАТАЛГААЖУУЛАХ"}
           </button>
         </div>
