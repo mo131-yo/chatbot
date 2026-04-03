@@ -3,15 +3,21 @@ import { NextResponse } from "next/server";
 import { index } from "@/lib/api/pinecone";
 import OpenAI from "openai";
 
-export async function GET() {
-  const products = await prisma.product.findMany({ include: { store: true } });
-  return Response.json(products);
-}
-
-
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_KEY,
 });
+
+export async function GET() {
+  try {
+    const products = await prisma.product.findMany({ 
+      include: { store: true },
+      orderBy: { createdAt: "desc" }
+    });
+    return NextResponse.json(products);
+  } catch (error) {
+    return NextResponse.json({ error: "Бараа авахад алдаа гарлаа" }, { status: 500 });
+  }
+}
 
 export async function POST(req: Request) {
   try {
@@ -20,53 +26,52 @@ export async function POST(req: Request) {
     const product = await prisma.product.create({
       data: {
         name: body.name,
-        slug: body.name.toLowerCase().replace(/ /g, "-"), 
-        description: body.description,
+        slug: body.name.toLowerCase().trim().replace(/\s+/g, "-"), 
+        description: body.description || "",
         price: Number(body.price),
-        brand: body.brand,
-        category: body.category,
+        brand: body.brand || "",
+        category: body.category || "",
         storeId: body.storeId,
         stock: Number(body.stock) || 0,
         images: body.images || [],
       },
     });
 
-    const textToEmbed = `${product.name} ${product.brand} ${product.category} ${product.description}`;
+    if (process.env.OPENAI_KEY) {
+      const textToEmbed = `${product.name} ${product.brand} ${product.category} ${product.description}`;
 
-    try {
-      const embeddingResponse = await openai.embeddings.create({
-        model: "text-embedding-3-small",
-        input: textToEmbed,
-      });
+      try {
+        const embeddingResponse = await openai.embeddings.create({
+          model: "text-embedding-3-small",
+          input: textToEmbed,
+        });
 
-      const vector = embeddingResponse.data[0].embedding;
+        const vector = embeddingResponse.data[0].embedding;
 
-      await index.upsert({
-        records: [
-          {
-            id: product.id, 
-            values: vector,
-            metadata: {
-              name: product.name,
-              price: product.price,
-              description: product.description || "",
-              image: product.images[0] || "",
-              category: product.category || "",
-              brand: product.brand || "",
-              storeId: product.storeId || "",
+        await index.upsert({
+          records: [
+            {
+              id: product.id,
+              values: vector,
+              metadata: {
+                name: product.name,
+                price: product.price,
+                category: product.category || "",
+                brand: product.brand || "",
+              },
             },
-          },
-        ],
-      });
-      
-      console.log("Pinecone-д амжилттай хадгалагдлаа!");
-    } catch (pineconeError) {
-      console.error("Pinecone Error:", pineconeError);
+          ],
+        });
+        
+        console.log("Pinecone-д амжилттай хадгалагдлаа!");
+      } catch (pineconeError) {
+        console.error("Pinecone/OpenAI Error:", pineconeError);
+      }
     }
 
     return NextResponse.json(product);
   } catch (error) {
     console.error("API Error:", error);
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    return NextResponse.json({ error: "Бараа үүсгэхэд алдаа гарлаа" }, { status: 500 });
   }
 }
