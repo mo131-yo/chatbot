@@ -7,6 +7,7 @@ import { LOCATION_DATA } from "./form1";
 
 interface Props {
   onClose: () => void;
+  onConfirm: () => void;
 }
 
 type FormData = {
@@ -19,24 +20,16 @@ type FormData = {
   lng: number;
 };
 
-type FormErrors = Partial<Record<keyof Omit<FormData, "lat" | "lng">, string>>;
-
-const LocationPicker = dynamic(() => import("./LocationPicker"), {
-  ssr: false,
-  loading: () => (
-    <div className="h-75 w-full animate-pulse rounded-xl bg-white/5" />
-  ),
-});
-
-const initialFormData: FormData = {
-  city: "",
-  district: "",
-  street: "",
-  address: "",
-  phone: "",
-  lat: 47.9188,
-  lng: 106.9176,
-};
+export default function OrderAddress({ onClose, onConfirm }: Props) {
+  const [formData, setFormData] = useState({
+    city: "",
+    district: "",
+    street:"",
+    address: "",
+    phone: "",
+    lat: 47.9188,
+    lng: 106.9176,
+  });
 
 export default function OrderAddress({ onClose }: Props) {
   const [formData, setFormData] = useState<FormData>(initialFormData);
@@ -515,17 +508,12 @@ export default function OrderAddress({ onClose }: Props) {
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={loading || submitting}
-            className="w-full rounded-2xl bg-[#C5A059] py-4 font-bold text-black transition-all hover:bg-[#d4b476] disabled:opacity-50"
+          <button 
+            onClick={() => onConfirm()}
+            disabled={loading} 
+            className="w-full py-4 bg-[#C5A059] hover:bg-[#d4b476] text-black font-bold rounded-2xl transition-all"
           >
-            {loading
-              ? "Уншиж байна..."
-              : submitting
-                ? "Илгээж байна..."
-                : "ХАЯГ БАТАЛГААЖУУЛАХ"}
+            {loading ? "Уншиж байна..." : "ХАЯГ БАТАЛГААЖУУЛАХ"}
           </button>
         </div>
       </motion.div>
