@@ -20,18 +20,19 @@ type FormData = {
   lng: number;
 };
 
-export default function OrderAddress({ onClose, onConfirm }: Props) {
-  const [formData, setFormData] = useState({
-    city: "",
-    district: "",
-    street:"",
-    address: "",
-    phone: "",
-    lat: 47.9188,
-    lng: 106.9176,
-  });
+const initialFormData: FormData = {
+  city: "",
+  district: "",
+  street: "",
+  address: "",
+  phone: "",
+  lat: 47.9188,
+  lng: 106.9176,
+};
 
-export default function OrderAddress({ onClose }: Props) {
+type FormErrors = Partial<Record<keyof Omit<FormData, "lat" | "lng">, string>>;
+ 
+export default function OrderAddress({ onClose, onConfirm }: Props) {
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -46,6 +47,22 @@ export default function OrderAddress({ onClose }: Props) {
   const districtOptions = useMemo(() => {
     return formData.city ? (LOCATION_DATA[formData.city] ?? []) : [];
   }, [formData.city]);
+
+interface FormErrors {
+  city?: string;
+  district?: string;
+  street?: string;
+  address?: string;
+  phone?: string;
+}
+
+  const LocationPicker = useMemo(
+    () =>
+      dynamic(() => import("./LocationPicker"), {
+        ssr: false,
+      }),
+    [],
+  );
 
   const validateField = (
     name: keyof Omit<FormData, "lat" | "lng">,
@@ -301,6 +318,7 @@ export default function OrderAddress({ onClose }: Props) {
         : "border-white/10 bg-white/5 focus:border-[#C5A059]"
     }`;
   };
+  
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
