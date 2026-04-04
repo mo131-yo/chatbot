@@ -203,87 +203,91 @@ export const useChatLogic = () => {
     [isSignedIn]
   );
 
-  const sendMessage = useCallback(
-    async (message: string) => {
-      if (!message.trim()) return;
-      setIsTyping(true);
+ const sendMessage = useCallback(
+  async (message: string) => {
+    if (!message.trim()) return;
 
-      try {
-        let chatId = activeChatId;
-        if (!chatId) {
-          const session = await createSession(message.slice(0, 20) || "Шинэ чат");
-          chatId = session.id;
+    setIsTyping(true);
 
-          setActiveChatIdState(chatId);
-          setSidebarHistory((prev) => [
-            {
-              id: session.id,
-              title: session.title || message.slice(0, 20) || "Шинэ чат",
-            },
-            ...prev,
-          ]);
-          setAllChats((prev) => ({ ...prev, [chatId!]: [] }));
-        }
+    try {
+      let chatId = activeChatId;
 
-        const nextMessages: ChatMessage[] = [
-          ...(allChats[chatId!] || []),
-          { role: "USER", content: message },
-        ];
+      if (!chatId) {
+        const title = message.slice(0, 20) || "Шинэ чат";
+        const session = await createSession(title);
+        chatId = session.id;
 
-        setAllChats((prev) => ({
+        setActiveChatIdState(chatId);
+        setSidebarHistory((prev) => [
+          {
+            id: session.id,
+            title: session.title || title,
+          },
           ...prev,
-          [chatId as string]: nextMessages,
-        }));
-
-        if (!isSignedIn) {
-          const guestChats = getGuestChats();
-          guestChats[chatId!] = nextMessages;
-          saveGuestChats(guestChats);
-        }
-
-        const res = await fetch("/chat/api/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            messages: nextMessages.map((m) => ({
-              role: m.role.toLowerCase(),
-              content: m.content,
-            })),
-            chatId,
-            userId: user?.id || null,
-          }),
-        });
-
-        if (!res.ok) {
-          const text = await res.text();
-          throw new Error(text || "Failed to send message");
-        }
-
-        const data = await res.json();
-
-        const updatedMessages: ChatMessage[] = [
-          ...nextMessages,
-          { role: "ASSISTANT", content: data.reply },
-        ];
-
-        setAllChats((prev) => ({
-          ...prev,
-          [chatId!]: updatedMessages,
-        }));
-
-        if (!isSignedIn) {
-          const guestChats = getGuestChats();
-          guestChats[chatId!] = updatedMessages;
-          saveGuestChats(guestChats);
-        }
-      } catch (error) {
-        console.error("sendMessage error:", error);
-      } finally {
-        setIsTyping(false);
+        ]);
+        setAllChats((prev) => ({ ...prev, [chatId!]: [] }));
       }
-    },
-    [activeChatId, allChats, createSession, isSignedIn, user?.id]
-  );
+
+      const nextMessages: ChatMessage[] = [
+        ...(allChats[chatId!] || []),
+        { role: "USER", content: message },
+      ];
+
+      setAllChats((prev) => ({
+        ...prev,
+        [chatId!]: nextMessages,
+      }));
+
+      if (!isSignedIn) {
+        const guestChats = getGuestChats();
+        guestChats[chatId!] = nextMessages;
+        saveGuestChats(guestChats);
+      }
+
+      const res = await fetch("/chat/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: nextMessages.map((m) => ({
+            role: m.role.toLowerCase(),
+            content: m.content,
+          })),
+          chatId,
+          userId: user?.id || null,
+        }),
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || "Failed to send message");
+      }
+
+      const data = await res.json();
+
+      const updatedMessages: ChatMessage[] = [
+        ...nextMessages,
+        { role: "ASSISTANT", content: data.reply },
+      ];
+
+      setAllChats((prev) => ({
+        ...prev,
+        [chatId!]: updatedMessages,
+      }));
+
+      if (!isSignedIn) {
+        const guestChats = getGuestChats();
+        guestChats[chatId!] = updatedMessages;
+        saveGuestChats(guestChats);
+      }
+
+    } catch (error) {
+      console.error("sendMessage error:", error);
+    } finally {
+      setIsTyping(false);
+    }
+  },
+  [activeChatId, allChats, createSession, isSignedIn, user?.id]
+);
 
   const deleteChat = useCallback(
     async (chatId: string) => {

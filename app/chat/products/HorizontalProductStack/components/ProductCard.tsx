@@ -19,10 +19,10 @@ export const ProductCard = ({
           onClick={() => onSelect(product)}
           src={product.image}
           alt={product.name}
-          className="h-full w-full object-cover select-none transition-transform duration-500 group-hover:scale-110"
+          className="h-full w-full object-cover select-none transition-transform duration-500 group-hover:scale-110 cursor-pointer"
         />
         
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent pointer-events-none opacity-90" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent pointer-events-none opacity-90" />
 
         <div className="absolute top-4 right-4 z-20">
           <button
@@ -36,45 +36,46 @@ export const ProductCard = ({
           </button>
         </div>
 
-        <div 
-          className={`absolute left-6 right-6 z-10 transition-all duration-500 ${
-            isCurrent ? "bottom-28" : "bottom-8"
-          }`}
-        >
-          <p className="text-white text-lg font-bold truncate leading-tight">{product.name}</p>
-          <p className="text-[#C5A059] text-xl font-black mt-1">{product.price}₮</p>
+        <div className="absolute bottom-6 left-6 right-6 z-20 flex flex-col gap-4">
+          
+          <div className="transition-all duration-500">
+            <p className="text-white text-lg font-bold line-clamp-2 leading-tight mb-1">
+              {product.name}
+            </p>
+            <p className="text-[#C5A059] text-xl font-black">{product.price}₮</p>
+          </div>
+
+          <AnimatePresence>
+            {isCurrent && (
+              <motion.div
+                initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                animate={{ opacity: 1, height: "auto", marginTop: 4 }}
+                exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                className="flex gap-2.5 overflow-hidden"
+              >
+                <button
+                  onClick={() => onOrder(product)}
+                  className="flex-1 h-12 bg-[#C5A059] rounded-2xl text-white font-bold active:scale-95 transition-transform shadow-lg"
+                >
+                  Захиалах
+                </button>
+                <button
+                  onClick={() => onShare(product.id)}
+                  className="p-3 rounded-full bg-white/5 backdrop-blur-md border border-white/10 text-white hover:bg-[#C5A059]/20 transition-colors"
+                >
+                  <Share2 size={20} />
+                </button>
+                <button
+                  onClick={() => onAddToCart(product)}
+                  className="bg-[#C5A059] text-black h-12 w-12 rounded-2xl flex items-center justify-center active:scale-95 transition-transform shadow-lg"
+                >
+                  <ShoppingBag size={18} />
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
-
-      <AnimatePresence>
-        {isCurrent && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
-            className="absolute bottom-6 left-6 right-6 z-20 flex gap-2.5"
-          >
-            <button
-              onClick={() => onOrder(product)}
-              className="flex-1 h-12 bg-[#C5A059] rounded-2xl text-white font-bold active:scale-95 transition-transform shadow-lg"
-            >
-              Захиалах
-            </button>
-            <button
-              onClick={() => onShare(product.id)}
-              className="p-3 rounded-full bg-white/5 backdrop-blur-md border border-white/10 text-white hover:bg-[#C5A059]/20 transition-colors"
-            >
-              <Share2 size={20} />
-            </button>
-            <button
-              onClick={() => onAddToCart(product)}
-              className="bg-[#C5A059] text-black h-12 w-12 rounded-2xl flex items-center justify-center active:scale-95 transition-transform shadow-lg"
-            >
-              <ShoppingBag size={18} />
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 };

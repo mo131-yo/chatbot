@@ -111,19 +111,24 @@ export const MessageList: React.FC<MessageListProps> = ({
         );
       })}
       
-      {isTyping && (
-        <motion.div 
-          initial={{ opacity: 0 }} 
-          animate={{ opacity: 1 }}
-          className="flex justify-start items-center space-x-2 ml-2"
-        >
-          <div className="bg-gray-100 dark:bg-[#161616] rounded-2xl px-5 py-4 flex gap-1.5 items-center border dark:border-white/5">
-            <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-duration:0.8s]" />
-            <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-duration:0.8s] [animation-delay:0.2s]" />
-            <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-duration:0.8s] [animation-delay:0.4s]" />
-          </div>
-        </motion.div>
-      )}
+      <AnimatePresence mode="wait">
+        {isTyping && (
+          <motion.div 
+            initial={{ opacity: 0, y: 10, scale: 0.95 }} 
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            className="flex justify-start items-center space-x-2 ml-2"
+          >
+            <div className="bg-white dark:bg-[#161616] rounded-2xl rounded-tl-none px-5 py-4 flex gap-1.5 items-center border dark:border-white/5 shadow-sm">
+              <span className="w-1.5 h-1.5 bg-[#C5A059] rounded-full animate-bounce [animation-duration:0.6s]" />
+              <span className="w-1.5 h-1.5 bg-[#C5A059] rounded-full animate-bounce [animation-duration:0.6s] [animation-delay:0.15s]" />
+              <span className="w-1.5 h-1.5 bg-[#C5A059] rounded-full animate-bounce [animation-duration:0.6s] [animation-delay:0.3s]" />
+              <span className="text-xs text-slate-500 ml-2 font-medium">AI хариу бичиж байна...</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div ref={messagesEndRef} className="h-4 w-full" />
     </div>
