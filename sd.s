@@ -1,3 +1,6 @@
+DuckDuckGo Images API, 
+Open Library API, LocalStorage, React Hooks
+
 <!DOCTYPE html>
 <html lang="mn">
 <head>
