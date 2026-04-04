@@ -9,7 +9,7 @@ interface NavigationProps {
   current: number;
 }
 
-export const NavigationControls = ({ onPrev, onNext, total, current }: NavigationProps) => (
+export const NavigationControls = ({ onPrev, onNext, total = 0, current }: NavigationProps) => (
   <>
     <div className="absolute left-2 md:left-6 z-50">
       <button
@@ -30,7 +30,7 @@ export const NavigationControls = ({ onPrev, onNext, total, current }: Navigatio
     </div>
 
     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 p-1.5 rounded-full bg-white/5 backdrop-blur-md border border-white/5">
-      {Array.from({ length: total }).map((_, i) => (
+      {total > 0 && Array.from({ length: total }).map((_, i) => (
         <div
           key={i}
           className={`h-1.5 transition-all duration-500 rounded-full ${
