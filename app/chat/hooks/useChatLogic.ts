@@ -43,6 +43,17 @@ export const useChatLogic = () => {
 
   const { user, isSignedIn, isLoaded } = useUser();
 
+const fetchProductImage = async (productName: string): Promise<string> => {
+  try {
+    const res = await fetch(`/api/search-image?q=${encodeURIComponent(productName)}`);
+    const data = await res.json();
+    return data.imageUrl || ""; 
+  } catch (err) {
+    console.error("Image fetch error:", err);
+    return ""; 
+  }
+};
+
   const loadChat = useCallback(
     async (chatId: string | null) => {
       if (!chatId) {
@@ -263,10 +274,27 @@ export const useChatLogic = () => {
       }
 
       const data = await res.json();
+      let finalReply = data.reply;
+
+      if (finalReply.includes("SEARCH_IMAGE_PLACEHOLDER")) {
+        const productRegex = /!\[([^,]+),[^\]]+\]\(SEARCH_IMAGE_PLACEHOLDER\)/g;
+        
+        const matches = Array.from(finalReply.matchAll(productRegex)) as any[];
+
+        for (const match of matches) {
+          const productName = match[1]; 
+          
+          if (productName) {
+            const realImage = await fetchProductImage(productName);
+            
+            finalReply = finalReply.replace("SEARCH_IMAGE_PLACEHOLDER", realImage || "https://via.placeholder.com/400x500?text=No+Image");
+          }
+        }
+      }
 
       const updatedMessages: ChatMessage[] = [
         ...nextMessages,
-        { role: "ASSISTANT", content: data.reply },
+        { role: "ASSISTANT", content: finalReply },
       ];
 
       setAllChats((prev) => ({
