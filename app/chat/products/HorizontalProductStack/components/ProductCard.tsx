@@ -21,9 +21,10 @@ export const ProductCard = ({
           alt={product.name}
           className="h-full w-full object-cover select-none transition-transform duration-500 group-hover:scale-110"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
+        
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent pointer-events-none opacity-90" />
 
-        <div className="absolute top-4 right-4 z-10">
+        <div className="absolute top-4 right-4 z-20">
           <button
             onClick={(e) => { e.stopPropagation(); onSave(product.id); }}
             className="p-3 rounded-full bg-black/30 backdrop-blur-md border border-white/10 hover:scale-110 active:scale-90 transition-all"
@@ -35,40 +36,42 @@ export const ProductCard = ({
           </button>
         </div>
 
-        <div className="absolute bottom-6 left-6 right-6">
-          <p className="text-white text-lg font-bold truncate">{product.name}</p>
-          <p className="text-[#C5A059] text-xl font-black">{product.price}₮</p>
+        <div 
+          className={`absolute left-6 right-6 z-10 transition-all duration-500 ${
+            isCurrent ? "bottom-28" : "bottom-8"
+          }`}
+        >
+          <p className="text-white text-lg font-bold truncate leading-tight">{product.name}</p>
+          <p className="text-[#C5A059] text-xl font-black mt-1">{product.price}₮</p>
         </div>
       </div>
 
       <AnimatePresence>
         {isCurrent && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
-            className="absolute bottom-0 w-full p-6 space-y-3 bg-gradient-to-t from-black to-transparent"
+            className="absolute bottom-6 left-6 right-6 z-20 flex gap-2.5"
           >
-            <div className="flex gap-2.5">
-              <button
-                onClick={() => onOrder(product)}
-                className="flex-1 h-12 bg-[#C5A059] rounded-2xl text-white font-bold active:scale-95 transition-transform"
-              >
-                Захиалах
-              </button>
-              <button
-                onClick={() => onShare(product.id)}
-                className="p-3 rounded-full bg-black/30 border border-white/10 text-white hover:bg-[#C5A059]/20"
-              >
-                <Share2 size={20} />
-              </button>
-              <button
-                onClick={() => onAddToCart(product)}
-                className="bg-[#C5A059] text-black h-12 w-12 rounded-2xl flex items-center justify-center active:scale-95 transition-transform"
-              >
-                <ShoppingBag size={18} />
-              </button>
-            </div>
+            <button
+              onClick={() => onOrder(product)}
+              className="flex-1 h-12 bg-[#C5A059] rounded-2xl text-white font-bold active:scale-95 transition-transform shadow-lg"
+            >
+              Захиалах
+            </button>
+            <button
+              onClick={() => onShare(product.id)}
+              className="p-3 rounded-full bg-white/5 backdrop-blur-md border border-white/10 text-white hover:bg-[#C5A059]/20 transition-colors"
+            >
+              <Share2 size={20} />
+            </button>
+            <button
+              onClick={() => onAddToCart(product)}
+              className="bg-[#C5A059] text-black h-12 w-12 rounded-2xl flex items-center justify-center active:scale-95 transition-transform shadow-lg"
+            >
+              <ShoppingBag size={18} />
+            </button>
           </motion.div>
         )}
       </AnimatePresence>

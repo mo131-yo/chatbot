@@ -206,12 +206,10 @@ export const useChatLogic = () => {
   const sendMessage = useCallback(
     async (message: string) => {
       if (!message.trim()) return;
-
       setIsTyping(true);
 
       try {
         let chatId = activeChatId;
-
         if (!chatId) {
           const session = await createSession(message.slice(0, 20) || "Шинэ чат");
           chatId = session.id;
