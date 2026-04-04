@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { useCart } from "@/app/context/CartContext";
 import { ProductDetailSidebar } from "../detail/ProductDetailSidebar";
-import { HorizontalProductStack } from "../HorizontalProductStack/page";
 import { Heart, X } from "lucide-react";
 import { useFavoriteStore } from "@/app/store/useFavoriteStore";
+import HorizontalProductStack from "../HorizontalProductStack/page";
 interface Product {
   id: string;
   name: string;
