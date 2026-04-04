@@ -10,7 +10,7 @@ import QPayPayment from "../../payment/components/QPayPayment ";
 import { NavigationControls } from "./components/NavigationControls";
 import { ProductCard } from "./components/ProductCard";
 
-export function HorizontalProductStack({ products, onSelect, onSave, savedIds = [] }: any) {
+export default function HorizontalProductStack({ products, onSelect, onSave, savedIds = [] }: any) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showPayment, setShowPayment] = useState(false);
   const [showLocationForm, setShowLocationForm] = useState(false);
