@@ -47,42 +47,46 @@ export default function ChatInput({
     }
   };
 
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+ const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
 
-    setIsLoading(true);
-    setIsTyping(true);
+  setIsLoading(true);
+  setIsTyping(true);
 
-    const imageUrl = URL.createObjectURL(file);
-    const userImageMsg = `<img src="${imageUrl}" class="w-48 rounded-lg border border-white/10" />`;
-
-    const formData = new FormData();
-    formData.append("image", file);
-
-    try {
-      const response = await fetch("/api/visual-search", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) throw new Error("Search failed");
-
-      const product = await response.json();
-      
-      onMessageReceived(userImageMsg, {
-        type: "product_card",
-        data: product
-      });
-
-    } catch (error) {
-      onMessageReceived(userImageMsg, "Уучлаарай, зургийг таньж чадсангүй.");
-    } finally {
-      setIsLoading(false);
-      setIsTyping(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    }
+  const imageUrl = URL.createObjectURL(file);
+  
+  const userImageMsg = {
+    type: "image",
+    content: imageUrl
   };
+
+  const formData = new FormData();
+  formData.append("image", file);
+
+  try {
+    const response = await fetch("/api/visual-search", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) throw new Error("Search failed");
+
+    const product = await response.json();
+    
+    onMessageReceived(userImageMsg, {
+      type: "product_card",
+      data: product
+    });
+
+  } catch (error) {
+    onMessageReceived(userImageMsg, "Уучлаарай, зургийг таньж чадсангүй.");
+  } finally {
+    setIsLoading(false);
+    setIsTyping(false);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+};
 
   return (
     <footer className="w-full max-w-4xl mx-auto p-4 relative z-50">

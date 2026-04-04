@@ -30,12 +30,14 @@ export default function RootLayout({
   return (
     <ClerkProvider afterSignOutUrl="/">
       <html lang="mn" suppressHydrationWarning>
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        >
-          <FavoriteDrawer />
+        <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
           <CartProvider>
-            <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              themes={["light", "dark", "minimalist", "midnight", "luxury", "forest", "cyber", "rose"]}
+            >
               {children}
               <CartSidebar />
             </ThemeProvider>
