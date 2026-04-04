@@ -20,6 +20,10 @@ export default function HorizontalProductStack({ products, onSelect, onSave, sav
   const { user } = useUser();
   const lastNavigationTime = useRef(0);
 
+  if (!products || products.length === 0) {
+    return <div className="h-137.5 flex items-center justify-center text-white/50">Бүтээгдэхүүн олдсонгүй...</div>;
+  }
+  
   const navigate = useCallback((dir: number) => {
     const now = Date.now();
     if (now - lastNavigationTime.current < 250) return;
@@ -47,7 +51,9 @@ export default function HorizontalProductStack({ products, onSelect, onSave, sav
   };
 
   const getCardStyle = (index: number) => {
-    const total = products.length;
+    const total = products?.length || 0;
+    if (total === 0) return { x: 0, scale: 0.5, opacity: 0 };
+
     let diff = index - currentIndex;
     if (diff > total / 2) diff -= total;
     if (diff < -total / 2) diff += total;
