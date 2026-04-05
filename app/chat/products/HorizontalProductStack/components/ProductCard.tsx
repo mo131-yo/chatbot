@@ -1,11 +1,47 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, Share2, ShoppingBag } from "lucide-react";
+import { Heart, Share2, ShoppingBag, ImageIcon } from "lucide-react";
+import { useState, useEffect } from "react";
 
 export const ProductCard = ({ 
   product, isCurrent, onSelect, onSave, onOrder, onShare, onAddToCart, savedIds 
 }: any) => {
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const getProductImage = async () => {
+      if (product.image_url && product.image_url.startsWith('http')) {
+        setImageUrl(product.image_url);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const API_KEY = '49511516-a1975e777478161947b66df87';
+        const query = product.image_keywords || product.name;
+        const url = `https://pixabay.com/api/?key=${API_KEY}&q=${encodeURIComponent(query)}&image_type=photo&per_page=3&orientation=vertical`;
+        
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if (data.hits && data.hits.length > 0) {
+          setImageUrl(data.hits[0].webformatURL);
+        } else {
+          setImageUrl('/default-product.png');
+        }
+      } catch (error) {
+        console.error("Image fetch error:", error);
+        setImageUrl('/default-product.png');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getProductImage();
+  }, [product.name, product.image_keywords]);
+
   return (
     <div
       className={`relative mx-auto h-105 w-70 md:h-120 md:w-[320px] overflow-hidden rounded-[2.5rem] bg-[#121212] border transition-all duration-700 ${
@@ -15,14 +51,20 @@ export const ProductCard = ({
       }`}
     >
       <div className="h-full w-full relative group overflow-hidden">
-        <img
-          onClick={() => onSelect(product)}
-          src={product.image}
-          alt={product.name}
-          className="h-full w-full object-cover select-none transition-transform duration-500 group-hover:scale-110 cursor-pointer"
-        />
+        {loading ? (
+          <div className="h-full w-full flex items-center justify-center bg-white/5 animate-pulse">
+            <ImageIcon className="text-white/20" size={40} />
+          </div>
+        ) : (
+          <img
+            onClick={() => onSelect(product)}
+            src={imageUrl || '/default-product.png'}
+            alt={product.name}
+            className="h-full w-full object-cover select-none transition-transform duration-500 group-hover:scale-110 cursor-pointer"
+          />
+        )}
         
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent pointer-events-none opacity-90" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent pointer-events-none opacity-90" />
 
         <div className="absolute top-4 right-4 z-20">
           <button
@@ -31,18 +73,19 @@ export const ProductCard = ({
           >
             <Heart
               size={20}
-              className={savedIds.includes(product.id) ? "text-red-500 fill-red-500" : "text-white"}
+              className={savedIds?.includes(product.id) ? "text-red-500 fill-red-500" : "text-white"}
             />
           </button>
         </div>
 
         <div className="absolute bottom-6 left-6 right-6 z-20 flex flex-col gap-4">
-          
           <div className="transition-all duration-500">
             <p className="text-white text-lg font-bold line-clamp-2 leading-tight mb-1">
-              {product.name}
+              {product.product_name || product.name}
             </p>
-            <p className="text-[#C5A059] text-xl font-black">{product.price}₮</p>
+            <p className="text-[#C5A059] text-xl font-black">
+              {Number(product.formatted_price || product.price).toLocaleString()}₮
+            </p>
           </div>
 
           <AnimatePresence>

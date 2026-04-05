@@ -45,12 +45,11 @@ export const useChatLogic = () => {
 
 const fetchProductImage = async (productName: string): Promise<string> => {
   try {
-    // Хайлтын үгэн дээр "product" гэж нэмбэл Pixabay илүү гоё зураг олдог
     const res = await fetch(`/api/search-image?q=${encodeURIComponent(productName + " product")}`);
     const data = await res.json();
-    return data.imageUrl; // Энд Robohash эсвэл Pixabay-ийн аль нэг нь заавал ирнэ
+    return data.imageUrl;
   } catch (err) {
-    return `https://robohash.org/${productName}`; // Сүлжээний алдаа гарвал шууд робот харуулна
+    return `https://robohash.org/${productName}`;
   }
 };
 
