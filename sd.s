@@ -1,4 +1,4 @@
-DuckDuckGo Images API, 
+DuckDuckGo Images API, Pixabay, Robohash
 Open Library API, LocalStorage, React Hooks
 
 <!DOCTYPE html>

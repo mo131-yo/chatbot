@@ -45,12 +45,12 @@ export const useChatLogic = () => {
 
 const fetchProductImage = async (productName: string): Promise<string> => {
   try {
-    const res = await fetch(`/api/search-image?q=${encodeURIComponent(productName)}`);
+    // Хайлтын үгэн дээр "product" гэж нэмбэл Pixabay илүү гоё зураг олдог
+    const res = await fetch(`/api/search-image?q=${encodeURIComponent(productName + " product")}`);
     const data = await res.json();
-    return data.imageUrl || ""; 
+    return data.imageUrl; // Энд Robohash эсвэл Pixabay-ийн аль нэг нь заавал ирнэ
   } catch (err) {
-    console.error("Image fetch error:", err);
-    return ""; 
+    return `https://robohash.org/${productName}`; // Сүлжээний алдаа гарвал шууд робот харуулна
   }
 };
 
@@ -287,7 +287,7 @@ const fetchProductImage = async (productName: string): Promise<string> => {
           if (productName) {
             const realImage = await fetchProductImage(productName);
             
-            finalReply = finalReply.replace("SEARCH_IMAGE_PLACEHOLDER", realImage || "https://via.placeholder.com/400x500?text=No+Image");
+           finalReply = finalReply.replace("SEARCH_IMAGE_PLACEHOLDER", realImage || "https://via.placeholder.com/400x500?text=No+Image");
           }
         }
       }
