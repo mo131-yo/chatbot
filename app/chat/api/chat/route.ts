@@ -74,7 +74,7 @@ export async function POST(req: Request) {
 
       const queryResponse = await index.query({
         vector: embeddingResponse.data[0].embedding,
-        topK: 10,
+        topK: 16,
         includeMetadata: true,
         filter: maxPrice ? { formatted_price: { $lte: maxPrice } } : undefined,
       });
