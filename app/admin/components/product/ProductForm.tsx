@@ -18,49 +18,7 @@ export default function ProductForm({ onSuccess }: any) {
   const [stock, setStock] = useState("");
   const [category, setCategory] = useState("");
 
-  // const handleSubmit = async () => {
-  //   const imagesBase64: string[] = [];
-
-  //   for (const file of imageFiles) {
-  //     const reader = new FileReader();
-
-  //     const base64 = await new Promise<string>((resolve) => {
-  //       reader.onload = () => resolve(reader.result as string);
-  //       reader.readAsDataURL(file);
-  //     });
-
-  //     imagesBase64.push(base64);
-  //   }
-
-  //   await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products`, {
-  //     method: "POST",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //     },
-  //     body: JSON.stringify({
-  //       name,
-  //       price: Number(price),
-  //       images: imagesBase64,
-  //       description,
-  //       color,
-  //       size,
-  //       brand,
-  //       stock: Number(stock),
-  //       category,
-  //     }),
-  //   });
-
-  //   setOpen(false);
-  //   setImageFiles([]);
-  //   setPreviews([]);
-  //   onSuccess();
-  //   setBrand("");
-  //   setCategory("");
-  //   setColor("");
-  //   setSize("");
-  // };
-  //
-  const handleSubmit = async () => {
+ const handleSubmit = async () => {
     try {
       const imagesBase64 = await Promise.all(
         imageFiles.map((file) => {
@@ -80,7 +38,7 @@ export default function ProductForm({ onSuccess }: any) {
         body: JSON.stringify({
           name,
           price: Number(price),
-          // images: imagesBase64,
+          images: imagesBase64,
           description,
           color,
           size,
@@ -98,7 +56,10 @@ export default function ProductForm({ onSuccess }: any) {
       const data = await response.json();
 
       if (data.success) {
-        alert("Бараа амжилттай нэмэгдлээ!");
+        console.log("Шинээр үүссэн Pinecone ID:", data.pineconeId);
+        
+        alert(`Бараа амжилттай нэмэгдлээ!\nPinecone ID: ${data.pineconeId}`);
+        
         setOpen(false);
         resetForm();
         onSuccess();
@@ -152,11 +113,11 @@ export default function ProductForm({ onSuccess }: any) {
             <Section title="Зураг">
               <div
                 className="
-    relative border-2 border-dashed rounded-xl p-4
-    bg-gray-800 dark:bg-gray-100
-    flex flex-col items-center justify-center
-    cursor-pointer hover:opacity-80 transition
-  "
+                relative border-2 border-dashed rounded-xl p-4
+                bg-gray-800 dark:bg-gray-100
+                flex flex-col items-center justify-center
+                cursor-pointer hover:opacity-80 transition
+              "
               >
                 <input
                   type="file"

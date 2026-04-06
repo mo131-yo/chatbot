@@ -48,7 +48,7 @@ export function ProductDetailSidebar({ product, onClose, onBuy }: Props) {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[150]">
+      <div className="fixed inset-0 z-150">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -62,12 +62,12 @@ export function ProductDetailSidebar({ product, onClose, onBuy }: Props) {
           animate={{ x: 0 }}
           exit={{ x: "100%" }}
           transition={{ type: "spring", damping: 25, stiffness: 200 }}
-          className="absolute right-0 top-0 h-full w-full md:w-[450px] bg-[#0A0A0A] border-l border-white/10 shadow-2xl flex flex-col text-white"
+          className="absolute right-0 top-0 h-full w-full md:w-112.5 bg-[#0A0A0A] border-l border-white/10 shadow-2xl flex flex-col text-white"
         >
           <Header title="Бүтээгдэхүүн" onClose={onClose} />
 
           <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
-            <div className="group relative rounded-3xl overflow-hidden border border-white/10 bg-gradient-to-b from-white/5 to-transparent mb-8">
+            <div className="group relative rounded-3xl overflow-hidden border border-white/10 bg-linear-to-b from-white/5 to-transparent mb-8">
               <img
                 src={product.image}
                 alt={product.name}
