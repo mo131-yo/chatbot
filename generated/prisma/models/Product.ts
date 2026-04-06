@@ -50,8 +50,8 @@ export type ProductMinAggregateOutputType = {
   price: number | null
   discountPrice: number | null
   brand: string | null
-  category: string | null
   subcategory: string | null
+  categoryName: string | null
   stock: number | null
   rating: number | null
   reviewCount: number | null
@@ -59,6 +59,7 @@ export type ProductMinAggregateOutputType = {
   isTrending: boolean | null
   status: $Enums.ProductStatus | null
   storeId: string | null
+  categoryId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -71,8 +72,8 @@ export type ProductMaxAggregateOutputType = {
   price: number | null
   discountPrice: number | null
   brand: string | null
-  category: string | null
   subcategory: string | null
+  categoryName: string | null
   stock: number | null
   rating: number | null
   reviewCount: number | null
@@ -80,6 +81,7 @@ export type ProductMaxAggregateOutputType = {
   isTrending: boolean | null
   status: $Enums.ProductStatus | null
   storeId: string | null
+  categoryId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -93,11 +95,11 @@ export type ProductCountAggregateOutputType = {
   discountPrice: number
   brand: number
   images: number
-  category: number
   subcategory: number
   colors: number
   sizes: number
   tags: number
+  categoryName: number
   stock: number
   rating: number
   reviewCount: number
@@ -105,6 +107,7 @@ export type ProductCountAggregateOutputType = {
   isTrending: number
   status: number
   storeId: number
+  categoryId: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -135,8 +138,8 @@ export type ProductMinAggregateInputType = {
   price?: true
   discountPrice?: true
   brand?: true
-  category?: true
   subcategory?: true
+  categoryName?: true
   stock?: true
   rating?: true
   reviewCount?: true
@@ -144,6 +147,7 @@ export type ProductMinAggregateInputType = {
   isTrending?: true
   status?: true
   storeId?: true
+  categoryId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -156,8 +160,8 @@ export type ProductMaxAggregateInputType = {
   price?: true
   discountPrice?: true
   brand?: true
-  category?: true
   subcategory?: true
+  categoryName?: true
   stock?: true
   rating?: true
   reviewCount?: true
@@ -165,6 +169,7 @@ export type ProductMaxAggregateInputType = {
   isTrending?: true
   status?: true
   storeId?: true
+  categoryId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -178,11 +183,11 @@ export type ProductCountAggregateInputType = {
   discountPrice?: true
   brand?: true
   images?: true
-  category?: true
   subcategory?: true
   colors?: true
   sizes?: true
   tags?: true
+  categoryName?: true
   stock?: true
   rating?: true
   reviewCount?: true
@@ -190,6 +195,7 @@ export type ProductCountAggregateInputType = {
   isTrending?: true
   status?: true
   storeId?: true
+  categoryId?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -290,11 +296,11 @@ export type ProductGroupByOutputType = {
   discountPrice: number | null
   brand: string | null
   images: string[]
-  category: string | null
   subcategory: string | null
   colors: string[]
   sizes: string[]
   tags: string[]
+  categoryName: string | null
   stock: number
   rating: number
   reviewCount: number
@@ -302,6 +308,7 @@ export type ProductGroupByOutputType = {
   isTrending: boolean
   status: $Enums.ProductStatus
   storeId: string | null
+  categoryId: string
   createdAt: Date
   updatedAt: Date
   _count: ProductCountAggregateOutputType | null
@@ -338,11 +345,11 @@ export type ProductWhereInput = {
   discountPrice?: Prisma.FloatNullableFilter<"Product"> | number | null
   brand?: Prisma.StringNullableFilter<"Product"> | string | null
   images?: Prisma.StringNullableListFilter<"Product">
-  category?: Prisma.StringNullableFilter<"Product"> | string | null
   subcategory?: Prisma.StringNullableFilter<"Product"> | string | null
   colors?: Prisma.StringNullableListFilter<"Product">
   sizes?: Prisma.StringNullableListFilter<"Product">
   tags?: Prisma.StringNullableListFilter<"Product">
+  categoryName?: Prisma.StringNullableFilter<"Product"> | string | null
   stock?: Prisma.IntFilter<"Product"> | number
   rating?: Prisma.FloatFilter<"Product"> | number
   reviewCount?: Prisma.IntFilter<"Product"> | number
@@ -350,9 +357,11 @@ export type ProductWhereInput = {
   isTrending?: Prisma.BoolFilter<"Product"> | boolean
   status?: Prisma.EnumProductStatusFilter<"Product"> | $Enums.ProductStatus
   storeId?: Prisma.StringNullableFilter<"Product"> | string | null
+  categoryId?: Prisma.StringFilter<"Product"> | string
   createdAt?: Prisma.DateTimeFilter<"Product"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Product"> | Date | string
   store?: Prisma.XOR<Prisma.StoreNullableScalarRelationFilter, Prisma.StoreWhereInput> | null
+  category?: Prisma.XOR<Prisma.CategoryScalarRelationFilter, Prisma.CategoryWhereInput>
   cartItems?: Prisma.CartItemListRelationFilter
   orderItems?: Prisma.OrderItemListRelationFilter
   orders?: Prisma.OrderListRelationFilter
@@ -369,11 +378,11 @@ export type ProductOrderByWithRelationInput = {
   discountPrice?: Prisma.SortOrderInput | Prisma.SortOrder
   brand?: Prisma.SortOrderInput | Prisma.SortOrder
   images?: Prisma.SortOrder
-  category?: Prisma.SortOrderInput | Prisma.SortOrder
   subcategory?: Prisma.SortOrderInput | Prisma.SortOrder
   colors?: Prisma.SortOrder
   sizes?: Prisma.SortOrder
   tags?: Prisma.SortOrder
+  categoryName?: Prisma.SortOrderInput | Prisma.SortOrder
   stock?: Prisma.SortOrder
   rating?: Prisma.SortOrder
   reviewCount?: Prisma.SortOrder
@@ -381,9 +390,11 @@ export type ProductOrderByWithRelationInput = {
   isTrending?: Prisma.SortOrder
   status?: Prisma.SortOrder
   storeId?: Prisma.SortOrderInput | Prisma.SortOrder
+  categoryId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   store?: Prisma.StoreOrderByWithRelationInput
+  category?: Prisma.CategoryOrderByWithRelationInput
   cartItems?: Prisma.CartItemOrderByRelationAggregateInput
   orderItems?: Prisma.OrderItemOrderByRelationAggregateInput
   orders?: Prisma.OrderOrderByRelationAggregateInput
@@ -403,11 +414,11 @@ export type ProductWhereUniqueInput = Prisma.AtLeast<{
   discountPrice?: Prisma.FloatNullableFilter<"Product"> | number | null
   brand?: Prisma.StringNullableFilter<"Product"> | string | null
   images?: Prisma.StringNullableListFilter<"Product">
-  category?: Prisma.StringNullableFilter<"Product"> | string | null
   subcategory?: Prisma.StringNullableFilter<"Product"> | string | null
   colors?: Prisma.StringNullableListFilter<"Product">
   sizes?: Prisma.StringNullableListFilter<"Product">
   tags?: Prisma.StringNullableListFilter<"Product">
+  categoryName?: Prisma.StringNullableFilter<"Product"> | string | null
   stock?: Prisma.IntFilter<"Product"> | number
   rating?: Prisma.FloatFilter<"Product"> | number
   reviewCount?: Prisma.IntFilter<"Product"> | number
@@ -415,9 +426,11 @@ export type ProductWhereUniqueInput = Prisma.AtLeast<{
   isTrending?: Prisma.BoolFilter<"Product"> | boolean
   status?: Prisma.EnumProductStatusFilter<"Product"> | $Enums.ProductStatus
   storeId?: Prisma.StringNullableFilter<"Product"> | string | null
+  categoryId?: Prisma.StringFilter<"Product"> | string
   createdAt?: Prisma.DateTimeFilter<"Product"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Product"> | Date | string
   store?: Prisma.XOR<Prisma.StoreNullableScalarRelationFilter, Prisma.StoreWhereInput> | null
+  category?: Prisma.XOR<Prisma.CategoryScalarRelationFilter, Prisma.CategoryWhereInput>
   cartItems?: Prisma.CartItemListRelationFilter
   orderItems?: Prisma.OrderItemListRelationFilter
   orders?: Prisma.OrderListRelationFilter
@@ -434,11 +447,11 @@ export type ProductOrderByWithAggregationInput = {
   discountPrice?: Prisma.SortOrderInput | Prisma.SortOrder
   brand?: Prisma.SortOrderInput | Prisma.SortOrder
   images?: Prisma.SortOrder
-  category?: Prisma.SortOrderInput | Prisma.SortOrder
   subcategory?: Prisma.SortOrderInput | Prisma.SortOrder
   colors?: Prisma.SortOrder
   sizes?: Prisma.SortOrder
   tags?: Prisma.SortOrder
+  categoryName?: Prisma.SortOrderInput | Prisma.SortOrder
   stock?: Prisma.SortOrder
   rating?: Prisma.SortOrder
   reviewCount?: Prisma.SortOrder
@@ -446,6 +459,7 @@ export type ProductOrderByWithAggregationInput = {
   isTrending?: Prisma.SortOrder
   status?: Prisma.SortOrder
   storeId?: Prisma.SortOrderInput | Prisma.SortOrder
+  categoryId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.ProductCountOrderByAggregateInput
@@ -467,11 +481,11 @@ export type ProductScalarWhereWithAggregatesInput = {
   discountPrice?: Prisma.FloatNullableWithAggregatesFilter<"Product"> | number | null
   brand?: Prisma.StringNullableWithAggregatesFilter<"Product"> | string | null
   images?: Prisma.StringNullableListFilter<"Product">
-  category?: Prisma.StringNullableWithAggregatesFilter<"Product"> | string | null
   subcategory?: Prisma.StringNullableWithAggregatesFilter<"Product"> | string | null
   colors?: Prisma.StringNullableListFilter<"Product">
   sizes?: Prisma.StringNullableListFilter<"Product">
   tags?: Prisma.StringNullableListFilter<"Product">
+  categoryName?: Prisma.StringNullableWithAggregatesFilter<"Product"> | string | null
   stock?: Prisma.IntWithAggregatesFilter<"Product"> | number
   rating?: Prisma.FloatWithAggregatesFilter<"Product"> | number
   reviewCount?: Prisma.IntWithAggregatesFilter<"Product"> | number
@@ -479,6 +493,7 @@ export type ProductScalarWhereWithAggregatesInput = {
   isTrending?: Prisma.BoolWithAggregatesFilter<"Product"> | boolean
   status?: Prisma.EnumProductStatusWithAggregatesFilter<"Product"> | $Enums.ProductStatus
   storeId?: Prisma.StringNullableWithAggregatesFilter<"Product"> | string | null
+  categoryId?: Prisma.StringWithAggregatesFilter<"Product"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Product"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Product"> | Date | string
 }
@@ -492,11 +507,11 @@ export type ProductCreateInput = {
   discountPrice?: number | null
   brand?: string | null
   images?: Prisma.ProductCreateimagesInput | string[]
-  category?: string | null
   subcategory?: string | null
   colors?: Prisma.ProductCreatecolorsInput | string[]
   sizes?: Prisma.ProductCreatesizesInput | string[]
   tags?: Prisma.ProductCreatetagsInput | string[]
+  categoryName?: string | null
   stock?: number
   rating?: number
   reviewCount?: number
@@ -506,6 +521,7 @@ export type ProductCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   store?: Prisma.StoreCreateNestedOneWithoutProductsInput
+  category: Prisma.CategoryCreateNestedOneWithoutProductsInput
   cartItems?: Prisma.CartItemCreateNestedManyWithoutProductInput
   orderItems?: Prisma.OrderItemCreateNestedManyWithoutProductInput
   orders?: Prisma.OrderCreateNestedManyWithoutProductInput
@@ -522,11 +538,11 @@ export type ProductUncheckedCreateInput = {
   discountPrice?: number | null
   brand?: string | null
   images?: Prisma.ProductCreateimagesInput | string[]
-  category?: string | null
   subcategory?: string | null
   colors?: Prisma.ProductCreatecolorsInput | string[]
   sizes?: Prisma.ProductCreatesizesInput | string[]
   tags?: Prisma.ProductCreatetagsInput | string[]
+  categoryName?: string | null
   stock?: number
   rating?: number
   reviewCount?: number
@@ -534,6 +550,7 @@ export type ProductUncheckedCreateInput = {
   isTrending?: boolean
   status?: $Enums.ProductStatus
   storeId?: string | null
+  categoryId: string
   createdAt?: Date | string
   updatedAt?: Date | string
   cartItems?: Prisma.CartItemUncheckedCreateNestedManyWithoutProductInput
@@ -552,11 +569,11 @@ export type ProductUpdateInput = {
   discountPrice?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.ProductUpdateimagesInput | string[]
-  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subcategory?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   colors?: Prisma.ProductUpdatecolorsInput | string[]
   sizes?: Prisma.ProductUpdatesizesInput | string[]
   tags?: Prisma.ProductUpdatetagsInput | string[]
+  categoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -566,6 +583,7 @@ export type ProductUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   store?: Prisma.StoreUpdateOneWithoutProductsNestedInput
+  category?: Prisma.CategoryUpdateOneRequiredWithoutProductsNestedInput
   cartItems?: Prisma.CartItemUpdateManyWithoutProductNestedInput
   orderItems?: Prisma.OrderItemUpdateManyWithoutProductNestedInput
   orders?: Prisma.OrderUpdateManyWithoutProductNestedInput
@@ -582,11 +600,11 @@ export type ProductUncheckedUpdateInput = {
   discountPrice?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.ProductUpdateimagesInput | string[]
-  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subcategory?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   colors?: Prisma.ProductUpdatecolorsInput | string[]
   sizes?: Prisma.ProductUpdatesizesInput | string[]
   tags?: Prisma.ProductUpdatetagsInput | string[]
+  categoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -594,6 +612,7 @@ export type ProductUncheckedUpdateInput = {
   isTrending?: Prisma.BoolFieldUpdateOperationsInput | boolean
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   storeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   cartItems?: Prisma.CartItemUncheckedUpdateManyWithoutProductNestedInput
@@ -612,11 +631,11 @@ export type ProductCreateManyInput = {
   discountPrice?: number | null
   brand?: string | null
   images?: Prisma.ProductCreateimagesInput | string[]
-  category?: string | null
   subcategory?: string | null
   colors?: Prisma.ProductCreatecolorsInput | string[]
   sizes?: Prisma.ProductCreatesizesInput | string[]
   tags?: Prisma.ProductCreatetagsInput | string[]
+  categoryName?: string | null
   stock?: number
   rating?: number
   reviewCount?: number
@@ -624,6 +643,7 @@ export type ProductCreateManyInput = {
   isTrending?: boolean
   status?: $Enums.ProductStatus
   storeId?: string | null
+  categoryId: string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -637,11 +657,11 @@ export type ProductUpdateManyMutationInput = {
   discountPrice?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.ProductUpdateimagesInput | string[]
-  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subcategory?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   colors?: Prisma.ProductUpdatecolorsInput | string[]
   sizes?: Prisma.ProductUpdatesizesInput | string[]
   tags?: Prisma.ProductUpdatetagsInput | string[]
+  categoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -661,11 +681,11 @@ export type ProductUncheckedUpdateManyInput = {
   discountPrice?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.ProductUpdateimagesInput | string[]
-  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subcategory?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   colors?: Prisma.ProductUpdatecolorsInput | string[]
   sizes?: Prisma.ProductUpdatesizesInput | string[]
   tags?: Prisma.ProductUpdatetagsInput | string[]
+  categoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -673,6 +693,7 @@ export type ProductUncheckedUpdateManyInput = {
   isTrending?: Prisma.BoolFieldUpdateOperationsInput | boolean
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   storeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -704,11 +725,11 @@ export type ProductCountOrderByAggregateInput = {
   discountPrice?: Prisma.SortOrder
   brand?: Prisma.SortOrder
   images?: Prisma.SortOrder
-  category?: Prisma.SortOrder
   subcategory?: Prisma.SortOrder
   colors?: Prisma.SortOrder
   sizes?: Prisma.SortOrder
   tags?: Prisma.SortOrder
+  categoryName?: Prisma.SortOrder
   stock?: Prisma.SortOrder
   rating?: Prisma.SortOrder
   reviewCount?: Prisma.SortOrder
@@ -716,6 +737,7 @@ export type ProductCountOrderByAggregateInput = {
   isTrending?: Prisma.SortOrder
   status?: Prisma.SortOrder
   storeId?: Prisma.SortOrder
+  categoryId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -736,8 +758,8 @@ export type ProductMaxOrderByAggregateInput = {
   price?: Prisma.SortOrder
   discountPrice?: Prisma.SortOrder
   brand?: Prisma.SortOrder
-  category?: Prisma.SortOrder
   subcategory?: Prisma.SortOrder
+  categoryName?: Prisma.SortOrder
   stock?: Prisma.SortOrder
   rating?: Prisma.SortOrder
   reviewCount?: Prisma.SortOrder
@@ -745,6 +767,7 @@ export type ProductMaxOrderByAggregateInput = {
   isTrending?: Prisma.SortOrder
   status?: Prisma.SortOrder
   storeId?: Prisma.SortOrder
+  categoryId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -757,8 +780,8 @@ export type ProductMinOrderByAggregateInput = {
   price?: Prisma.SortOrder
   discountPrice?: Prisma.SortOrder
   brand?: Prisma.SortOrder
-  category?: Prisma.SortOrder
   subcategory?: Prisma.SortOrder
+  categoryName?: Prisma.SortOrder
   stock?: Prisma.SortOrder
   rating?: Prisma.SortOrder
   reviewCount?: Prisma.SortOrder
@@ -766,6 +789,7 @@ export type ProductMinOrderByAggregateInput = {
   isTrending?: Prisma.SortOrder
   status?: Prisma.SortOrder
   storeId?: Prisma.SortOrder
+  categoryId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -889,6 +913,48 @@ export type EnumProductStatusFieldUpdateOperationsInput = {
   set?: $Enums.ProductStatus
 }
 
+export type ProductCreateNestedManyWithoutCategoryInput = {
+  create?: Prisma.XOR<Prisma.ProductCreateWithoutCategoryInput, Prisma.ProductUncheckedCreateWithoutCategoryInput> | Prisma.ProductCreateWithoutCategoryInput[] | Prisma.ProductUncheckedCreateWithoutCategoryInput[]
+  connectOrCreate?: Prisma.ProductCreateOrConnectWithoutCategoryInput | Prisma.ProductCreateOrConnectWithoutCategoryInput[]
+  createMany?: Prisma.ProductCreateManyCategoryInputEnvelope
+  connect?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[]
+}
+
+export type ProductUncheckedCreateNestedManyWithoutCategoryInput = {
+  create?: Prisma.XOR<Prisma.ProductCreateWithoutCategoryInput, Prisma.ProductUncheckedCreateWithoutCategoryInput> | Prisma.ProductCreateWithoutCategoryInput[] | Prisma.ProductUncheckedCreateWithoutCategoryInput[]
+  connectOrCreate?: Prisma.ProductCreateOrConnectWithoutCategoryInput | Prisma.ProductCreateOrConnectWithoutCategoryInput[]
+  createMany?: Prisma.ProductCreateManyCategoryInputEnvelope
+  connect?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[]
+}
+
+export type ProductUpdateManyWithoutCategoryNestedInput = {
+  create?: Prisma.XOR<Prisma.ProductCreateWithoutCategoryInput, Prisma.ProductUncheckedCreateWithoutCategoryInput> | Prisma.ProductCreateWithoutCategoryInput[] | Prisma.ProductUncheckedCreateWithoutCategoryInput[]
+  connectOrCreate?: Prisma.ProductCreateOrConnectWithoutCategoryInput | Prisma.ProductCreateOrConnectWithoutCategoryInput[]
+  upsert?: Prisma.ProductUpsertWithWhereUniqueWithoutCategoryInput | Prisma.ProductUpsertWithWhereUniqueWithoutCategoryInput[]
+  createMany?: Prisma.ProductCreateManyCategoryInputEnvelope
+  set?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[]
+  disconnect?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[]
+  delete?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[]
+  connect?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[]
+  update?: Prisma.ProductUpdateWithWhereUniqueWithoutCategoryInput | Prisma.ProductUpdateWithWhereUniqueWithoutCategoryInput[]
+  updateMany?: Prisma.ProductUpdateManyWithWhereWithoutCategoryInput | Prisma.ProductUpdateManyWithWhereWithoutCategoryInput[]
+  deleteMany?: Prisma.ProductScalarWhereInput | Prisma.ProductScalarWhereInput[]
+}
+
+export type ProductUncheckedUpdateManyWithoutCategoryNestedInput = {
+  create?: Prisma.XOR<Prisma.ProductCreateWithoutCategoryInput, Prisma.ProductUncheckedCreateWithoutCategoryInput> | Prisma.ProductCreateWithoutCategoryInput[] | Prisma.ProductUncheckedCreateWithoutCategoryInput[]
+  connectOrCreate?: Prisma.ProductCreateOrConnectWithoutCategoryInput | Prisma.ProductCreateOrConnectWithoutCategoryInput[]
+  upsert?: Prisma.ProductUpsertWithWhereUniqueWithoutCategoryInput | Prisma.ProductUpsertWithWhereUniqueWithoutCategoryInput[]
+  createMany?: Prisma.ProductCreateManyCategoryInputEnvelope
+  set?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[]
+  disconnect?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[]
+  delete?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[]
+  connect?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[]
+  update?: Prisma.ProductUpdateWithWhereUniqueWithoutCategoryInput | Prisma.ProductUpdateWithWhereUniqueWithoutCategoryInput[]
+  updateMany?: Prisma.ProductUpdateManyWithWhereWithoutCategoryInput | Prisma.ProductUpdateManyWithWhereWithoutCategoryInput[]
+  deleteMany?: Prisma.ProductScalarWhereInput | Prisma.ProductScalarWhereInput[]
+}
+
 export type ProductCreateNestedOneWithoutCartItemsInput = {
   create?: Prisma.XOR<Prisma.ProductCreateWithoutCartItemsInput, Prisma.ProductUncheckedCreateWithoutCartItemsInput>
   connectOrCreate?: Prisma.ProductCreateOrConnectWithoutCartItemsInput
@@ -968,11 +1034,11 @@ export type ProductCreateWithoutStoreInput = {
   discountPrice?: number | null
   brand?: string | null
   images?: Prisma.ProductCreateimagesInput | string[]
-  category?: string | null
   subcategory?: string | null
   colors?: Prisma.ProductCreatecolorsInput | string[]
   sizes?: Prisma.ProductCreatesizesInput | string[]
   tags?: Prisma.ProductCreatetagsInput | string[]
+  categoryName?: string | null
   stock?: number
   rating?: number
   reviewCount?: number
@@ -981,6 +1047,7 @@ export type ProductCreateWithoutStoreInput = {
   status?: $Enums.ProductStatus
   createdAt?: Date | string
   updatedAt?: Date | string
+  category: Prisma.CategoryCreateNestedOneWithoutProductsInput
   cartItems?: Prisma.CartItemCreateNestedManyWithoutProductInput
   orderItems?: Prisma.OrderItemCreateNestedManyWithoutProductInput
   orders?: Prisma.OrderCreateNestedManyWithoutProductInput
@@ -997,17 +1064,18 @@ export type ProductUncheckedCreateWithoutStoreInput = {
   discountPrice?: number | null
   brand?: string | null
   images?: Prisma.ProductCreateimagesInput | string[]
-  category?: string | null
   subcategory?: string | null
   colors?: Prisma.ProductCreatecolorsInput | string[]
   sizes?: Prisma.ProductCreatesizesInput | string[]
   tags?: Prisma.ProductCreatetagsInput | string[]
+  categoryName?: string | null
   stock?: number
   rating?: number
   reviewCount?: number
   isFeatured?: boolean
   isTrending?: boolean
   status?: $Enums.ProductStatus
+  categoryId: string
   createdAt?: Date | string
   updatedAt?: Date | string
   cartItems?: Prisma.CartItemUncheckedCreateNestedManyWithoutProductInput
@@ -1055,11 +1123,11 @@ export type ProductScalarWhereInput = {
   discountPrice?: Prisma.FloatNullableFilter<"Product"> | number | null
   brand?: Prisma.StringNullableFilter<"Product"> | string | null
   images?: Prisma.StringNullableListFilter<"Product">
-  category?: Prisma.StringNullableFilter<"Product"> | string | null
   subcategory?: Prisma.StringNullableFilter<"Product"> | string | null
   colors?: Prisma.StringNullableListFilter<"Product">
   sizes?: Prisma.StringNullableListFilter<"Product">
   tags?: Prisma.StringNullableListFilter<"Product">
+  categoryName?: Prisma.StringNullableFilter<"Product"> | string | null
   stock?: Prisma.IntFilter<"Product"> | number
   rating?: Prisma.FloatFilter<"Product"> | number
   reviewCount?: Prisma.IntFilter<"Product"> | number
@@ -1067,8 +1135,95 @@ export type ProductScalarWhereInput = {
   isTrending?: Prisma.BoolFilter<"Product"> | boolean
   status?: Prisma.EnumProductStatusFilter<"Product"> | $Enums.ProductStatus
   storeId?: Prisma.StringNullableFilter<"Product"> | string | null
+  categoryId?: Prisma.StringFilter<"Product"> | string
   createdAt?: Prisma.DateTimeFilter<"Product"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Product"> | Date | string
+}
+
+export type ProductCreateWithoutCategoryInput = {
+  id?: string
+  name: string
+  slug?: string | null
+  description?: string | null
+  price: number
+  discountPrice?: number | null
+  brand?: string | null
+  images?: Prisma.ProductCreateimagesInput | string[]
+  subcategory?: string | null
+  colors?: Prisma.ProductCreatecolorsInput | string[]
+  sizes?: Prisma.ProductCreatesizesInput | string[]
+  tags?: Prisma.ProductCreatetagsInput | string[]
+  categoryName?: string | null
+  stock?: number
+  rating?: number
+  reviewCount?: number
+  isFeatured?: boolean
+  isTrending?: boolean
+  status?: $Enums.ProductStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  store?: Prisma.StoreCreateNestedOneWithoutProductsInput
+  cartItems?: Prisma.CartItemCreateNestedManyWithoutProductInput
+  orderItems?: Prisma.OrderItemCreateNestedManyWithoutProductInput
+  orders?: Prisma.OrderCreateNestedManyWithoutProductInput
+  favorites?: Prisma.FavoriteCreateNestedManyWithoutProductInput
+  productEmbedding?: Prisma.ProductEmbeddingCreateNestedOneWithoutProductInput
+}
+
+export type ProductUncheckedCreateWithoutCategoryInput = {
+  id?: string
+  name: string
+  slug?: string | null
+  description?: string | null
+  price: number
+  discountPrice?: number | null
+  brand?: string | null
+  images?: Prisma.ProductCreateimagesInput | string[]
+  subcategory?: string | null
+  colors?: Prisma.ProductCreatecolorsInput | string[]
+  sizes?: Prisma.ProductCreatesizesInput | string[]
+  tags?: Prisma.ProductCreatetagsInput | string[]
+  categoryName?: string | null
+  stock?: number
+  rating?: number
+  reviewCount?: number
+  isFeatured?: boolean
+  isTrending?: boolean
+  status?: $Enums.ProductStatus
+  storeId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  cartItems?: Prisma.CartItemUncheckedCreateNestedManyWithoutProductInput
+  orderItems?: Prisma.OrderItemUncheckedCreateNestedManyWithoutProductInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutProductInput
+  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProductInput
+  productEmbedding?: Prisma.ProductEmbeddingUncheckedCreateNestedOneWithoutProductInput
+}
+
+export type ProductCreateOrConnectWithoutCategoryInput = {
+  where: Prisma.ProductWhereUniqueInput
+  create: Prisma.XOR<Prisma.ProductCreateWithoutCategoryInput, Prisma.ProductUncheckedCreateWithoutCategoryInput>
+}
+
+export type ProductCreateManyCategoryInputEnvelope = {
+  data: Prisma.ProductCreateManyCategoryInput | Prisma.ProductCreateManyCategoryInput[]
+  skipDuplicates?: boolean
+}
+
+export type ProductUpsertWithWhereUniqueWithoutCategoryInput = {
+  where: Prisma.ProductWhereUniqueInput
+  update: Prisma.XOR<Prisma.ProductUpdateWithoutCategoryInput, Prisma.ProductUncheckedUpdateWithoutCategoryInput>
+  create: Prisma.XOR<Prisma.ProductCreateWithoutCategoryInput, Prisma.ProductUncheckedCreateWithoutCategoryInput>
+}
+
+export type ProductUpdateWithWhereUniqueWithoutCategoryInput = {
+  where: Prisma.ProductWhereUniqueInput
+  data: Prisma.XOR<Prisma.ProductUpdateWithoutCategoryInput, Prisma.ProductUncheckedUpdateWithoutCategoryInput>
+}
+
+export type ProductUpdateManyWithWhereWithoutCategoryInput = {
+  where: Prisma.ProductScalarWhereInput
+  data: Prisma.XOR<Prisma.ProductUpdateManyMutationInput, Prisma.ProductUncheckedUpdateManyWithoutCategoryInput>
 }
 
 export type ProductCreateWithoutCartItemsInput = {
@@ -1080,11 +1235,11 @@ export type ProductCreateWithoutCartItemsInput = {
   discountPrice?: number | null
   brand?: string | null
   images?: Prisma.ProductCreateimagesInput | string[]
-  category?: string | null
   subcategory?: string | null
   colors?: Prisma.ProductCreatecolorsInput | string[]
   sizes?: Prisma.ProductCreatesizesInput | string[]
   tags?: Prisma.ProductCreatetagsInput | string[]
+  categoryName?: string | null
   stock?: number
   rating?: number
   reviewCount?: number
@@ -1094,6 +1249,7 @@ export type ProductCreateWithoutCartItemsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   store?: Prisma.StoreCreateNestedOneWithoutProductsInput
+  category: Prisma.CategoryCreateNestedOneWithoutProductsInput
   orderItems?: Prisma.OrderItemCreateNestedManyWithoutProductInput
   orders?: Prisma.OrderCreateNestedManyWithoutProductInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProductInput
@@ -1109,11 +1265,11 @@ export type ProductUncheckedCreateWithoutCartItemsInput = {
   discountPrice?: number | null
   brand?: string | null
   images?: Prisma.ProductCreateimagesInput | string[]
-  category?: string | null
   subcategory?: string | null
   colors?: Prisma.ProductCreatecolorsInput | string[]
   sizes?: Prisma.ProductCreatesizesInput | string[]
   tags?: Prisma.ProductCreatetagsInput | string[]
+  categoryName?: string | null
   stock?: number
   rating?: number
   reviewCount?: number
@@ -1121,6 +1277,7 @@ export type ProductUncheckedCreateWithoutCartItemsInput = {
   isTrending?: boolean
   status?: $Enums.ProductStatus
   storeId?: string | null
+  categoryId: string
   createdAt?: Date | string
   updatedAt?: Date | string
   orderItems?: Prisma.OrderItemUncheckedCreateNestedManyWithoutProductInput
@@ -1154,11 +1311,11 @@ export type ProductUpdateWithoutCartItemsInput = {
   discountPrice?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.ProductUpdateimagesInput | string[]
-  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subcategory?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   colors?: Prisma.ProductUpdatecolorsInput | string[]
   sizes?: Prisma.ProductUpdatesizesInput | string[]
   tags?: Prisma.ProductUpdatetagsInput | string[]
+  categoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1168,6 +1325,7 @@ export type ProductUpdateWithoutCartItemsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   store?: Prisma.StoreUpdateOneWithoutProductsNestedInput
+  category?: Prisma.CategoryUpdateOneRequiredWithoutProductsNestedInput
   orderItems?: Prisma.OrderItemUpdateManyWithoutProductNestedInput
   orders?: Prisma.OrderUpdateManyWithoutProductNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProductNestedInput
@@ -1183,11 +1341,11 @@ export type ProductUncheckedUpdateWithoutCartItemsInput = {
   discountPrice?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.ProductUpdateimagesInput | string[]
-  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subcategory?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   colors?: Prisma.ProductUpdatecolorsInput | string[]
   sizes?: Prisma.ProductUpdatesizesInput | string[]
   tags?: Prisma.ProductUpdatetagsInput | string[]
+  categoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1195,6 +1353,7 @@ export type ProductUncheckedUpdateWithoutCartItemsInput = {
   isTrending?: Prisma.BoolFieldUpdateOperationsInput | boolean
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   storeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orderItems?: Prisma.OrderItemUncheckedUpdateManyWithoutProductNestedInput
@@ -1212,11 +1371,11 @@ export type ProductCreateWithoutOrdersInput = {
   discountPrice?: number | null
   brand?: string | null
   images?: Prisma.ProductCreateimagesInput | string[]
-  category?: string | null
   subcategory?: string | null
   colors?: Prisma.ProductCreatecolorsInput | string[]
   sizes?: Prisma.ProductCreatesizesInput | string[]
   tags?: Prisma.ProductCreatetagsInput | string[]
+  categoryName?: string | null
   stock?: number
   rating?: number
   reviewCount?: number
@@ -1226,6 +1385,7 @@ export type ProductCreateWithoutOrdersInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   store?: Prisma.StoreCreateNestedOneWithoutProductsInput
+  category: Prisma.CategoryCreateNestedOneWithoutProductsInput
   cartItems?: Prisma.CartItemCreateNestedManyWithoutProductInput
   orderItems?: Prisma.OrderItemCreateNestedManyWithoutProductInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProductInput
@@ -1241,11 +1401,11 @@ export type ProductUncheckedCreateWithoutOrdersInput = {
   discountPrice?: number | null
   brand?: string | null
   images?: Prisma.ProductCreateimagesInput | string[]
-  category?: string | null
   subcategory?: string | null
   colors?: Prisma.ProductCreatecolorsInput | string[]
   sizes?: Prisma.ProductCreatesizesInput | string[]
   tags?: Prisma.ProductCreatetagsInput | string[]
+  categoryName?: string | null
   stock?: number
   rating?: number
   reviewCount?: number
@@ -1253,6 +1413,7 @@ export type ProductUncheckedCreateWithoutOrdersInput = {
   isTrending?: boolean
   status?: $Enums.ProductStatus
   storeId?: string | null
+  categoryId: string
   createdAt?: Date | string
   updatedAt?: Date | string
   cartItems?: Prisma.CartItemUncheckedCreateNestedManyWithoutProductInput
@@ -1286,11 +1447,11 @@ export type ProductUpdateWithoutOrdersInput = {
   discountPrice?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.ProductUpdateimagesInput | string[]
-  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subcategory?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   colors?: Prisma.ProductUpdatecolorsInput | string[]
   sizes?: Prisma.ProductUpdatesizesInput | string[]
   tags?: Prisma.ProductUpdatetagsInput | string[]
+  categoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1300,6 +1461,7 @@ export type ProductUpdateWithoutOrdersInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   store?: Prisma.StoreUpdateOneWithoutProductsNestedInput
+  category?: Prisma.CategoryUpdateOneRequiredWithoutProductsNestedInput
   cartItems?: Prisma.CartItemUpdateManyWithoutProductNestedInput
   orderItems?: Prisma.OrderItemUpdateManyWithoutProductNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProductNestedInput
@@ -1315,11 +1477,11 @@ export type ProductUncheckedUpdateWithoutOrdersInput = {
   discountPrice?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.ProductUpdateimagesInput | string[]
-  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subcategory?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   colors?: Prisma.ProductUpdatecolorsInput | string[]
   sizes?: Prisma.ProductUpdatesizesInput | string[]
   tags?: Prisma.ProductUpdatetagsInput | string[]
+  categoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1327,6 +1489,7 @@ export type ProductUncheckedUpdateWithoutOrdersInput = {
   isTrending?: Prisma.BoolFieldUpdateOperationsInput | boolean
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   storeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   cartItems?: Prisma.CartItemUncheckedUpdateManyWithoutProductNestedInput
@@ -1344,11 +1507,11 @@ export type ProductCreateWithoutOrderItemsInput = {
   discountPrice?: number | null
   brand?: string | null
   images?: Prisma.ProductCreateimagesInput | string[]
-  category?: string | null
   subcategory?: string | null
   colors?: Prisma.ProductCreatecolorsInput | string[]
   sizes?: Prisma.ProductCreatesizesInput | string[]
   tags?: Prisma.ProductCreatetagsInput | string[]
+  categoryName?: string | null
   stock?: number
   rating?: number
   reviewCount?: number
@@ -1358,6 +1521,7 @@ export type ProductCreateWithoutOrderItemsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   store?: Prisma.StoreCreateNestedOneWithoutProductsInput
+  category: Prisma.CategoryCreateNestedOneWithoutProductsInput
   cartItems?: Prisma.CartItemCreateNestedManyWithoutProductInput
   orders?: Prisma.OrderCreateNestedManyWithoutProductInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProductInput
@@ -1373,11 +1537,11 @@ export type ProductUncheckedCreateWithoutOrderItemsInput = {
   discountPrice?: number | null
   brand?: string | null
   images?: Prisma.ProductCreateimagesInput | string[]
-  category?: string | null
   subcategory?: string | null
   colors?: Prisma.ProductCreatecolorsInput | string[]
   sizes?: Prisma.ProductCreatesizesInput | string[]
   tags?: Prisma.ProductCreatetagsInput | string[]
+  categoryName?: string | null
   stock?: number
   rating?: number
   reviewCount?: number
@@ -1385,6 +1549,7 @@ export type ProductUncheckedCreateWithoutOrderItemsInput = {
   isTrending?: boolean
   status?: $Enums.ProductStatus
   storeId?: string | null
+  categoryId: string
   createdAt?: Date | string
   updatedAt?: Date | string
   cartItems?: Prisma.CartItemUncheckedCreateNestedManyWithoutProductInput
@@ -1418,11 +1583,11 @@ export type ProductUpdateWithoutOrderItemsInput = {
   discountPrice?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.ProductUpdateimagesInput | string[]
-  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subcategory?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   colors?: Prisma.ProductUpdatecolorsInput | string[]
   sizes?: Prisma.ProductUpdatesizesInput | string[]
   tags?: Prisma.ProductUpdatetagsInput | string[]
+  categoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1432,6 +1597,7 @@ export type ProductUpdateWithoutOrderItemsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   store?: Prisma.StoreUpdateOneWithoutProductsNestedInput
+  category?: Prisma.CategoryUpdateOneRequiredWithoutProductsNestedInput
   cartItems?: Prisma.CartItemUpdateManyWithoutProductNestedInput
   orders?: Prisma.OrderUpdateManyWithoutProductNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProductNestedInput
@@ -1447,11 +1613,11 @@ export type ProductUncheckedUpdateWithoutOrderItemsInput = {
   discountPrice?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.ProductUpdateimagesInput | string[]
-  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subcategory?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   colors?: Prisma.ProductUpdatecolorsInput | string[]
   sizes?: Prisma.ProductUpdatesizesInput | string[]
   tags?: Prisma.ProductUpdatetagsInput | string[]
+  categoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1459,6 +1625,7 @@ export type ProductUncheckedUpdateWithoutOrderItemsInput = {
   isTrending?: Prisma.BoolFieldUpdateOperationsInput | boolean
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   storeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   cartItems?: Prisma.CartItemUncheckedUpdateManyWithoutProductNestedInput
@@ -1476,11 +1643,11 @@ export type ProductCreateWithoutProductEmbeddingInput = {
   discountPrice?: number | null
   brand?: string | null
   images?: Prisma.ProductCreateimagesInput | string[]
-  category?: string | null
   subcategory?: string | null
   colors?: Prisma.ProductCreatecolorsInput | string[]
   sizes?: Prisma.ProductCreatesizesInput | string[]
   tags?: Prisma.ProductCreatetagsInput | string[]
+  categoryName?: string | null
   stock?: number
   rating?: number
   reviewCount?: number
@@ -1490,6 +1657,7 @@ export type ProductCreateWithoutProductEmbeddingInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   store?: Prisma.StoreCreateNestedOneWithoutProductsInput
+  category: Prisma.CategoryCreateNestedOneWithoutProductsInput
   cartItems?: Prisma.CartItemCreateNestedManyWithoutProductInput
   orderItems?: Prisma.OrderItemCreateNestedManyWithoutProductInput
   orders?: Prisma.OrderCreateNestedManyWithoutProductInput
@@ -1505,11 +1673,11 @@ export type ProductUncheckedCreateWithoutProductEmbeddingInput = {
   discountPrice?: number | null
   brand?: string | null
   images?: Prisma.ProductCreateimagesInput | string[]
-  category?: string | null
   subcategory?: string | null
   colors?: Prisma.ProductCreatecolorsInput | string[]
   sizes?: Prisma.ProductCreatesizesInput | string[]
   tags?: Prisma.ProductCreatetagsInput | string[]
+  categoryName?: string | null
   stock?: number
   rating?: number
   reviewCount?: number
@@ -1517,6 +1685,7 @@ export type ProductUncheckedCreateWithoutProductEmbeddingInput = {
   isTrending?: boolean
   status?: $Enums.ProductStatus
   storeId?: string | null
+  categoryId: string
   createdAt?: Date | string
   updatedAt?: Date | string
   cartItems?: Prisma.CartItemUncheckedCreateNestedManyWithoutProductInput
@@ -1550,11 +1719,11 @@ export type ProductUpdateWithoutProductEmbeddingInput = {
   discountPrice?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.ProductUpdateimagesInput | string[]
-  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subcategory?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   colors?: Prisma.ProductUpdatecolorsInput | string[]
   sizes?: Prisma.ProductUpdatesizesInput | string[]
   tags?: Prisma.ProductUpdatetagsInput | string[]
+  categoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1564,6 +1733,7 @@ export type ProductUpdateWithoutProductEmbeddingInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   store?: Prisma.StoreUpdateOneWithoutProductsNestedInput
+  category?: Prisma.CategoryUpdateOneRequiredWithoutProductsNestedInput
   cartItems?: Prisma.CartItemUpdateManyWithoutProductNestedInput
   orderItems?: Prisma.OrderItemUpdateManyWithoutProductNestedInput
   orders?: Prisma.OrderUpdateManyWithoutProductNestedInput
@@ -1579,11 +1749,11 @@ export type ProductUncheckedUpdateWithoutProductEmbeddingInput = {
   discountPrice?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.ProductUpdateimagesInput | string[]
-  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subcategory?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   colors?: Prisma.ProductUpdatecolorsInput | string[]
   sizes?: Prisma.ProductUpdatesizesInput | string[]
   tags?: Prisma.ProductUpdatetagsInput | string[]
+  categoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1591,6 +1761,7 @@ export type ProductUncheckedUpdateWithoutProductEmbeddingInput = {
   isTrending?: Prisma.BoolFieldUpdateOperationsInput | boolean
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   storeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   cartItems?: Prisma.CartItemUncheckedUpdateManyWithoutProductNestedInput
@@ -1608,11 +1779,11 @@ export type ProductCreateWithoutFavoritesInput = {
   discountPrice?: number | null
   brand?: string | null
   images?: Prisma.ProductCreateimagesInput | string[]
-  category?: string | null
   subcategory?: string | null
   colors?: Prisma.ProductCreatecolorsInput | string[]
   sizes?: Prisma.ProductCreatesizesInput | string[]
   tags?: Prisma.ProductCreatetagsInput | string[]
+  categoryName?: string | null
   stock?: number
   rating?: number
   reviewCount?: number
@@ -1622,6 +1793,7 @@ export type ProductCreateWithoutFavoritesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   store?: Prisma.StoreCreateNestedOneWithoutProductsInput
+  category: Prisma.CategoryCreateNestedOneWithoutProductsInput
   cartItems?: Prisma.CartItemCreateNestedManyWithoutProductInput
   orderItems?: Prisma.OrderItemCreateNestedManyWithoutProductInput
   orders?: Prisma.OrderCreateNestedManyWithoutProductInput
@@ -1637,11 +1809,11 @@ export type ProductUncheckedCreateWithoutFavoritesInput = {
   discountPrice?: number | null
   brand?: string | null
   images?: Prisma.ProductCreateimagesInput | string[]
-  category?: string | null
   subcategory?: string | null
   colors?: Prisma.ProductCreatecolorsInput | string[]
   sizes?: Prisma.ProductCreatesizesInput | string[]
   tags?: Prisma.ProductCreatetagsInput | string[]
+  categoryName?: string | null
   stock?: number
   rating?: number
   reviewCount?: number
@@ -1649,6 +1821,7 @@ export type ProductUncheckedCreateWithoutFavoritesInput = {
   isTrending?: boolean
   status?: $Enums.ProductStatus
   storeId?: string | null
+  categoryId: string
   createdAt?: Date | string
   updatedAt?: Date | string
   cartItems?: Prisma.CartItemUncheckedCreateNestedManyWithoutProductInput
@@ -1682,11 +1855,11 @@ export type ProductUpdateWithoutFavoritesInput = {
   discountPrice?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.ProductUpdateimagesInput | string[]
-  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subcategory?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   colors?: Prisma.ProductUpdatecolorsInput | string[]
   sizes?: Prisma.ProductUpdatesizesInput | string[]
   tags?: Prisma.ProductUpdatetagsInput | string[]
+  categoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1696,6 +1869,7 @@ export type ProductUpdateWithoutFavoritesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   store?: Prisma.StoreUpdateOneWithoutProductsNestedInput
+  category?: Prisma.CategoryUpdateOneRequiredWithoutProductsNestedInput
   cartItems?: Prisma.CartItemUpdateManyWithoutProductNestedInput
   orderItems?: Prisma.OrderItemUpdateManyWithoutProductNestedInput
   orders?: Prisma.OrderUpdateManyWithoutProductNestedInput
@@ -1711,11 +1885,11 @@ export type ProductUncheckedUpdateWithoutFavoritesInput = {
   discountPrice?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.ProductUpdateimagesInput | string[]
-  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subcategory?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   colors?: Prisma.ProductUpdatecolorsInput | string[]
   sizes?: Prisma.ProductUpdatesizesInput | string[]
   tags?: Prisma.ProductUpdatetagsInput | string[]
+  categoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1723,6 +1897,7 @@ export type ProductUncheckedUpdateWithoutFavoritesInput = {
   isTrending?: Prisma.BoolFieldUpdateOperationsInput | boolean
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   storeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   cartItems?: Prisma.CartItemUncheckedUpdateManyWithoutProductNestedInput
@@ -1740,17 +1915,18 @@ export type ProductCreateManyStoreInput = {
   discountPrice?: number | null
   brand?: string | null
   images?: Prisma.ProductCreateimagesInput | string[]
-  category?: string | null
   subcategory?: string | null
   colors?: Prisma.ProductCreatecolorsInput | string[]
   sizes?: Prisma.ProductCreatesizesInput | string[]
   tags?: Prisma.ProductCreatetagsInput | string[]
+  categoryName?: string | null
   stock?: number
   rating?: number
   reviewCount?: number
   isFeatured?: boolean
   isTrending?: boolean
   status?: $Enums.ProductStatus
+  categoryId: string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1764,11 +1940,11 @@ export type ProductUpdateWithoutStoreInput = {
   discountPrice?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.ProductUpdateimagesInput | string[]
-  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subcategory?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   colors?: Prisma.ProductUpdatecolorsInput | string[]
   sizes?: Prisma.ProductUpdatesizesInput | string[]
   tags?: Prisma.ProductUpdatetagsInput | string[]
+  categoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1777,6 +1953,7 @@ export type ProductUpdateWithoutStoreInput = {
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  category?: Prisma.CategoryUpdateOneRequiredWithoutProductsNestedInput
   cartItems?: Prisma.CartItemUpdateManyWithoutProductNestedInput
   orderItems?: Prisma.OrderItemUpdateManyWithoutProductNestedInput
   orders?: Prisma.OrderUpdateManyWithoutProductNestedInput
@@ -1793,17 +1970,18 @@ export type ProductUncheckedUpdateWithoutStoreInput = {
   discountPrice?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.ProductUpdateimagesInput | string[]
-  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subcategory?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   colors?: Prisma.ProductUpdatecolorsInput | string[]
   sizes?: Prisma.ProductUpdatesizesInput | string[]
   tags?: Prisma.ProductUpdatetagsInput | string[]
+  categoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isTrending?: Prisma.BoolFieldUpdateOperationsInput | boolean
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
+  categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   cartItems?: Prisma.CartItemUncheckedUpdateManyWithoutProductNestedInput
@@ -1822,17 +2000,128 @@ export type ProductUncheckedUpdateManyWithoutStoreInput = {
   discountPrice?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.ProductUpdateimagesInput | string[]
-  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subcategory?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   colors?: Prisma.ProductUpdatecolorsInput | string[]
   sizes?: Prisma.ProductUpdatesizesInput | string[]
   tags?: Prisma.ProductUpdatetagsInput | string[]
+  categoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isTrending?: Prisma.BoolFieldUpdateOperationsInput | boolean
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
+  categoryId?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type ProductCreateManyCategoryInput = {
+  id?: string
+  name: string
+  slug?: string | null
+  description?: string | null
+  price: number
+  discountPrice?: number | null
+  brand?: string | null
+  images?: Prisma.ProductCreateimagesInput | string[]
+  subcategory?: string | null
+  colors?: Prisma.ProductCreatecolorsInput | string[]
+  sizes?: Prisma.ProductCreatesizesInput | string[]
+  tags?: Prisma.ProductCreatetagsInput | string[]
+  categoryName?: string | null
+  stock?: number
+  rating?: number
+  reviewCount?: number
+  isFeatured?: boolean
+  isTrending?: boolean
+  status?: $Enums.ProductStatus
+  storeId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type ProductUpdateWithoutCategoryInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  price?: Prisma.FloatFieldUpdateOperationsInput | number
+  discountPrice?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  images?: Prisma.ProductUpdateimagesInput | string[]
+  subcategory?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  colors?: Prisma.ProductUpdatecolorsInput | string[]
+  sizes?: Prisma.ProductUpdatesizesInput | string[]
+  tags?: Prisma.ProductUpdatetagsInput | string[]
+  categoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stock?: Prisma.IntFieldUpdateOperationsInput | number
+  rating?: Prisma.FloatFieldUpdateOperationsInput | number
+  reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
+  isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrending?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  store?: Prisma.StoreUpdateOneWithoutProductsNestedInput
+  cartItems?: Prisma.CartItemUpdateManyWithoutProductNestedInput
+  orderItems?: Prisma.OrderItemUpdateManyWithoutProductNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutProductNestedInput
+  favorites?: Prisma.FavoriteUpdateManyWithoutProductNestedInput
+  productEmbedding?: Prisma.ProductEmbeddingUpdateOneWithoutProductNestedInput
+}
+
+export type ProductUncheckedUpdateWithoutCategoryInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  price?: Prisma.FloatFieldUpdateOperationsInput | number
+  discountPrice?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  images?: Prisma.ProductUpdateimagesInput | string[]
+  subcategory?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  colors?: Prisma.ProductUpdatecolorsInput | string[]
+  sizes?: Prisma.ProductUpdatesizesInput | string[]
+  tags?: Prisma.ProductUpdatetagsInput | string[]
+  categoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stock?: Prisma.IntFieldUpdateOperationsInput | number
+  rating?: Prisma.FloatFieldUpdateOperationsInput | number
+  reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
+  isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrending?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
+  storeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  cartItems?: Prisma.CartItemUncheckedUpdateManyWithoutProductNestedInput
+  orderItems?: Prisma.OrderItemUncheckedUpdateManyWithoutProductNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutProductNestedInput
+  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProductNestedInput
+  productEmbedding?: Prisma.ProductEmbeddingUncheckedUpdateOneWithoutProductNestedInput
+}
+
+export type ProductUncheckedUpdateManyWithoutCategoryInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  price?: Prisma.FloatFieldUpdateOperationsInput | number
+  discountPrice?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  images?: Prisma.ProductUpdateimagesInput | string[]
+  subcategory?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  colors?: Prisma.ProductUpdatecolorsInput | string[]
+  sizes?: Prisma.ProductUpdatesizesInput | string[]
+  tags?: Prisma.ProductUpdatetagsInput | string[]
+  categoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stock?: Prisma.IntFieldUpdateOperationsInput | number
+  rating?: Prisma.FloatFieldUpdateOperationsInput | number
+  reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
+  isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrending?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
+  storeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1904,11 +2193,11 @@ export type ProductSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   discountPrice?: boolean
   brand?: boolean
   images?: boolean
-  category?: boolean
   subcategory?: boolean
   colors?: boolean
   sizes?: boolean
   tags?: boolean
+  categoryName?: boolean
   stock?: boolean
   rating?: boolean
   reviewCount?: boolean
@@ -1916,9 +2205,11 @@ export type ProductSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   isTrending?: boolean
   status?: boolean
   storeId?: boolean
+  categoryId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   store?: boolean | Prisma.Product$storeArgs<ExtArgs>
+  category?: boolean | Prisma.CategoryDefaultArgs<ExtArgs>
   cartItems?: boolean | Prisma.Product$cartItemsArgs<ExtArgs>
   orderItems?: boolean | Prisma.Product$orderItemsArgs<ExtArgs>
   orders?: boolean | Prisma.Product$ordersArgs<ExtArgs>
@@ -1936,11 +2227,11 @@ export type ProductSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   discountPrice?: boolean
   brand?: boolean
   images?: boolean
-  category?: boolean
   subcategory?: boolean
   colors?: boolean
   sizes?: boolean
   tags?: boolean
+  categoryName?: boolean
   stock?: boolean
   rating?: boolean
   reviewCount?: boolean
@@ -1948,9 +2239,11 @@ export type ProductSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   isTrending?: boolean
   status?: boolean
   storeId?: boolean
+  categoryId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   store?: boolean | Prisma.Product$storeArgs<ExtArgs>
+  category?: boolean | Prisma.CategoryDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["product"]>
 
 export type ProductSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1962,11 +2255,11 @@ export type ProductSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   discountPrice?: boolean
   brand?: boolean
   images?: boolean
-  category?: boolean
   subcategory?: boolean
   colors?: boolean
   sizes?: boolean
   tags?: boolean
+  categoryName?: boolean
   stock?: boolean
   rating?: boolean
   reviewCount?: boolean
@@ -1974,9 +2267,11 @@ export type ProductSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   isTrending?: boolean
   status?: boolean
   storeId?: boolean
+  categoryId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   store?: boolean | Prisma.Product$storeArgs<ExtArgs>
+  category?: boolean | Prisma.CategoryDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["product"]>
 
 export type ProductSelectScalar = {
@@ -1988,11 +2283,11 @@ export type ProductSelectScalar = {
   discountPrice?: boolean
   brand?: boolean
   images?: boolean
-  category?: boolean
   subcategory?: boolean
   colors?: boolean
   sizes?: boolean
   tags?: boolean
+  categoryName?: boolean
   stock?: boolean
   rating?: boolean
   reviewCount?: boolean
@@ -2000,13 +2295,15 @@ export type ProductSelectScalar = {
   isTrending?: boolean
   status?: boolean
   storeId?: boolean
+  categoryId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "slug" | "description" | "price" | "discountPrice" | "brand" | "images" | "category" | "subcategory" | "colors" | "sizes" | "tags" | "stock" | "rating" | "reviewCount" | "isFeatured" | "isTrending" | "status" | "storeId" | "createdAt" | "updatedAt", ExtArgs["result"]["product"]>
+export type ProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "slug" | "description" | "price" | "discountPrice" | "brand" | "images" | "subcategory" | "colors" | "sizes" | "tags" | "categoryName" | "stock" | "rating" | "reviewCount" | "isFeatured" | "isTrending" | "status" | "storeId" | "categoryId" | "createdAt" | "updatedAt", ExtArgs["result"]["product"]>
 export type ProductInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   store?: boolean | Prisma.Product$storeArgs<ExtArgs>
+  category?: boolean | Prisma.CategoryDefaultArgs<ExtArgs>
   cartItems?: boolean | Prisma.Product$cartItemsArgs<ExtArgs>
   orderItems?: boolean | Prisma.Product$orderItemsArgs<ExtArgs>
   orders?: boolean | Prisma.Product$ordersArgs<ExtArgs>
@@ -2016,15 +2313,18 @@ export type ProductInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs
 }
 export type ProductIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   store?: boolean | Prisma.Product$storeArgs<ExtArgs>
+  category?: boolean | Prisma.CategoryDefaultArgs<ExtArgs>
 }
 export type ProductIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   store?: boolean | Prisma.Product$storeArgs<ExtArgs>
+  category?: boolean | Prisma.CategoryDefaultArgs<ExtArgs>
 }
 
 export type $ProductPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Product"
   objects: {
     store: Prisma.$StorePayload<ExtArgs> | null
+    category: Prisma.$CategoryPayload<ExtArgs>
     cartItems: Prisma.$CartItemPayload<ExtArgs>[]
     orderItems: Prisma.$OrderItemPayload<ExtArgs>[]
     orders: Prisma.$OrderPayload<ExtArgs>[]
@@ -2040,11 +2340,11 @@ export type $ProductPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     discountPrice: number | null
     brand: string | null
     images: string[]
-    category: string | null
     subcategory: string | null
     colors: string[]
     sizes: string[]
     tags: string[]
+    categoryName: string | null
     stock: number
     rating: number
     reviewCount: number
@@ -2052,6 +2352,7 @@ export type $ProductPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     isTrending: boolean
     status: $Enums.ProductStatus
     storeId: string | null
+    categoryId: string
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["product"]>
@@ -2449,6 +2750,7 @@ readonly fields: ProductFieldRefs;
 export interface Prisma__ProductClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   store<T extends Prisma.Product$storeArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Product$storeArgs<ExtArgs>>): Prisma.Prisma__StoreClient<runtime.Types.Result.GetResult<Prisma.$StorePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  category<T extends Prisma.CategoryDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CategoryDefaultArgs<ExtArgs>>): Prisma.Prisma__CategoryClient<runtime.Types.Result.GetResult<Prisma.$CategoryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   cartItems<T extends Prisma.Product$cartItemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Product$cartItemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CartItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   orderItems<T extends Prisma.Product$orderItemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Product$orderItemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrderItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   orders<T extends Prisma.Product$ordersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Product$ordersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -2491,11 +2793,11 @@ export interface ProductFieldRefs {
   readonly discountPrice: Prisma.FieldRef<"Product", 'Float'>
   readonly brand: Prisma.FieldRef<"Product", 'String'>
   readonly images: Prisma.FieldRef<"Product", 'String[]'>
-  readonly category: Prisma.FieldRef<"Product", 'String'>
   readonly subcategory: Prisma.FieldRef<"Product", 'String'>
   readonly colors: Prisma.FieldRef<"Product", 'String[]'>
   readonly sizes: Prisma.FieldRef<"Product", 'String[]'>
   readonly tags: Prisma.FieldRef<"Product", 'String[]'>
+  readonly categoryName: Prisma.FieldRef<"Product", 'String'>
   readonly stock: Prisma.FieldRef<"Product", 'Int'>
   readonly rating: Prisma.FieldRef<"Product", 'Float'>
   readonly reviewCount: Prisma.FieldRef<"Product", 'Int'>
@@ -2503,6 +2805,7 @@ export interface ProductFieldRefs {
   readonly isTrending: Prisma.FieldRef<"Product", 'Boolean'>
   readonly status: Prisma.FieldRef<"Product", 'ProductStatus'>
   readonly storeId: Prisma.FieldRef<"Product", 'String'>
+  readonly categoryId: Prisma.FieldRef<"Product", 'String'>
   readonly createdAt: Prisma.FieldRef<"Product", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Product", 'DateTime'>
 }

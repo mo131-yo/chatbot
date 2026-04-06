@@ -1,16 +1,14 @@
 "use client";
-import React, { useState, useRef, useLayoutEffect } from "react";
+import React, { useState, useRef } from "react";
 import { useChatLogic } from "./chat/hooks/useChatLogic";
 import { SparklesCore } from "@/lib/utils/chat-animation/sparkles";
 import { useScrollEffect } from "./chat/hooks/useScrollEffect";
 import { MessageList } from "./chat/homeChat/product/message-list";
 import { WelcomeSection } from "./chat/homeChat/robot-text/welcome-section";
-
 import { ProductDetailSidebar } from "./chat/products/detail/ProductDetailSidebar";
 import Sidebar from "./chat/sidebar/page";
 import Header from "./chat/header/page";
 import ChatInput from "./chat/chatInput/page";
-// import ChatRobot from "@/lib/utils/chat-animation/ChatRobot";
 
 export default function Home() {
   const {
@@ -19,30 +17,28 @@ export default function Home() {
     allChats,
     sidebarHistory,
     isTyping,
-    setIsTyping,
+    isStreaming,
+    streamingContent,
     sendMessage,
+    addVisualResult,
     isLoading,
     deleteChat: handleDeleteChat,
   } = useChatLogic();
 
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
-
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const currentChatMessages = activeChatId ? allChats[activeChatId] || [] : [];
 
-  useScrollEffect(messagesEndRef, [currentChatMessages, isTyping]);
+  useScrollEffect(messagesEndRef, [currentChatMessages, isTyping, streamingContent]);
 
   const buyProduct = async (productName: string, productPrice?: any) => {
-    const exactPrice = Number(productPrice).toLocaleString();
-    const userMsg = `Bi яг ${exactPrice}₮ үнэтэй "${productName}"-г авмаар байна. Төлбөрөө яаж төлөх вэ?`;
-
+    const exactPrice = typeof productPrice === "number"
+      ? productPrice.toLocaleString()
+      : productPrice;
+    const userMsg = `Би яг ${exactPrice}₮ үнэтэй "${productName}"-г авмаар байна. Төлбөрөө яаж төлөх вэ?`;
     await sendMessage(userMsg);
-  };
-
-  const toggleSidebar = () => {
-    setIsCollapsed(!isCollapsed);
   };
 
   return (
@@ -52,6 +48,7 @@ export default function Home() {
         onClose={() => setSelectedProduct(null)}
         onBuy={(name: string) => buyProduct(name, selectedProduct?.price)}
       />
+
       <Sidebar
         isCollapsed={isCollapsed}
         history={sidebarHistory || []}
@@ -63,7 +60,8 @@ export default function Home() {
       />
 
       <div className="flex-1 flex flex-col min-w-0 h-screen relative">
-        <Header toggleSidebar={toggleSidebar} />
+        <Header toggleSidebar={() => setIsCollapsed(!isCollapsed)} />
+
         <div className="absolute inset-0 z-0 pointer-events-none">
           <SparklesCore
             id="tsparticlesfullpage"
@@ -75,13 +73,15 @@ export default function Home() {
             particleColor="#0A84FF"
           />
         </div>
+
         <main className="flex-1 overflow-y-auto bg-transparent p-4 custom-scrollbar relative z-10">
-          {currentChatMessages.length === 0 ? (
-            <WelcomeSection />
+          {currentChatMessages.length === 0 && !streamingContent ? (
+            <WelcomeSection onSelect={(q) => sendMessage(q)} />
           ) : (
             <MessageList
               messages={currentChatMessages}
               isTyping={isTyping}
+              streamingContent={streamingContent}
               onProductClick={setSelectedProduct}
               onBuy={buyProduct}
               messagesEndRef={messagesEndRef}
@@ -89,12 +89,17 @@ export default function Home() {
           )}
         </main>
 
-        {/* <ChatRobot /> */}
-
         <ChatInput
-          onMessageReceived={sendMessage}
+          onSendMessage={sendMessage}
+          onVisualResult={(userMsg, result) => {
+            if (result?.type === "product_card") {
+              addVisualResult(userMsg, [result.data]);
+            } else if (Array.isArray(result?.products)) {
+              addVisualResult(userMsg, result.products);
+            }
+          }}
           history={currentChatMessages}
-          setIsTyping={setIsTyping}
+          isTyping={isTyping || isStreaming}
         />
       </div>
     </div>

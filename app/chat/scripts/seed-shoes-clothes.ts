@@ -120,8 +120,9 @@ async function universalSeed(fileName: string, type: string, namespace: string) 
 
 async function runAllSeeds() {
   try {
-    await universalSeed('data/Shoe prices.csv', 'shoes', 'shoes-namespace');
-    await universalSeed('data/clothes_price_prediction_data.csv', 'clothing', 'fashion-namespace');
+    // await universalSeed('data/Shoe prices.csv', 'shoes', 'shoes-namespace');
+    // await universalSeed('data/clothes_price_prediction_data.csv', 'clothing', 'fashion-namespace');
+    await universalSeed('data/most_used_beauty_cosmetics_products_extended 2.csv', 'most_used_beauty_cosmetics', 'most_used_beauty_cosmetics-namespace');
 
     console.log('🎯 БҮХ ДАТА АМЖИЛТТАЙ СУУЛАА!');
   } catch (err) {

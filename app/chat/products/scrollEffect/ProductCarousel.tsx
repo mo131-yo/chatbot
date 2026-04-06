@@ -67,15 +67,10 @@ export const ProductCarousel = ({ products, history, onSelect, onBuy }: ProductC
   
   return (
     <div className="w-full space-y-8">
-      <HorizontalProductStack 
-        products={products} 
+      <HorizontalProductStack
+        products={products}
         onSelect={(product: any) => setSelectedProduct(product)}
-        onOrder={onBuy}
-        onSave={(id: string) => {
-          const product = products.find((p: any) => p.id === id);
-          if (product) toggleFavorite(product);
-        }}
-        savedIds={savedProducts}
+        onBuy={onBuy}
       />
 
       {savedProducts.length > 0 && (

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-// fvdgshajxklkfjgfbhdvnkcsla;skdjfbhgfjdk
 import TopProductsChart from "@/app/admin/components/analytics/TopProductsChart";
 import OrdersHeatmap from "@/app/admin/components/analytics/OrdersHeatmap";
 import LiveSales from "@/app/admin/components/analytics/LiveSales";
