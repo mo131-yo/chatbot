@@ -19,59 +19,89 @@ export default function ProductForm({ onSuccess }: any) {
   const [category, setCategory] = useState("");
 
   // const handleSubmit = async () => {
-  //   const imagesBase64: string[] = [];
+  //   try {
+  //     const uploadedUrls = await Promise.all(
+  //       imageFiles.map(async (file) => {
+  //         const formData = new FormData();
+  //         formData.append("file", file);
+  //         formData.append("upload_preset", "your_preset_name");
 
-  //   for (const file of imageFiles) {
-  //     const reader = new FileReader();
+  //         const res = await fetch("https://cloudinary.com", {
+  //           method: "POST",
+  //           body: formData,
+  //         });
+  //         const data = await res.json();
+  //         return data.secure_url;
+  //       })
+  //     );
 
-  //     const base64 = await new Promise<string>((resolve) => {
-  //       reader.onload = () => resolve(reader.result as string);
-  //       reader.readAsDataURL(file);
+  //     const response = await fetch("/admin/api/productCreate", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({
+  //         name,
+  //         price: Number(price),
+  //         images: uploadedUrls.join(","),
+  //         description,
+  //         color,
+  //         size,
+  //         brand,
+  //         stock: Number(stock),
+  //         category,
+  //       }),
   //     });
 
-  //     imagesBase64.push(base64);
+  //     if (!response.ok) {
+  //       const errorData = await response.json();
+  //       throw new Error(errorData.error || "Хадгалахад алдаа гарлаа");
+  //     }
+
+  //     const data = await response.json();
+
+  //     if (data.success) {
+  //       alert(`Бараа амжилттай нэмэгдлээ! ID: ${data.id}`);
+  //       setOpen(false);
+  //       resetForm();
+  //       onSuccess();
+  //     }
+  //   } catch (error: any) {
+  //     console.error("Фронт дээрх алдаа:", error);
+  //     alert("Алдаа: " + error.message);
   //   }
-
-  //   await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products`, {
-  //     method: "POST",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //     },
-  //     body: JSON.stringify({
-  //       name,
-  //       price: Number(price),
-  //       images: imagesBase64,
-  //       description,
-  //       color,
-  //       size,
-  //       brand,
-  //       stock: Number(stock),
-  //       category,
-  //     }),
-  //   });
-
-  //   setOpen(false);
-  //   setImageFiles([]);
-  //   setPreviews([]);
-  //   onSuccess();
-  //   setBrand("");
-  //   setCategory("");
-  //   setColor("");
-  //   setSize("");
   // };
-  //
   const handleSubmit = async () => {
     try {
-      const imagesBase64 = await Promise.all(
-        imageFiles.map((file) => {
-          return new Promise<string>((resolve) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result as string);
-            reader.readAsDataURL(file);
-          });
+      // 1. Зургуудыг Cloudinary руу нэг нэгээр нь хуулж URL-уудыг нь авна
+      const uploadedUrls = await Promise.all(
+        imageFiles.map(async (file) => {
+          const formData = new FormData();
+          formData.append("file", file);
+          // ЧУХАЛ: Cloudinary Settings -> Upload -> Unsigned Upload Preset нэрээ энд бичнэ
+          formData.append("upload_preset", "tur_preset");
+
+          const cloudName = "tur";
+          const res = await fetch(
+            `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+            {
+              method: "POST",
+              body: formData,
+            },
+          );
+          if (!res.ok) {
+            const errorData = await res.json();
+            throw new Error(
+              errorData.error?.message || "Зураг хуулахад алдаа гарлаа",
+            );
+          }
+
+          const data = await res.json();
+          return data.secure_url; // Зургийн бэлэн URL (https://...)
         }),
       );
 
+      // 2. Одоо бэлэн болсон URL-уудаа өөрийн API руу илгээнэ
       const response = await fetch("/admin/api/productCreate", {
         method: "POST",
         headers: {
@@ -79,14 +109,14 @@ export default function ProductForm({ onSuccess }: any) {
         },
         body: JSON.stringify({
           name,
-          price: Number(price),
-          // images: imagesBase64,
           description,
+          price: Number(price),
+          images: uploadedUrls, // Энд одоо ["https://...", "https://..."] массив очиж байгаа
+          category,
+          brand,
           color,
           size,
-          brand,
           stock: Number(stock),
-          category,
         }),
       });
 
@@ -98,13 +128,13 @@ export default function ProductForm({ onSuccess }: any) {
       const data = await response.json();
 
       if (data.success) {
-        alert("Бараа амжилттай нэмэгдлээ!");
+        alert(`Бараа амжилттай нэмэгдлээ! ID: ${data.id}`);
         setOpen(false);
-        resetForm();
-        onSuccess();
+        resetForm(); // Формоо цэвэрлэх
+        onSuccess(); // Жагсаалтыг шинэчлэх
       }
     } catch (error: any) {
-      console.error("Фронт дээрх алдаа:", error);
+      console.error("Алдаа:", error);
       alert("Алдаа: " + error.message);
     }
   };
