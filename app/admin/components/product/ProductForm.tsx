@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "../ui/button";
+import { useUploadThing } from "@/utils/uploadthing";
 
 export default function ProductForm({ onSuccess }: any) {
   const [open, setOpen] = useState(false);
@@ -17,127 +18,61 @@ export default function ProductForm({ onSuccess }: any) {
   const [brand, setBrand] = useState("");
   const [stock, setStock] = useState("");
   const [category, setCategory] = useState("");
+  
 
-  // const handleSubmit = async () => {
-  //   try {
-  //     const uploadedUrls = await Promise.all(
-  //       imageFiles.map(async (file) => {
-  //         const formData = new FormData();
-  //         formData.append("file", file);
-  //         formData.append("upload_preset", "your_preset_name");
 
-  //         const res = await fetch("https://cloudinary.com", {
-  //           method: "POST",
-  //           body: formData,
-  //         });
-  //         const data = await res.json();
-  //         return data.secure_url;
-  //       })
-  //     );
+const { startUpload } = useUploadThing("imageUploader");
 
-  //     const response = await fetch("/admin/api/productCreate", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({
-  //         name,
-  //         price: Number(price),
-  //         images: uploadedUrls.join(","),
-  //         description,
-  //         color,
-  //         size,
-  //         brand,
-  //         stock: Number(stock),
-  //         category,
-  //       }),
-  //     });
-
-  //     if (!response.ok) {
-  //       const errorData = await response.json();
-  //       throw new Error(errorData.error || "Хадгалахад алдаа гарлаа");
-  //     }
-
-  //     const data = await response.json();
-
-  //     if (data.success) {
-  //       alert(`Бараа амжилттай нэмэгдлээ! ID: ${data.id}`);
-  //       setOpen(false);
-  //       resetForm();
-  //       onSuccess();
-  //     }
-  //   } catch (error: any) {
-  //     console.error("Фронт дээрх алдаа:", error);
-  //     alert("Алдаа: " + error.message);
-  //   }
-  // };
-  const handleSubmit = async () => {
-    try {
-      // 1. Зургуудыг Cloudinary руу нэг нэгээр нь хуулж URL-уудыг нь авна
-      const uploadedUrls = await Promise.all(
-        imageFiles.map(async (file) => {
-          const formData = new FormData();
-          formData.append("file", file);
-          // ЧУХАЛ: Cloudinary Settings -> Upload -> Unsigned Upload Preset нэрээ энд бичнэ
-          formData.append("upload_preset", "tur_preset");
-
-          const cloudName = "tur";
-          const res = await fetch(
-            `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-            {
-              method: "POST",
-              body: formData,
-            },
-          );
-          if (!res.ok) {
-            const errorData = await res.json();
-            throw new Error(
-              errorData.error?.message || "Зураг хуулахад алдаа гарлаа",
-            );
-          }
-
-          const data = await res.json();
-          return data.secure_url; // Зургийн бэлэн URL (https://...)
-        }),
-      );
-
-      // 2. Одоо бэлэн болсон URL-уудаа өөрийн API руу илгээнэ
-      const response = await fetch("/admin/api/productCreate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name,
-          description,
-          price: Number(price),
-          images: uploadedUrls, // Энд одоо ["https://...", "https://..."] массив очиж байгаа
-          category,
-          brand,
-          color,
-          size,
-          stock: Number(stock),
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Хадгалахад алдаа гарлаа");
-      }
-
-      const data = await response.json();
-
-      if (data.success) {
-        alert(`Бараа амжилттай нэмэгдлээ! ID: ${data.id}`);
-        setOpen(false);
-        resetForm(); // Формоо цэвэрлэх
-        onSuccess(); // Жагсаалтыг шинэчлэх
-      }
-    } catch (error: any) {
-      console.error("Алдаа:", error);
-      alert("Алдаа: " + error.message);
+const handleSubmit = async () => {
+  try {
+    if (imageFiles.length === 0) {
+      alert("Зураг сонгоно уу!");
+      return;
     }
-  };
+
+    // 1. UploadThing рүү зургуудаа хуулна
+    const uploadRes = await startUpload(imageFiles);
+    
+    if (!uploadRes) {
+      throw new Error("Зураг хуулахад алдаа гарлаа");
+    }
+
+    const uploadedUrls = uploadRes.map(file => file.url);
+
+    // 2. Өөрийн API (Pinecone-той) руу мэдээллээ илгээнэ
+    const response = await fetch("/admin/api/productCreate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name,
+        description,
+        price: Number(price),
+        images: uploadedUrls, // Одоо UploadThing-ийн URL-ууд очиж байна
+        category,
+        brand,
+        color,
+        size,
+        stock: Number(stock),
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Хадгалахад алдаа гарлаа");
+    }
+
+    const data = await response.json();
+    if (data.success) {
+      alert(`Амжилттай хадгалагдлаа! ID: ${data.id}`);
+      setOpen(false);
+      resetForm();
+      onSuccess();
+    }
+  } catch (error: any) {
+    console.error("Алдаа:", error);
+    alert(error.message);
+  }
+};
 
   const resetForm = () => {
     setName("");
