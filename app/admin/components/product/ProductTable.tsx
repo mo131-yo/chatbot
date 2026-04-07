@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { Loader2, PackageOpen, Trash2, Edit3 } from "lucide-react";
 import ProductForm from "./ProductForm";
 
-export default function ProductTable() {
+export default function ProductTable({ search }: { search: string }) {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingProduct, setEditingProduct] = useState<any>(null);
@@ -12,25 +12,25 @@ export default function ProductTable() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-const fetchData = useCallback(async () => {
-  try {
-    setLoading(true);
-    const res = await fetch("/admin/api/productAllGet", {
-      cache: "no-store" 
-    });
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await fetch("/admin/api/productAllGet", {
+        cache: "no-store",
+      });
 
-    if (!res.ok) throw new Error(`Server error: ${res.status}`);
+      if (!res.ok) throw new Error(`Server error: ${res.status}`);
 
-    const data = await res.json();
-    if (data.success) {
-      setProducts(data.products || []);
+      const data = await res.json();
+      if (data.success) {
+        setProducts(data.products || []);
+      }
+    } catch (error) {
+      console.error("Fetch error:", error);
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error("Fetch error:", error);
-  } finally {
-    setLoading(false);
-  }
-}, []);
+  }, []);
 
   useEffect(() => {
     fetchData();
@@ -56,12 +56,12 @@ const fetchData = useCallback(async () => {
   };
 
   const getProductImage = (p: any): string => {
-  if (Array.isArray(p.images) && p.images.length > 0) return p.images[0];
-  if (p.product_image_url) return p.product_image_url;
-  if (p.imageUrl) return p.imageUrl;
-  
-  return "https://placehold.co/100x100?text=No+Image";
-};
+    if (Array.isArray(p.images) && p.images.length > 0) return p.images[0];
+    if (p.product_image_url) return p.product_image_url;
+    if (p.imageUrl) return p.imageUrl;
+
+    return "https://placehold.co/100x100?text=No+Image";
+  };
 
   if (loading) {
     return (
@@ -71,6 +71,9 @@ const fetchData = useCallback(async () => {
       </div>
     );
   }
+  const filtered = products.filter((p) =>
+    p.name.toLowerCase().includes(search.toLowerCase()),
+  );
 
   return (
     <div className="relative w-full bg-white dark:bg-gray-950 rounded-[2rem] border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
@@ -88,7 +91,14 @@ const fetchData = useCallback(async () => {
 
       {deletingId && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-200 flex items-center justify-center p-4 animate-in fade-in duration-300">
-          <div className="bg-gray-900 border border-white/10 w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
+          <div
+            className="bg-gray-900/90 backdrop-blur-xl
+  border border-white/10
+  w-full max-w-sm
+  rounded-[2.5rem] p-8
+  shadow-2xl shadow-black/50
+  animate-in zoom-in-95 duration-300"
+          >
             <div className="w-20 h-20 bg-red-500/10 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-red-500/20">
               <Trash2 className="w-10 h-10 text-red-500" />
             </div>
@@ -137,23 +147,29 @@ const fetchData = useCallback(async () => {
           <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
             {products.length === 0 ? (
               <tr>
-                <td colSpan={6} className="p-20 text-center text-gray-400">
+                <td
+                  colSpan={6}
+                  className="p-20 text-center text-gray-400 animate-pulse"
+                >
                   <PackageOpen className="w-10 h-10 mx-auto mb-2" />
                   <p>Бараа олдсонгүй.</p>
                 </td>
               </tr>
             ) : (
-              products.map((p) => (
+              filtered.map((p) => (
                 <tr
                   key={p.id}
                   onClick={() => setEditingProduct(p)}
-                  className="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors group cursor-pointer"
+                  className="  hover:bg-gray-50/50 dark:hover:bg-white/5
+    transition-all duration-300
+    group cursor-pointer
+    hover:scale-[1.01] hover:shadow-md"
                 >
                   <td className="p-4">
                     <div className="w-12 h-12 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-800">
                       <img
                         src={getProductImage(p)}
-                        className="w-full h-full object-cover transition group-hover:scale-110"
+                        className="w-full h-full object-cover transition duration-500 ease-out group-hover:scale-125"
                         alt=""
                       />
                     </div>
@@ -177,7 +193,12 @@ const fetchData = useCallback(async () => {
                     </span>
                   </td>
                   <td className="p-4" onClick={(e) => e.stopPropagation()}>
-                    <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div
+                      className=" flex items-center justify-end gap-2
+  opacity-0 group-hover:opacity-100
+  transition-all duration-300
+  translate-y-2 group-hover:translate-y-0"
+                    >
                       <button
                         onClick={() => setEditingProduct(p)}
                         className="p-2 hover:bg-amber-50 text-amber-600 rounded-lg"

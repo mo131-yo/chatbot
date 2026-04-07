@@ -32,12 +32,16 @@ export default function Sidebar() {
     <aside
       className={`h-screen p-5 flex flex-col justify-between transition-all duration-300
       ${collapsed ? "w-20" : "w-64"}
-      bg-[#1c2541] text-white`}
+      bg-[#1c2541]/90 backdrop-blur-xl border-r border-white/10 text-white`}
     >
+      {/* TOP */}
       <div>
-        <div className="flex items-center justify-between mb-2">
+        {/* LOGO + AVATAR */}
+        <div className="flex items-center justify-between mb-3">
           {!collapsed && (
-            <h1 className="text-xl font-bold tracking-wide">Luxe AI</h1>
+            <h1 className="text-xl font-bold tracking-wide bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+              Luxe AI
+            </h1>
           )}
 
           <div className="flex items-center gap-2">
@@ -45,61 +49,76 @@ export default function Sidebar() {
 
             <button
               onClick={() => setCollapsed(!collapsed)}
-              className="text-xs bg-white/10 px-2 py-1 rounded"
+              className="text-xs bg-white/10 px-2 py-1 rounded hover:bg-white/20 transition"
             >
               {collapsed ? "👉" : "👈"}
             </button>
           </div>
         </div>
 
+        {/* ADMIN BADGE */}
         {!collapsed && role === "admin" && (
           <span
-            className="text-[10px] px-2 py-1 rounded-full text-white mb-4 inline-block
-  bg-linear-to-r from-red-500 via-pink-500 to-orange-500
+  className="text-[10px] px-2 py-1 rounded-full text-white mb-4 inline-block
+  bg-gradient-to-r from-red-500 via-pink-500 to-orange-500
   animate-pulse shadow-lg shadow-red-500/40"
-          >
-            ADMIN 🔥
-          </span>
+>
+  ADMIN 🔥
+</span>
         )}
 
+        {/* MENU */}
         <nav className="space-y-2 mt-4">
           {menu.map((item) => {
             const Icon = item.icon;
 
             return (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={`flex items-center gap-3 p-3 rounded-xl transition-all
-                ${
-                  path === item.href
-                    ? "bg-indigo-600 text-white shadow"
-                    : "hover:bg-indigo-800"
-                }`}
-              >
-                <Icon size={18} />
+              <div key={item.name} className="relative group">
+                {/* ACTIVE LINE */}
+                {path === item.href && (
+                  <span className="absolute left-0 top-0 h-full w-1 bg-indigo-400 rounded-r" />
+                )}
 
-                {!collapsed && <span>{item.name}</span>}
-              </Link>
+                <Link
+                  href={item.href}
+                  className={`flex items-center gap-3 p-3 pl-4 rounded-xl transition-all duration-300
+                  ${
+                    path === item.href
+                      ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg scale-[1.02]"
+                      : "hover:bg-white/10 hover:translate-x-1 hover:shadow-md"
+                  }`}
+                >
+                  <Icon
+                    size={18}
+                    className="transition-transform duration-300 group-hover:scale-125"
+                  />
+
+                  {!collapsed && (
+                    <span className="transition-all duration-200">
+                      {item.name}
+                    </span>
+                  )}
+                </Link>
+              </div>
             );
           })}
         </nav>
       </div>
 
+      {/* SETTINGS */}
       <div className="relative">
         {openSettings && !collapsed && (
-          <div className="mt-3 p-3 rounded-xl bg-white/10 backdrop-blur text-white space-y-2">
-            <div>
-              {" "}
-              <span className="text-sm">THEME</span>
+          <div className="mb-3 p-4 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/10 space-y-3 animate-fade">
+            <div className="flex justify-between items-center">
+              <span className="text-sm">Theme</span>
               <ThemeToggle />
-              <p className="text-xs opacity-70"></p>
             </div>
           </div>
         )}
+
         <button
           onClick={() => setOpenSettings(!openSettings)}
-          className="w-full bg-white/5 p-3 rounded-xl text-left hover:bg-white/10 transition mt-5"
+          className="w-full bg-white/5 p-3 rounded-xl text-left hover:bg-white/10 transition"
         >
           {!collapsed ? "⚙️ Settings" : "⚙️"}
         </button>
@@ -107,4 +126,3 @@ export default function Sidebar() {
     </aside>
   );
 }
-// sssssss
