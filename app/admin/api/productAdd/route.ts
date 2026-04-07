@@ -39,24 +39,24 @@ export async function POST(req: NextRequest) {
     const generatedId = `prod_${Date.now()}`;
 
     await index.namespace(userId).upsert({
-      records: [
+    records: [
         {
-          id: generatedId,
-          values: vector,
-          metadata: {
-            product_name: String(name || "Нэргүй"),
-            formatted_price: Number(price) || 0,
-            description: String(description || ""),
-            category: String(category || "General"),
-            brand: String(brand || "Unknown"),
-            product_image_url: String(imageUrl || ""),
+        id: generatedId,
+        values: vector,
+        metadata: {
+            name: name,          
+            price: Number(price) || 0, 
+            description: description,
+            category: category || "General",
+            brand: brand || "Unknown",
+            product_image_url: imageUrl || "",
             stock: Number(stock) || 0,
-            color: String(color || ""),
-            size: String(size || ""),
-            store_id: String(userId),
-          },
+            color: color || "",
+            size: size || "",
+            store_id: userId
         },
-      ],
+        },
+    ],
     });
 
     return NextResponse.json({ success: true, id: generatedId });

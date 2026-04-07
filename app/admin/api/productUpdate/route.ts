@@ -1,68 +1,3 @@
-// import { NextResponse } from "next/server";
-// import { prisma } from "@/lib/prisma";
-// import { auth } from "@clerk/nextjs/server";
-
-// export async function POST(req: Request) {
-//   try {
-//     const { userId } = await auth();
-//     if (!userId) return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
-
-//     const body = await req.json();
-//     console.log("RECEIVED_BODY:", body);
-
-//     const { id, name, price, description, brand, category, stock, imageUrl, color, size } = body;
-
-//     if (!id) return NextResponse.json({ success: false, error: "ID олдсонгүй" }, { status: 400 });
-
-//     const categoryName = category || "Тодорхойгүй";
-//     const numericPrice = Number(price);
-//     const numericStock = parseInt(stock?.toString() || "0");
-
-//     const existingProduct = await prisma.product.findUnique({
-//       where: { id },
-//       select: { images: true, slug: true }
-//     });
-
-//     const finalImages = imageUrl
-//       ? [imageUrl]
-//       : (existingProduct?.images ?? []);
-
-//     const categoryRecord = await prisma.category.upsert({
-//       where: { name: categoryName },
-//       update: {},
-//       create: {
-//         name: categoryName,
-//         slug: categoryName.toLowerCase().trim().replace(/\s+/g, '-')
-//       }
-//     });
-
-//     const updatedProduct = await prisma.product.update({
-//       where: { id },
-//       data: {
-//         name,
-//         price: numericPrice,
-//         description: description || "",
-//         brand: brand || "",
-//         stock: numericStock,
-//         images: finalImages,
-//         colors: color ? [color] : [],
-//         sizes: size ? [size] : [],
-//         categoryName,
-//         categoryId: categoryRecord.id,
-//       }
-//     });
-//     console.log("RECEIVED_BODY:", body);
-//     console.log("ID:", id);
-//     console.log("IMAGE_URL:", imageUrl);
-//     console.log("UPDATED_PRODUCT:", updatedProduct);
-//     return NextResponse.json({ success: true, product: updatedProduct });
-
-//   } catch (error: any) {
-//     console.error("PRISMA_ERROR:", error.code, error.message);
-//     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
-//   }
-// }
-
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
@@ -71,10 +6,7 @@ export async function POST(req: Request) {
   try {
     const { userId } = await auth();
     if (!userId) {
-      return NextResponse.json(
-        { success: false, error: "Unauthorized" },
-        { status: 401 },
-      );
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await req.json();
@@ -92,17 +24,12 @@ export async function POST(req: Request) {
     } = body;
 
     if (!id) {
-      return NextResponse.json(
-        { success: false, error: "ID олдсонгүй" },
-        { status: 400 },
-      );
+      return NextResponse.json({ success: false, error: "ID олдсонгүй" }, { status: 400 });
     }
 
-    const categoryName = category || "Тодорхойгүй";
+    const categoryName = category || "General";
     const numericPrice = parseFloat(price) || 0;
     const numericStock = parseInt(stock?.toString() || "0", 10);
-
-    const productId = typeof id === "number" ? id : id;
 
     const categoryRecord = await prisma.category.upsert({
       where: { name: categoryName },
@@ -113,23 +40,22 @@ export async function POST(req: Request) {
       },
     });
 
-    // 4. Product-ыг шинэчлэх эсвэл үүсгэх (Upsert ашиглах нь хамгийн найдвартай)
     const updatedProduct = await prisma.product.upsert({
-      where: { id: productId },
+      where: { id: id },
       update: {
         name,
         price: numericPrice,
         description: description || "",
         brand: brand || "",
         stock: numericStock,
-        images: imageUrl ? [imageUrl] : undefined, // Зөвхөн шинэ зураг ирвэл солино
+        images: imageUrl ? [imageUrl] : undefined, 
         colors: color ? [color] : [],
         sizes: size ? [size] : [],
-        categoryName,
+        categoryName: categoryRecord.name,
         categoryId: categoryRecord.id,
       },
       create: {
-        id: productId, // Хэрэв ID-г өөрөө гараас өгч байгаа бол
+        id: id,
         name,
         price: numericPrice,
         description: description || "",
@@ -138,24 +64,16 @@ export async function POST(req: Request) {
         images: imageUrl ? [imageUrl] : [],
         colors: color ? [color] : [],
         sizes: size ? [size] : [],
-        categoryName,
+        categoryName: categoryRecord.name,
         categoryId: categoryRecord.id,
-        slug:
-          name?.toLowerCase().trim().replace(/\s+/g, "-") ||
-          `prod-${Date.now()}`,
+        slug: name?.toLowerCase().trim().replace(/\s+/g, "-") || `prod-${Date.now()}`,
       },
     });
 
-    console.log("SUCCESS: Product updated/created", updatedProduct.id);
+    console.log("✅ PRISMA SUCCESS:", updatedProduct.id);
     return NextResponse.json({ success: true, product: updatedProduct });
   } catch (error: any) {
     console.error("PRISMA_ERROR:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: error.message || "Серверийн алдаа гарлаа",
-      },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
