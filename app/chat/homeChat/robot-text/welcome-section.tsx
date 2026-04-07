@@ -1,46 +1,105 @@
 "use client";
-import React, { useState } from "react";
+
 import { motion } from "framer-motion";
-import dynamic from "next/dynamic";
-import { TypewriterText } from "@/lib/utils/text/typewriter-text";
 
-const SplineScene = dynamic(
-  () => import("@/lib/utils/chat-animation/splite").then((mod) => mod.SplineScene),
-  { ssr: false, loading: () => <div className="h-125 w-full bg-white/5 animate-pulse rounded-3xl" /> }
-);
-
-const WELCOME_MESSAGES = [
-  "Сайн байна уу? Би танд бүх барааг олж өгөхөд туслах ухаалаг туслах байна.",
-  "Та яг одоо ямар төрлийн бараа хайж байна вэ?", 
-  "Манай дэлгүүрт шинээр ирсэн бараануудыг үзэх үү?",
-  "Би танд 24/7 туслахад бэлэн байна. Юу сонирхож байна?",
+const suggestions = [
+  { label: "👟 Nike гутал харуулаач", query: "Nike гутал харуулаач" },
+  { label: "💄 Косметик санал болго", query: "Шилдэг косметик санал болго" },
+  { label: "📱 iPhone 15 хэд вэ?", query: "iPhone 15 хэд вэ?" },
+  { label: "👗 Трэнд хувцас", query: "Энэ улиралд trending хувцас юу байна?" },
 ];
 
-export const WelcomeSection = () => {
-  const [currentMsgIndex, setCurrentMsgIndex] = useState(0);
+const floatingOrbs = [
+  { size: 300, x: "10%", y: "20%", color: "#C5A059", delay: 0, duration: 8 },
+  { size: 200, x: "75%", y: "10%", color: "#0A84FF", delay: 2, duration: 10 },
+  { size: 150, x: "60%", y: "65%", color: "#C5A059", delay: 1, duration: 7 },
+  { size: 100, x: "20%", y: "70%", color: "#0A84FF", delay: 3, duration: 9 },
+];
 
+export function WelcomeSection({ onSelect }: { onSelect: (q: string) => void }) {
   return (
-    <div className="flex-1 relative min-h-125 flex items-center justify-center">
+    <div className="relative flex flex-col items-center justify-center min-h-[70vh] overflow-hidden select-none">
+      {floatingOrbs.map((orb, i) => (
+        <motion.div
+          key={i}
+          className="absolute rounded-full pointer-events-none"
+          style={{
+            width: orb.size,
+            height: orb.size,
+            left: orb.x,
+            top: orb.y,
+            background: `radial-gradient(circle, ${orb.color}18 0%, transparent 70%)`,
+            filter: "blur(40px)",
+          }}
+          animate={{
+            y: [0, -30, 0],
+            scale: [1, 1.1, 1],
+            opacity: [0.4, 0.7, 0.4],
+          }}
+          transition={{
+            duration: orb.duration,
+            delay: orb.delay,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+      ))}
+
       <motion.div
-        initial={{ opacity: 0, x: 20, scale: 0.8 }}
-        animate={{ opacity: 1, x: 0, y: [0, -10, 0], scale: 1 }}
-        transition={{ delay: 0.5, duration: 0.8, y: { repeat: Infinity, duration: 3, ease: "easeInOut" } }}
-        className="absolute top-[12%] right-[8%] md:right-[35%] z-20 bg-white/90 dark:bg-[#161616]/90 backdrop-blur-md border border-slate-200 dark:border-white/10 p-5 rounded-2xl shadow-2xl max-w-60"
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="relative mb-8"
       >
-        <p className="text-sm md:text-base font-medium text-slate-800 dark:text-slate-200 leading-snug">
-          <TypewriterText 
-            text={WELCOME_MESSAGES[currentMsgIndex]} 
-            onComplete={() => setCurrentMsgIndex((prev) => (prev + 1) % WELCOME_MESSAGES.length)} 
-          />
-        </p>
-        <div className="absolute -bottom-2 left-6 w-4 h-4 bg-white/90 dark:bg-[#161616]/90 border-r border-b border-slate-200 dark:border-white/10 rotate-45" />
+        <div className="w-20 h-20 rounded-3xl bg-linear-to-br from-[#C5A059] to-[#8B6F35] flex items-center justify-center shadow-2xl shadow-[#C5A059]/30">
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+            <path d="M8 20C8 13.373 13.373 8 20 8s12 5.373 12 12-5.373 12-12 12S8 26.627 8 20z" fill="white" fillOpacity="0.2"/>
+            <path d="M14 20h12M20 14v12" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+            <circle cx="20" cy="20" r="3" fill="white"/>
+          </svg>
+        </div>
+        <motion.div
+          className="absolute inset-0 rounded-3xl border-2 border-[#C5A059]/40"
+          animate={{ scale: [1, 1.4], opacity: [0.6, 0] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
+        />
       </motion.div>
 
-      <div className="w-full h-full pt-8">
-        <SplineScene scene="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode" className="w-full h-full" />
-        {/* https://prod.spline.design/iK7697Ic6v1C8XbI/scene.splinecode */}
-        {/* https://prod.spline.design/OT-uL-mZ-Y7T-9-T/scene.splinecode */}
-      </div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="text-center mb-3"
+      >
+        <h1 className="text-3xl md:text-4xl font-black text-white mb-2 tracking-tight">
+          Сайн байна уу! 👋
+        </h1>
+        <p className="text-white/50 text-base md:text-lg">
+          Юу хайж байна вэ? Би танд тусална.
+        </p>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.4 }}
+        className="flex flex-wrap gap-2 justify-center mt-6 max-w-lg px-4"
+      >
+        {suggestions.map((item, i) => (
+          <motion.button
+            key={i}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.5 + i * 0.08 }}
+            whileHover={{ scale: 1.04, y: -2 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => onSelect(item.query)}
+            className="px-4 py-2 rounded-2xl bg-white/5 border border-white/10 text-white/70 text-sm backdrop-blur-sm hover:bg-white/10 hover:border-[#C5A059]/40 hover:text-white transition-all shadow-lg"
+          >
+            {item.label}
+          </motion.button>
+        ))}
+      </motion.div>
     </div>
   );
-};
+}

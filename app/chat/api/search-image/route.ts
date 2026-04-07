@@ -1,68 +1,95 @@
-// import { NextResponse } from 'next/server';
-// import { queryImages } from 'duckduckgo-images-api';
-
-// export async function GET(request: Request) {
-//   const { searchParams } = new URL(request.url);
-//   const query = searchParams.get('q');
-
-//   if (!query) {
-//     return NextResponse.json({ error: "Хайлтын утга алга" }, { status: 400 });
-//   }
-
-//   try {
-//     const results = await queryImages(`${query} product photo`);
-    
-//     if (results && results.length > 0) {
-//       return NextResponse.json({ imageUrl: results[0].image });
-//     }
-
-//     return NextResponse.json({ error: "Зураг олдсонгүй" }, { status: 404 });
-//   } catch (error) {
-//     console.error("Search Error:", error);
-//     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
-//   }
-// }
-
-
-
 import { NextResponse } from 'next/server';
 
-async function fetchFromDDG(query: string) {
-  try {
-    const res = await fetch(`https://duckduckgo.com/assets/logo.png`); 
-    return `https://duckduckgo.com/?q=${encodeURIComponent(query)}&iax=images&ia=images`;
-  } catch {
-    return null;
+const MN_TO_EN: Record<string, string> = {
+  'гутал': 'shoes', 'цамц': 't-shirt', 'өмд': 'pants', 'хүрэм': 'jacket',
+  'дэгээ': 'coat', 'малгай': 'hat', 'цүнх': 'bag', 'чихэвч': 'earphones',
+  'утас': 'smartphone', 'компьютер': 'laptop', 'дэлгэц': 'monitor',
+  'крем': 'face cream', 'шампунь': 'shampoo', 'ном': 'book', 'цаг': 'watch',
+  'колонк': 'speaker', 'камер': 'camera', 'хулгана': 'mouse',
+  'hoodie': 'hoodie', 'sweater': 'sweater',
+};
+
+function buildSearchQuery(query: string): string {
+  let q = query.trim();
+  for (const [mn, en] of Object.entries(MN_TO_EN)) {
+    q = q.replace(new RegExp(mn, 'gi'), en);
   }
+  const hasCyrillic = /[а-яөүёА-ЯӨҮЁ]/.test(q);
+  return hasCyrillic ? `${query} product` : `${q} product white background`;
 }
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const query = searchParams.get('q') || "";
-  const PIXABAY_KEY = "55314889-269180eb131097849a9c07ba1";
+const BOOK_KEYWORDS = ['ном', 'book', 'тууж', 'роман', 'поттер', 'harry', 'tolkien', 'толкин'];
+function isBook(q: string) {
+  return BOOK_KEYWORDS.some(k => q.toLowerCase().includes(k));
+}
 
+async function tryOpenLibrary(query: string): Promise<string | null> {
+  if (!isBook(query)) return null;
   try {
-    if (query.toLowerCase().includes("book") || query.toLowerCase().includes("ном")) {
-      const bookRes = await fetch(`https://openlibrary.org/search.json?title=${encodeURIComponent(query)}&limit=1`);
-      const bookData = await bookRes.json();
-      if (bookData.docs?.[0]?.cover_i) {
-        return NextResponse.json({ imageUrl: `https://covers.openlibrary.org/b/id/${bookData.docs[0].cover_i}-L.jpg` });
-      }
-    }
-
-    const pixabayRes = await fetch(
-      `https://pixabay.com/api/?key=${PIXABAY_KEY}&q=${encodeURIComponent(query)}&image_type=photo&per_page=3`
+    const res = await fetch(
+      `https://openlibrary.org/search.json?title=${encodeURIComponent(query)}&limit=1`,
+      { next: { revalidate: 86400 } }
     );
-    const pixabayData = await pixabayRes.json();
+    const data = await res.json();
+    const coverId = data.docs?.[0]?.cover_i;
+    if (coverId) return `https://covers.openlibrary.org/b/id/${coverId}-L.jpg`;
+  } catch (e) { console.error('OpenLibrary error:', e); }
+  return null;
+}
 
-    if (pixabayData.hits && pixabayData.hits.length > 0) {
-      return NextResponse.json({ imageUrl: pixabayData.hits[0].webformatURL });
+async function tryGoogle(query: string): Promise<string | null> {
+  const key = process.env.GOOGLE_API_KEY;
+  const cx  = process.env.GOOGLE_CX;
+  if (!key || !cx) return null;
+  try {
+    const res = await fetch(
+      `https://www.googleapis.com/customsearch/v1?q=${encodeURIComponent(buildSearchQuery(query))}&cx=${cx}&key=${key}&searchType=image&num=3&imgSize=large&imgType=photo`,
+      { next: { revalidate: 3600 } }
+    );
+    const data = await res.json();
+    if (data.error?.code === 429 || data.error?.code === 403) {
+      console.warn('⚠️ Google quota reached');
+      return null;
     }
+    return data.items?.[0]?.link ?? null;
+  } catch (e) { console.error('Google error:', e); }
+  return null;
+}
 
-    const fallbackUrl = `https://loremflickr.com/800/600/${encodeURIComponent(query.replace(/\s+/g, ','))}`;
-    return NextResponse.json({ imageUrl: fallbackUrl });
+async function tryPixabay(query: string): Promise<string | null> {
+  const key = process.env.PIXABAY_KEY;
+  if (!key) return null;
+  try {
+    const res = await fetch(
+      `https://pixabay.com/api/?key=${key}&q=${encodeURIComponent(buildSearchQuery(query))}&image_type=photo&per_page=5&safesearch=true&order=relevant`,
+      { next: { revalidate: 3600 } }
+    );
+    const data = await res.json();
+    return data.hits?.[0]?.webformatURL ?? null;
+  } catch (e) { console.error('Pixabay error:', e); }
+  return null;
+}
 
-  } catch (error) {
-    return NextResponse.json({ imageUrl: `https://robohash.org/${encodeURIComponent(query)}?set=set4` });
-  }
+function unsplashFallback(query: string): string {
+  const keywords = buildSearchQuery(query)
+    .replace(/[^a-zA-Z0-9\s]/g, '')
+    .split(/\s+/)
+    .slice(0, 2)
+    .join(',') || 'product,shopping';
+  return `https://source.unsplash.com/800x800/?${encodeURIComponent(keywords)}`;
+}
+
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const query = searchParams.get('q');
+
+  if (!query) return NextResponse.json({ imageUrl: '/default-product.png' });
+
+  const imageUrl =
+    (await tryOpenLibrary(query)) ??
+    (await tryGoogle(query))      ??
+    (await tryPixabay(query))     ??
+    unsplashFallback(query);
+
+  return NextResponse.json({ imageUrl });
 }

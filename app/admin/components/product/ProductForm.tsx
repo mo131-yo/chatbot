@@ -20,15 +20,35 @@ export default function ProductForm({ onSuccess }: any) {
   const [category, setCategory] = useState("");
   
 
+ const handleSubmit = async () => {
+    try {
+      const imagesBase64 = await Promise.all(
+        imageFiles.map((file) => {
+          return new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.readAsDataURL(file);
+          });
+        }),
+      );
 
-const { startUpload } = useUploadThing("imageUploader");
-
-const handleSubmit = async () => {
-  try {
-    if (imageFiles.length === 0) {
-      alert("Зураг сонгоно уу!");
-      return;
-    }
+      const response = await fetch("/admin/api/productCreate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          price: Number(price),
+          images: imagesBase64,
+          description,
+          color,
+          size,
+          brand,
+          stock: Number(stock),
+          category,
+        }),
+      });
 
     // 1. UploadThing рүү зургуудаа хуулна
     const uploadRes = await startUpload(imageFiles);
@@ -61,12 +81,18 @@ const handleSubmit = async () => {
       throw new Error(errorData.error || "Хадгалахад алдаа гарлаа");
     }
 
-    const data = await response.json();
-    if (data.success) {
-      alert(`Амжилттай хадгалагдлаа! ID: ${data.id}`);
-      setOpen(false);
-      resetForm();
-      onSuccess();
+      if (data.success) {
+        console.log("Шинээр үүссэн Pinecone ID:", data.pineconeId);
+        
+        alert(`Бараа амжилттай нэмэгдлээ!\nPinecone ID: ${data.pineconeId}`);
+        
+        setOpen(false);
+        resetForm();
+        onSuccess();
+      }
+    } catch (error: any) {
+      console.error("Фронт дээрх алдаа:", error);
+      alert("Алдаа: " + error.message);
     }
   } catch (error: any) {
     console.error("Алдаа:", error);
@@ -117,11 +143,11 @@ const handleSubmit = async () => {
             <Section title="Зураг">
               <div
                 className="
-    relative border-2 border-dashed rounded-xl p-4
-    bg-gray-800 dark:bg-gray-100
-    flex flex-col items-center justify-center
-    cursor-pointer hover:opacity-80 transition
-  "
+                relative border-2 border-dashed rounded-xl p-4
+                bg-gray-800 dark:bg-gray-100
+                flex flex-col items-center justify-center
+                cursor-pointer hover:opacity-80 transition
+              "
               >
                 <input
                   type="file"

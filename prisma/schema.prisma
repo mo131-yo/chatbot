@@ -121,11 +121,11 @@ model Product {
   discountPrice Float?
   brand         String?
   images        String[]
-  category      String?
   subcategory   String?
   colors        String[]
   sizes         String[]
   tags          String[]
+  categoryName  String?
   stock         Int      @default(0)
   rating        Float    @default(0)
   reviewCount   Int      @default(0)
@@ -135,6 +135,9 @@ model Product {
 
   storeId String?
   store   Store?  @relation(fields: [storeId], references: [id], onDelete: SetNull)
+
+  categoryId    String
+  category      Category @relation(fields: [categoryId], references: [id])
 
   cartItems  CartItem[]
   orderItems OrderItem[]
@@ -148,8 +151,15 @@ model Product {
 
 
   @@index([storeId])
-  @@index([category])
+  @@index([categoryId])
   @@index([status])
+}
+
+model Category {
+  id       String    @id @default(uuid())
+  name     String    @unique
+  slug     String?   @unique
+  products Product[] 
 }
 
 model Cart {

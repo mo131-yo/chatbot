@@ -5,13 +5,13 @@ import { SparklesCore } from "@/lib/utils/chat-animation/sparkles";
 import { useScrollEffect } from "./chat/hooks/useScrollEffect";
 import { MessageList } from "./chat/homeChat/product/message-list";
 import { WelcomeSection } from "./chat/homeChat/robot-text/welcome-section";
-
+ 
 import { ProductDetailSidebar } from "./chat/products/detail/ProductDetailSidebar";
 import Sidebar from "./chat/sidebar/page";
 import Header from "./chat/header/page";
 import ChatInput from "./chat/chatInput/page";
 // import ChatRobot from "@/lib/utils/chat-animation/ChatRobot";
-
+ 
 export default function Home() {
   const {
     activeChatId,
@@ -19,32 +19,34 @@ export default function Home() {
     allChats,
     sidebarHistory,
     isTyping,
-    setIsTyping,
+
     sendMessage,
     isLoading,
+    addVisualResult, 
+    isStreaming,
     deleteChat: handleDeleteChat,
   } = useChatLogic();
-
+ 
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
-
+ 
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
+ 
   const currentChatMessages = activeChatId ? allChats[activeChatId] || [] : [];
-
+ 
   useScrollEffect(messagesEndRef, [currentChatMessages, isTyping]);
-
+ 
   const buyProduct = async (productName: string, productPrice?: any) => {
     const exactPrice = Number(productPrice).toLocaleString();
     const userMsg = `Bi яг ${exactPrice}₮ үнэтэй "${productName}"-г авмаар байна. Төлбөрөө яаж төлөх вэ?`;
-
+ 
     await sendMessage(userMsg);
   };
-
+ 
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
   };
-
+ 
   return (
     <div className="flex min-h-screen bg-slate-50 dark:bg-[#0D0D0D] transition-colors duration-300 overflow-hidden text-slate-900 dark:text-white">
       <ProductDetailSidebar
@@ -61,7 +63,7 @@ export default function Home() {
         onDeleteChat={handleDeleteChat}
         activeChatId={activeChatId}
       />
-
+ 
       <div className="flex-1 flex flex-col min-w-0 h-screen relative">
         <Header toggleSidebar={toggleSidebar} />
         <div className="absolute inset-0 z-0 pointer-events-none">
@@ -77,7 +79,7 @@ export default function Home() {
         </div>
         <main className="flex-1 overflow-y-auto bg-transparent p-4 custom-scrollbar relative z-10">
           {currentChatMessages.length === 0 ? (
-            <WelcomeSection />
+            <WelcomeSection onSelect={(q) => sendMessage(q)} />
           ) : (
             <MessageList
               messages={currentChatMessages}
@@ -88,15 +90,22 @@ export default function Home() {
             />
           )}
         </main>
-
-        {/* <ChatRobot /> */}
-
+ 
+ 
         <ChatInput
-          onMessageReceived={sendMessage}
-          history={currentChatMessages}
-          setIsTyping={setIsTyping}
-        />
+        onSendMessage={sendMessage}
+        onVisualResult={(userMsg, result) => {
+          if (result?.type === "product_card") {
+            addVisualResult(userMsg, [result.data]);
+          } else if (Array.isArray(result?.products)) {
+            addVisualResult(userMsg, result.products);
+          }
+        }}
+        history={currentChatMessages}
+        isTyping={isTyping || isStreaming}
+      />
       </div>
     </div>
   );
 }
+ 

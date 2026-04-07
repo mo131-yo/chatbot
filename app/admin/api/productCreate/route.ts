@@ -98,45 +98,53 @@ export async function POST(req: Request) {
       );
     }
 
-    const productId = Date.now().toString();
+    const generatedId = Date.now().toString();
+
+    const textToEmbed = `${name} ${description} ${brand || ""} ${category || ""} ${color || ""} ${size || ""}`;
 
     // 2. Текстээ вектор болгох (OpenAI ашиглан)
     const textToEmbed = `${name} ${description} ${brand} ${category} ${color} ${size}`;
     const embeddings = new OpenAIEmbeddings({
       openAIApiKey: process.env.OPENAI_KEY,
+      modelName: "text-embedding-3-small", 
     });
     const vector = await embeddings.embedQuery(textToEmbed);
 
     await index.upsert({
       records: [
         {
-          id: productId,
+          id: generatedId,
           values: vector,
           metadata: {
-            name,
-            price: Number(price),
-            description,
-            category,
-            brand,
-            color,
-            size,
-            stock: Number(stock),
-            image: Array.isArray(images) ? images.join(",") : images || "",
+            product_name: name,
+            formatted_price: Number(price),
+            description: description,
+            category: category || "General",
+            brand: brand || "Unknown",
+            product_image_url: Array.isArray(images) && images.length > 0 ? images[0] : "",
+            stock: Number(stock) || 0,
+            color: color || "",
+            size: size || ""
           },
         },
       ],
     });
-
-    return Response.json({
-      success: true,
-      message: "Бүтээгдэхүүн Pinecone-д амжилттай хадгалагдлаа",
-      id: productId,
+    console.log("\x1b[32m%s\x1b[0m", "✅ ШИНЭ БАРАА PINECONE-Д ОРЛОО!");
+    console.log(`ID: ${generatedId}`);
+    console.log(`Нэр: ${name}`);
+    console.log("-----------------------------------");
+    
+    return Response.json({ 
+      success: true, 
+      message: "Амжилттай хадгалагдлаа",
+      pineconeId: generatedId 
     });
+
   } catch (error: any) {
-    console.error("Pinecone Upsert Error:", error);
+    console.error("Бүтээгдэхүүн нэмэхэд алдаа гарлаа:", error);
     return Response.json(
-      { success: false, error: error.message || "Алдаа гарлаа" },
-      { status: 500 },
+      { success: false, error: error.message || "Дотоод серверт алдаа гарлаа" }, 
+      { status: 500 }
     );
   }
 }
