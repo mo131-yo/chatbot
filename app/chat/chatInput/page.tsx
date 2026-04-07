@@ -1,32 +1,36 @@
 "use client";
 
+import { useState, useRef } from "react";
+import { ImagePlus, Loader2 } from "lucide-react";
 import { SendButton } from "./components/SendButton";
 import { Suggestions } from "./components/Suggestion";
 import { useState, useRef } from "react";
 import { ImagePlus, Loader2 } from "lucide-react";
 import { InputField } from "./components";
+import { useVisualSearch } from "../hooks/useVisualSearch";
 
 interface ChatInputProps {
-  onMessageReceived: (userMessage: any, aiReply: any) => void;
+  onSendMessage: (text: string) => void;   
+  onVisualResult: (userMsg: any, aiMsg: any) => void;
   history: { role: string; content: string }[];
-  setIsTyping: (val: boolean) => void;
+  isTyping: boolean;
 }
 
 export default function ChatInput({
-  onMessageReceived,
+  onSendMessage,
+  onVisualResult,
   history,
-  setIsTyping,
+  isTyping,
 }: ChatInputProps) {
   const [input, setInput] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { searchByImage, isSearching } = useVisualSearch();
 
-  const handleSend = async (textToSend?: string) => {
-    const finalInput = textToSend || input;
-    if (!finalInput.trim() || isLoading) return;
+  const combinedLoading = isTyping || isSearching;
 
-    setIsLoading(true);
-    setIsTyping(true);
+  const handleSend = (textToSend?: string) => {
+    const text = (textToSend ?? input).trim();
+    if (!text || combinedLoading) return;
     setInput("");
 
     try {
@@ -55,34 +59,25 @@ export default function ChatInput({
 
     setIsLoading(true);
     setIsTyping(true);
+    onSendMessage(text);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || combinedLoading) return;
 
     const imageUrl = URL.createObjectURL(file);
-    const userImageMsg = `<img src="${imageUrl}" class="w-48 rounded-lg border border-white/10" />`;
+    const userMsg = { type: "image", content: imageUrl };
 
-    const formData = new FormData();
-    formData.append("image", file);
+    const result = await searchByImage(file);
 
-    try {
-      const response = await fetch("/api/visual-search", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) throw new Error("Search failed");
-
-      const product = await response.json();
-
-      onMessageReceived(userImageMsg, {
-        type: "product_card",
-        data: product,
-      });
-    } catch (error) {
-      onMessageReceived(userImageMsg, "Уучлаарай, зургийг таньж чадсангүй.");
-    } finally {
-      setIsLoading(false);
-      setIsTyping(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
+    if (result.success && result.product) {
+      onVisualResult(userMsg, { type: "product_card", data: result.product });
+    } else {
+      onVisualResult(userMsg, "Уучлаарай, тохирох бараа олдсонгүй.");
     }
+
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   return (
@@ -99,28 +94,25 @@ export default function ChatInput({
         />
 
         <button
+          type="button"
           onClick={() => fileInputRef.current?.click()}
-          disabled={isLoading}
-          className="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded-xl transition-all"
+          disabled={combinedLoading}
+          className="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded-xl transition-all disabled:opacity-50"
         >
-          {isLoading ? (
-            <Loader2 className="animate-spin" size={22} />
-          ) : (
-            <ImagePlus size={22} />
-          )}
+          {isSearching ? <Loader2 className="animate-spin" size={22} /> : <ImagePlus size={22} />}
         </button>
 
         <InputField
           value={input}
           onChange={setInput}
-          onKeyDown={(e: any) => e.key === "Enter" && handleSend()}
-          disabled={isLoading}
+          onKeyDown={(e: any) => e.key === "Enter" && !e.shiftKey && handleSend()}
+          disabled={combinedLoading}
         />
 
         <SendButton
           onClick={() => handleSend()}
-          disabled={isLoading || !input.trim()}
-          isLoading={isLoading}
+          disabled={combinedLoading || !input.trim()}
+          isLoading={isTyping}
         />
       </div>
     </footer>

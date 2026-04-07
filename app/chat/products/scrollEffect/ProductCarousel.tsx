@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { useCart } from "@/app/context/CartContext";
 import { ProductDetailSidebar } from "../detail/ProductDetailSidebar";
-import { HorizontalProductStack } from "../components/HorizontalProductStack";
 import { Heart, X } from "lucide-react";
 import { useFavoriteStore } from "@/app/store/useFavoriteStore";
+import { HorizontalProductStack } from "../HorizontalProductStack/page";
 interface Product {
   id: string;
   name: string;
@@ -67,15 +67,11 @@ export const ProductCarousel = ({ products, history, onSelect, onBuy }: ProductC
   
   return (
     <div className="w-full space-y-8">
-      <HorizontalProductStack 
-        products={products} 
-        onSelect={(product) => setSelectedProduct(product)} 
+      <HorizontalProductStack
+        products={products}
+        onSelect={(product: any) => setSelectedProduct(product)}
         onBuy={onBuy}
-        onSave={(id) => {
-          const product = products.find(p => p.id === id);
-          toggleFavorite(product);
-        }}
-        savedIds={savedProducts}
+        onSave={(id) => console.log(id)}
       />
 
       {savedProducts.length > 0 && (

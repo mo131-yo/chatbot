@@ -161,7 +161,13 @@ export default function CartSidebar() {
                     </div>
                   </div>
                 </div>
-              ))
+                <button
+                  onClick={handleCheckout}
+                  className="w-full py-4 bg-[#C5A059] text-black font-black rounded-xl uppercase hover:bg-white transition-all"
+                >   
+                  Захиалга өгөх 
+                </button>
+              </div>
             )}
           </div>
 

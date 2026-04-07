@@ -1,8 +1,22 @@
-"use client";
+import { auth, clerkClient } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 
 import RevenueChart from "@/app/admin/components/dashboard/RevenueChart";
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const { userId } = await auth();
+
+  if (!userId) {
+    return redirect("/login");
+  }
+
+  const client = await clerkClient();
+  const user = await client.users.getUser(userId);
+
+  if (user.publicMetadata?.role !== "admin") {
+    return redirect("/");
+  }
+
   return (
     <div className="grid grid-cols-2 gap-6">
       <div
