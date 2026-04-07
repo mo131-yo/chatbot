@@ -1,127 +1,150 @@
 "use client";
 
+import { useState, useRef } from "react";
+import { ImagePlus, Loader2, X } from "lucide-react";
 import { SendButton } from "./components/SendButton";
 import { Suggestions } from "./components/Suggestion";
-import { useState, useRef } from "react";
-import { ImagePlus, Loader2 } from "lucide-react";
 import { InputField } from "./components";
+import { useVisualSearch } from "../hooks/useVisualSearch";
 
 interface ChatInputProps {
-  onMessageReceived: (userMessage: any, aiReply: any) => void;
+  onSendMessage: (text: string) => void;
+  onVisualResult: (userMsg: any, aiMsg: any) => void;
   history: { role: string; content: string }[];
-  setIsTyping: (val: boolean) => void;
+  isTyping: boolean;
 }
 
 export default function ChatInput({
-  onMessageReceived,
+  onSendMessage,
+  onVisualResult,
   history,
-  setIsTyping,
+  isTyping,
 }: ChatInputProps) {
   const [input, setInput] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [previewImage, setPreviewImage] = useState<{
+    file: File;
+    url: string;
+  } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { searchByImage, isSearching } = useVisualSearch();
+
+  const combinedLoading = isTyping || isSearching;
 
   const handleSend = async (textToSend?: string) => {
-    const finalInput = textToSend || input;
-    if (!finalInput.trim() || isLoading) return;
+    const text = (textToSend ?? input).trim();
 
-    setIsLoading(true);
-    setIsTyping(true);
-    setInput("");
+    if (previewImage) {
+      const imageUrl = previewImage.url;
+      const file = previewImage.file;
+      const inputText = input.trim();
+      setPreviewImage(null);
+      setInput("");
 
-    try {
-      const response = await fetch("/chat/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: [...history, { role: "user", content: finalInput }],
-        }),
+      const base64 = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.readAsDataURL(file);
       });
-      const data = await response.json();
-      if (data.reply) onMessageReceived(finalInput, data.reply);
-    } catch (error) {
-      onMessageReceived(finalInput, "Холболтын алдаа гарлаа.");
-    } finally {
-      setIsLoading(false);
-      setIsTyping(false);
+
+      const userMsg = {
+        type: "image",
+        content: imageUrl,
+        base64,
+        text: inputText,
+      };
+      const result = await searchByImage(file);
+
+      if (result.success && result.products?.length) {
+        onVisualResult(userMsg, {
+          type: "product_card",
+          data: result.product,
+          products: result.products,
+        });
+      } else {
+        onVisualResult(userMsg, "Уучлаарай, тохирох бараа олдсонгүй.");
+      }
+      return;
     }
+
+    if (!text || combinedLoading) return;
+    setInput("");
+    onSendMessage(text);
   };
 
-  const handleImageUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || combinedLoading) return;
+    const url = URL.createObjectURL(file);
+    setPreviewImage({ file, url });
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
 
-    setIsLoading(true);
-    setIsTyping(true);
-
-    const imageUrl = URL.createObjectURL(file);
-    const userImageMsg = `<img src="${imageUrl}" class="w-48 rounded-lg border border-white/10" />`;
-
-    const formData = new FormData();
-    formData.append("image", file);
-
-    try {
-      const response = await fetch("/api/visual-search", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) throw new Error("Search failed");
-
-      const product = await response.json();
-
-      onMessageReceived(userImageMsg, {
-        type: "product_card",
-        data: product,
-      });
-    } catch (error) {
-      onMessageReceived(userImageMsg, "Уучлаарай, зургийг таньж чадсангүй.");
-    } finally {
-      setIsLoading(false);
-      setIsTyping(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    }
+  const handleRemoveImage = () => {
+    if (previewImage) URL.revokeObjectURL(previewImage.url);
+    setPreviewImage(null);
   };
 
   return (
     <footer className="w-full max-w-4xl mx-auto p-4 relative z-50">
       <Suggestions visible={history?.length === 0} onSelect={handleSend} />
 
-      <div className="relative flex items-center w-full gap-3 bg-white/5 backdrop-blur-xl p-2 rounded-2xl border border-white/10 shadow-2xl">
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={handleImageUpload}
-          accept="image/*"
-          className="hidden"
-        />
+      <div className="flex flex-col w-full bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
+        {previewImage && (
+          <div className="px-3 pt-3">
+            <div className="relative inline-block">
+              <img
+                src={previewImage.url}
+                alt="preview"
+                className="h-20 w-20 object-cover rounded-xl border border-white/20"
+              />
+              <button
+                onClick={handleRemoveImage}
+                className="absolute -top-2 -right-2 bg-gray-700 hover:bg-gray-600 text-white rounded-full p-0.5 transition-colors"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          </div>
+        )}
 
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          disabled={isLoading}
-          className="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded-xl transition-all"
-        >
-          {isLoading ? (
-            <Loader2 className="animate-spin" size={22} />
-          ) : (
-            <ImagePlus size={22} />
-          )}
-        </button>
+        <div className="relative flex items-center w-full gap-3 p-2">
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleImageSelect}
+            accept="image/*"
+            className="hidden"
+          />
 
-        <InputField
-          value={input}
-          onChange={setInput}
-          onKeyDown={(e: any) => e.key === "Enter" && handleSend()}
-          disabled={isLoading}
-        />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={combinedLoading}
+            className="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded-xl transition-all disabled:opacity-50"
+          >
+            {isSearching ? (
+              <Loader2 className="animate-spin" size={22} />
+            ) : (
+              <ImagePlus size={22} />
+            )}
+          </button>
 
-        <SendButton
-          onClick={() => handleSend()}
-          disabled={isLoading || !input.trim()}
-          isLoading={isLoading}
-        />
+          <InputField
+            value={input}
+            onChange={setInput}
+            onKeyDown={(e: any) =>
+              e.key === "Enter" && !e.shiftKey && handleSend()
+            }
+            disabled={combinedLoading}
+            placeholder={previewImage ? "Зураг илгээх..." : undefined}
+          />
+
+          <SendButton
+            onClick={() => handleSend()}
+            disabled={combinedLoading || (!input.trim() && !previewImage)}
+            isLoading={isTyping || isSearching}
+          />
+        </div>
       </div>
     </footer>
   );

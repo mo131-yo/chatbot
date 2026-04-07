@@ -1,21 +1,33 @@
-// import { clerkMiddleware } from "@clerk/nextjs/server";
-
-// export default clerkMiddleware();
-
-// export const config = {
-//   matcher: ["/((?!_next|.*\\..*).*)"],
-// };
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import {
+  clerkMiddleware,
+  clerkClient,
+  createRouteMatcher,
+} from "@clerk/nextjs/server";
 
 const isProtectedRoute = createRouteMatcher(["/chat(.*)"]);
 
-async function proxy(auth: any, req: any) {
-  if (isProtectedRoute(req)) {
-    await auth.protect();
-  }
-}
+export default clerkMiddleware(async (auth, req) => {
+  const { userId } = await auth();
+  const pathname = req.nextUrl.pathname;
 
-export default clerkMiddleware(proxy);
+  if (isProtectedRoute(req) && !userId) {
+    return Response.redirect(new URL("/login", req.url));
+  }
+
+  if (pathname.startsWith("/admin")) {
+    if (!userId) {
+      return Response.redirect(new URL("/login", req.url));
+    }
+
+    const client = await clerkClient();
+    const user = await client.users.getUser(userId);
+    const role = user.publicMetadata?.role;
+
+    if (role !== "admin") {
+      return Response.redirect(new URL("/", req.url));
+    }
+  }
+});
 
 export const config = {
   matcher: ["/((?!_next|.*\\..*).*)"],

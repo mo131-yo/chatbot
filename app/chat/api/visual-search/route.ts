@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import OpenAI from 'openai';
-import { Pinecone } from '@pinecone-database/pinecone';
+import { NextRequest, NextResponse } from "next/server";
+import OpenAI from "openai";
+import { Pinecone } from "@pinecone-database/pinecone";
 
 const openaiKey = process.env.OPENAI_KEY;
 const pineconeApiKey = process.env.PINECONE_API_KEY;
@@ -15,14 +15,14 @@ const pc = new Pinecone({ apiKey: pineconeApiKey });
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
-    const file = formData.get('image') as File;
+    const file = formData.get("image") as File;
 
     if (!file) {
       return NextResponse.json({ error: "Зураг олдсонгүй" }, { status: 400 });
     }
 
     const bytes = await file.arrayBuffer();
-    const base64Image = Buffer.from(bytes).toString('base64');
+    const base64Image = Buffer.from(bytes).toString("base64");
 
     const visionResponse = await openai.chat.completions.create({
       model: "gpt-4o-mini",
@@ -30,8 +30,14 @@ export async function POST(req: NextRequest) {
         {
           role: "user",
           content: [
-            { type: "text", text: "Describe this product briefly for a search engine. Include brand, color, and item type in English." },
-            { type: "image_url", image_url: { url: `data:image/jpeg;base64,${base64Image}` } },
+            {
+              type: "text",
+              text: "Describe this product briefly for a search engine. Include brand, color, and item type in English.",
+            },
+            {
+              type: "image_url",
+              image_url: { url: `data:image/jpeg;base64,${base64Image}` },
+            },
           ],
         },
       ],
@@ -46,7 +52,7 @@ export async function POST(req: NextRequest) {
 
     const vector = embeddingResponse.data[0].embedding;
 
-    const index = pc.index("shoppy-products");
+    const index = pc.index("chatbot");
     const queryResponse = await index.query({
       vector: vector,
       topK: 1,
@@ -58,7 +64,6 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json(queryResponse.matches[0].metadata);
-
   } catch (error: any) {
     console.error("Visual Search Error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });

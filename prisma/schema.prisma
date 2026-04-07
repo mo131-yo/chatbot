@@ -91,6 +91,7 @@ model ChatMessage {
   chatSession   ChatSession @relation(fields: [chatSessionId], references: [id], onDelete: Cascade)
   role          ChatRole
   content       String
+  imagePreview  String?     @db.Text 
   createdAt     DateTime    @default(now())
 
   @@index([chatSessionId, createdAt])

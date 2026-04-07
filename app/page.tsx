@@ -22,6 +22,8 @@ export default function Home() {
     setIsTyping,
     sendMessage,
     isLoading,
+    addVisualResult,
+    isStreaming,
     deleteChat: handleDeleteChat,
   } = useChatLogic();
 
@@ -89,12 +91,17 @@ export default function Home() {
           )}
         </main>
 
-        {/* <ChatRobot /> */}
-
         <ChatInput
-          onMessageReceived={sendMessage}
+          onSendMessage={sendMessage}
+          onVisualResult={async (userMsg, result) => {
+            if (result?.type === "product_card") {
+              await addVisualResult(userMsg, result.products || [result.data]);
+            } else if (typeof result === "string") {
+              await addVisualResult(userMsg, []);
+            }
+          }}
           history={currentChatMessages}
-          setIsTyping={setIsTyping}
+          isTyping={isTyping || isStreaming}
         />
       </div>
     </div>

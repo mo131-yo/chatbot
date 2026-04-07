@@ -13,7 +13,10 @@ export async function POST(req: Request) {
     const { productId, name, price, image, storeId } = body;
 
     if (!productId) {
-      return NextResponse.json({ error: "ProductId is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "ProductId is required" },
+        { status: 400 },
+      );
     }
 
     const user = await prisma.user.findUnique({
@@ -73,8 +76,6 @@ export async function POST(req: Request) {
   }
 }
 
-
-
 export async function GET() {
   try {
     const { userId: clerkUserId } = await auth();
@@ -84,22 +85,25 @@ export async function GET() {
       where: { clerkUserId },
       include: {
         favorites: {
-          include: { 
-            product: true
-          }
-        }
-      }
+          include: {
+            product: true,
+          },
+        },
+      },
     });
 
     if (!user) return NextResponse.json([]);
 
-    const favorites = user.favorites.map(f => ({
+    const favorites = user.favorites.map((f) => ({
       productId: f.productId,
-      product: f.product
+      product: f.product,
     }));
 
     return NextResponse.json(favorites);
   } catch (error) {
-    return NextResponse.json({ error: "Татахад алдаа гарлаа" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Татахад алдаа гарлаа" },
+      { status: 500 },
+    );
   }
 }
