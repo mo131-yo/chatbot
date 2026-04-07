@@ -1,542 +1,314 @@
-// "use client";
-
-// import { useState } from "react";
-// import { Button } from "../ui/button";
-// import { useUploadThing } from "@/utils/uploadthing";
-
-// export default function ProductForm({ onSuccess }: any) {
-//   const [open, setOpen] = useState(false);
-
-//   const [name, setName] = useState("");
-//   const [price, setPrice] = useState("");
-//   const [imageFiles, setImageFiles] = useState<File[]>([]);
-//   const [previews, setPreviews] = useState<string[]>([]);
-//   const [description, setDescription] = useState("");
-
-//   const [color, setColor] = useState("");
-//   const [size, setSize] = useState("");
-//   const [brand, setBrand] = useState("");
-//   const [stock, setStock] = useState("");
-//   const [category, setCategory] = useState("");
-  
-
-//  const handleSubmit = async () => {
-//     try {
-//       const imagesBase64 = await Promise.all(
-//         imageFiles.map((file) => {
-//           return new Promise<string>((resolve) => {
-//             const reader = new FileReader();
-//             reader.onload = () => resolve(reader.result as string);
-//             reader.readAsDataURL(file);
-//           });
-//         }),
-//       );
-
-//       const response = await fetch("/admin/api/productCreate", {
-//         method: "POST",
-//         headers: {
-//           "Content-Type": "application/json",
-//         },
-//         body: JSON.stringify({
-//           name,
-//           price: Number(price),
-//           images: imagesBase64,
-//           description,
-//           color,
-//           size,
-//           brand,
-//           stock: Number(stock),
-//           category,
-//         }),
-//       });
-
-//     // 1. UploadThing рүү зургуудаа хуулна
-//     const uploadRes = await startUpload(imageFiles);
-    
-//     if (!uploadRes) {
-//       throw new Error("Зураг хуулахад алдаа гарлаа");
-//     }
-
-//     const uploadedUrls = uploadRes.map(file => file.url);
-
-//     // 2. Өөрийн API (Pinecone-той) руу мэдээллээ илгээнэ
-//     const response = await fetch("/admin/api/productCreate", {
-//       method: "POST",
-//       headers: { "Content-Type": "application/json" },
-//       body: JSON.stringify({
-//         name,
-//         description,
-//         price: Number(price),
-//         images: uploadedUrls, // Одоо UploadThing-ийн URL-ууд очиж байна
-//         category,
-//         brand,
-//         color,
-//         size,
-//         stock: Number(stock),
-//       }),
-//     });
-
-//     if (!response.ok) {
-//       const errorData = await response.json();
-//       throw new Error(errorData.error || "Хадгалахад алдаа гарлаа");
-//     }
-
-//       if (data.success) {
-//         console.log("Шинээр үүссэн Pinecone ID:", data.pineconeId);
-        
-//         alert(`Бараа амжилттай нэмэгдлээ!\nPinecone ID: ${data.pineconeId}`);
-        
-//         setOpen(false);
-//         resetForm();
-//         onSuccess();
-//       }
-//     } catch (error: any) {
-//       console.error("Фронт дээрх алдаа:", error);
-//       alert("Алдаа: " + error.message);
-//     }
-//   } catch (error: any) {
-//     console.error("Алдаа:", error);
-//     alert(error.message);
-//   }
-// };
-
-//   const resetForm = () => {
-//     setName("");
-//     setPrice("");
-//     setImageFiles([]);
-//     setPreviews([]);
-//     setDescription("");
-//     setBrand("");
-//     setCategory("");
-//     setColor("");
-//     setSize("");
-//     setStock("");
-//   };
-
-//   return (
-//     <>
-//       <Button onClick={() => setOpen(true)}>+ Бараа нэмэх</Button>
-
-//       {open && (
-//         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-//           <div
-//             className="
-//             w-120 max-h-[90vh] overflow-y-auto p-6 rounded-2xl
-//             bg-gray-900 text-white
-//             dark:bg-white dark:text-black
-//             border border-white/10 dark:border-gray-200
-//             shadow-2xl space-y-6 transition-all duration-300
-//           "
-//           >
-//             <h2 className="text-xl font-bold">🛒 Шинэ бараа нэмэх</h2>
-
-//             <Section title="Basic Info">
-//               <Input label="Барааны нэр" value={name} set={setName} />
-//               <Input
-//                 label="Барааны үнэ"
-//                 type="number"
-//                 value={price}
-//                 set={setPrice}
-//               />
-//             </Section>
-
-//             <Section title="Зураг">
-//               <div
-//                 className="
-//                 relative border-2 border-dashed rounded-xl p-4
-//                 bg-gray-800 dark:bg-gray-100
-//                 flex flex-col items-center justify-center
-//                 cursor-pointer hover:opacity-80 transition
-//               "
-//               >
-//                 <input
-//                   type="file"
-//                   accept="image/*"
-//                   multiple
-//                   className="absolute inset-0 opacity-0 cursor-pointer"
-//                   onChange={(e) => {
-//                     const files = Array.from(e.target.files || []);
-//                     if (!files.length) return;
-
-//                     setImageFiles((prev) => [...prev, ...files]);
-
-//                     const newPreviews = files.map((file) =>
-//                       URL.createObjectURL(file),
-//                     );
-
-//                     setPreviews((prev) => [...prev, ...newPreviews]);
-//                   }}
-//                 />
-
-//                 <p className="text-sm text-gray-400 dark:text-gray-600">
-//                   Click or drag multiple images
-//                 </p>
-//               </div>
-
-//               <div className="grid grid-cols-3 gap-3 mt-4">
-//                 {previews.map((img, index) => (
-//                   <div key={index} className="relative">
-//                     <img
-//                       src={img}
-//                       className="w-full h-24 object-cover rounded-lg"
-//                     />
-
-//                     <button
-//                       onClick={() => {
-//                         setPreviews((prev) =>
-//                           prev.filter((_, i) => i !== index),
-//                         );
-//                         setImageFiles((prev) =>
-//                           prev.filter((_, i) => i !== index),
-//                         );
-//                       }}
-//                       className="
-//           absolute top-1 right-1
-//           bg-red-500 text-white text-xs px-2 py-1 rounded
-//         "
-//                     >
-//                       ✕
-//                     </button>
-//                   </div>
-//                 ))}
-//               </div>
-//             </Section>
-
-//             <Section title="Тайлбар">
-//               <textarea
-//                 value={description}
-//                 onChange={(e) => setDescription(e.target.value)}
-//                 className="input min-h-22.5"
-//               />
-//             </Section>
-
-//             <Section title="Дэлгэрэнгүй">
-//               <Input label="Брэнд" value={brand} set={setBrand} />
-//               <Input label="Категори" value={category} set={setCategory} />
-//               <Input label="Color" value={color} set={setColor} />
-//               <Input label="Size" value={size} set={setSize} />
-//               <Input label="Stock" type="number" value={stock} set={setStock} />
-//             </Section>
-
-//             <div className="flex gap-3 pt-2">
-//               <button
-//                 onClick={() => setOpen(false)}
-//                 className="
-//                 flex-1 py-2 rounded-lg
-//                 bg-gray-700 text-white
-//                 dark:bg-gray-200 dark:text-black
-//               "
-//               >
-//                 Болих
-//               </button>
-
-//               <button
-//                 onClick={handleSubmit}
-//                 className="
-//                 flex-1 py-2 rounded-lg
-//                 bg-indigo-600 text-white hover:opacity-90
-//               "
-//               >
-//                 Хадгалах
-//               </button>
-//             </div>
-//           </div>
-//         </div>
-//       )}
-//     </>
-//   );
-// }
-
-// function Section({ title, children }: any) {
-//   return (
-//     <div className="p-4 rounded-xl bg-white/5 dark:bg-gray-100 space-y-3">
-//       <h3 className="text-sm font-semibold text-gray-400 dark:text-gray-600">
-//         {title}
-//       </h3>
-//       {children}
-//     </div>
-//   );
-// }
-
-// function Input({ label, value, set, type = "text" }: any) {
-//   return (
-//     <div>
-//       <label className="text-xs text-gray-400 dark:text-gray-600">
-//         {label}
-//       </label>
-
-//       <input
-//         type={type}
-//         value={value}
-//         onChange={(e) => set(e.target.value)}
-//         className="
-//         w-full mt-1 p-2 rounded-lg
-//         bg-gray-800 text-white
-//         dark:bg-white dark:text-black
-//         border border-transparent
-//         focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500
-//         outline-none transition
-//       "
-//       />
-//     </div>
-//   );
-// }
-
-
-
-
-
-
-
 "use client";
- 
-import { useState } from "react";
-import { Button } from "../ui/button";
- 
-export default function ProductForm({ onSuccess }: any) {
+
+import React, { useEffect, useState } from "react";
+import { X, Upload, PackagePlus, Info, ImageIcon, LayoutGrid, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@clerk/nextjs";
+import { SuccessToast } from "../ui/SuccessToast";
+
+interface ProductFormProps {
+  onSuccess?: () => void;
+  initialData?: any;
+  onClose?: () => void;
+}
+
+const getInitialImage = (data: any): string[] => {
+  if (!data) return [];
+  if (data.product_image_url) return [data.product_image_url];
+  if (Array.isArray(data.images) && data.images.length > 0) return [data.images[0]];
+  if (data.image) return [data.image];
+  return [];
+};
+
+const getCurrentImageUrl = (data: any): string => {
+  if (!data) return "";
+  if (data.product_image_url) return data.product_image_url;
+  if (Array.isArray(data.images) && data.images.length > 0) return data.images[0];
+  if (data.image) return data.image;
+  return "";
+};
+
+export default function ProductForm({ onSuccess, initialData, onClose }: ProductFormProps) {
   const [open, setOpen] = useState(false);
- 
-  const [name, setName] = useState("");
-  const [price, setPrice] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { userId } = useAuth();
+
+  const [showToast, setShowToast] = useState(false);
+  const [toastMsg, setToastMsg] = useState("");
+
+  const [formData, setFormData] = useState({
+    id: "",
+    name: "",
+    price: "",
+    description: "",
+    brand: "",
+    category: "",
+    stock: "",
+    color: "",
+    size: "",
+  });
+
+  const [previews, setPreviews] = useState<string[]>(getInitialImage(initialData));
   const [imageFiles, setImageFiles] = useState<File[]>([]);
-  const [previews, setPreviews] = useState<string[]>([]);
-  const [description, setDescription] = useState("");
- 
-  const [color, setColor] = useState("");
-  const [size, setSize] = useState("");
-  const [brand, setBrand] = useState("");
-  const [stock, setStock] = useState("");
-  const [category, setCategory] = useState("");
- 
-const handleSubmit = async () => {
-    try {
-      const imagesBase64 = await Promise.all(
-        imageFiles.map((file) => {
-          return new Promise<string>((resolve) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result as string);
-            reader.readAsDataURL(file);
-          });
-        }),
-      );
- 
-      const response = await fetch("/admin/api/productCreate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name,
-          price: Number(price),
-          images: imagesBase64,
-          description,
-          color,
-          size,
-          brand,
-          stock: Number(stock),
-          category,
-        }),
+
+  useEffect(() => {
+    if (initialData) {
+      setOpen(true);
+      setFormData({
+        id: initialData.id || "",
+        name: initialData.name || "",
+        price: initialData.price?.toString() || "",
+        description: initialData.description || "",
+        brand: initialData.brand || "",
+        category: initialData.category?.name || initialData.categoryName || "",
+        stock: initialData.stock?.toString() || "",
+        color: Array.isArray(initialData.colors) ? initialData.colors[0] : (initialData.color || ""),
+        size: Array.isArray(initialData.sizes) ? initialData.sizes[0] : (initialData.size || ""),
       });
- 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Хадгалахад алдаа гарлаа");
-      }
- 
-      const data = await response.json();
- 
-      if (data.success) {
-        console.log("Шинээр үүссэн Pinecone ID:", data.pineconeId);
-        
-        alert(`Бараа амжилттай нэмэгдлээ!\nPinecone ID: ${data.pineconeId}`);
-        
-        setOpen(false);
-        resetForm();
-        onSuccess();
-      }
-    } catch (error: any) {
-      console.error("Фронт дээрх алдаа:", error);
-      alert("Алдаа: " + error.message);
+
+      setPreviews(getInitialImage(initialData));
+      setImageFiles([]);
+    }
+  }, [initialData]);
+
+  const handleClose = () => {
+    setOpen(false);
+    if (onClose) onClose();
+    if (!initialData) {
+      resetForm();
     }
   };
- 
+
   const resetForm = () => {
-    setName("");
-    setPrice("");
+    setFormData({ id: "", name: "", price: "", description: "", brand: "", category: "", color: "", size: "", stock: "" });
     setImageFiles([]);
     setPreviews([]);
-    setDescription("");
-    setBrand("");
-    setCategory("");
-    setColor("");
-    setSize("");
-    setStock("");
   };
- 
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    setImageFiles(prev => [...prev, ...files]);
+    const newPreviews = files.map(file => URL.createObjectURL(file));
+    setPreviews(prev => [...prev, ...newPreviews]);
+  };
+
+  const handleSubmit = async () => {
+    if (!formData.name || !formData.price) {
+      return alert("Нэр болон үнэ заавал байх ёстой");
+    }
+
+    setIsSubmitting(true);
+    try {
+      let permanentImageUrl = getCurrentImageUrl(initialData);
+
+      if (imageFiles.length > 0) {
+        const file = imageFiles[0];
+        const cloudData = new FormData();
+        cloudData.append("file", file);
+        cloudData.append("upload_preset", "my_store_preset");
+        cloudData.append("folder", `stores/${userId}`);
+
+        const CLOUD_NAME = "dzljgphud";
+        const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+          method: "POST",
+          body: cloudData
+        });
+
+        const cloudJson = await uploadRes.json();
+        if (cloudJson.secure_url) {
+          permanentImageUrl = cloudJson.secure_url;
+        }
+      }
+
+      const endpoint = initialData ? "/admin/api/productUpdate" : "/admin/api/productAdd";
+      
+      const payload = {
+        ...formData,
+        id: initialData?.id || formData.id || `prod_${Date.now()}`, 
+        price: parseFloat(formData.price),
+        stock: parseInt(formData.stock || "0"),
+        imageUrl: permanentImageUrl,
+      };
+
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setToastMsg(initialData ? "DATABASE RE-SYNCHRONIZED" : "Success");
+        setShowToast(true);
+        
+        setTimeout(() => {
+          handleClose();
+          if (onSuccess) onSuccess();
+        }, 1000); 
+      } else {
+        alert("Системийн алдаа: " + data.error);
+      }
+    } catch (error) {
+      console.error("Submit error:", error);
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      alert("Холболтын алдаа: " + errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <>
-      <Button onClick={() => setOpen(true)}>+ Бараа нэмэх</Button>
- 
+      {showToast && (
+        <SuccessToast 
+          isVisible={showToast} 
+          message={toastMsg} 
+          onClose={() => setShowToast(false)} 
+        />
+      )}
+
+      {!initialData && (
+        <Button
+          onClick={() => setOpen(true)}
+          className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-6 py-5 rounded-xl shadow-indigo-500/20 shadow-lg transition-all active:scale-95"
+        >
+          <PackagePlus className="w-5 h-5 mr-2" /> Бараа нэмэх
+        </Button>
+      )}
+
       {open && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div
-            className="
-            w-120 max-h-[90vh] overflow-y-auto p-6 rounded-2xl
-            bg-gray-900 text-white
-            dark:bg-white dark:text-black
-            border border-white/10 dark:border-gray-200
-            shadow-2xl space-y-6 transition-all duration-300
-          "
-          >
-            <h2 className="text-xl font-bold">🛒 Шинэ бараа нэмэх</h2>
- 
-            <Section title="Basic Info">
-              <Input label="Барааны нэр" value={name} set={setName} />
-              <Input
-                label="Барааны үнэ"
-                type="number"
-                value={price}
-                set={setPrice}
-              />
-            </Section>
- 
-            <Section title="Зураг">
-              <div
-                className="
-                relative border-2 border-dashed rounded-xl p-4
-                bg-gray-800 dark:bg-gray-100
-                flex flex-col items-center justify-center
-                cursor-pointer hover:opacity-80 transition
-              "
-              >
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  className="absolute inset-0 opacity-0 cursor-pointer"
-                  onChange={(e) => {
-                    const files = Array.from(e.target.files || []);
-                    if (!files.length) return;
- 
-                    setImageFiles((prev) => [...prev, ...files]);
- 
-                    const newPreviews = files.map((file) =>
-                      URL.createObjectURL(file),
-                    );
- 
-                    setPreviews((prev) => [...prev, ...newPreviews]);
-                  }}
-                />
- 
-                <p className="text-sm text-gray-400 dark:text-gray-600">
-                  Click or drag multiple images
-                </p>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-100 p-4 animate-in fade-in duration-200">
+          <div className="relative w-full max-w-4xl max-h-[92vh] overflow-hidden rounded-[2.5rem] bg-gray-950 text-white shadow-2xl flex flex-col border border-white/5">
+
+            <header className="px-8 py-6 border-b border-white/5 flex items-center justify-between bg-gray-950/50 backdrop-blur-md sticky top-0 z-10">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-indigo-500/10 rounded-2xl flex items-center justify-center border border-indigo-500/20">
+                  <PackagePlus className="w-6 h-6 text-indigo-400" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold tracking-tight">
+                    {initialData ? "Барааны мэдээлэл засах" : "Шинэ бараа бүртгэх"}
+                  </h2>
+                  <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-semibold">Inventory Control</p>
+                </div>
               </div>
- 
-              <div className="grid grid-cols-3 gap-3 mt-4">
-                {previews.map((img, index) => (
-                  <div key={index} className="relative">
-                    <img
-                      src={img}
-                      className="w-full h-24 object-cover rounded-lg"
-                    />
- 
-                    <button
-                      onClick={() => {
-                        setPreviews((prev) =>
-                          prev.filter((_, i) => i !== index),
-                        );
-                        setImageFiles((prev) =>
-                          prev.filter((_, i) => i !== index),
-                        );
-                      }}
-                      className="
-          absolute top-1 right-1
-          bg-red-500 text-white text-xs px-2 py-1 rounded
-        "
-                    >
-                      ✕
-                    </button>
-                  </div>
-                ))}
+              <button onClick={handleClose} className="p-2 hover:bg-white/5 rounded-xl transition-colors">
+                <X className="w-6 h-6 text-gray-500" />
+              </button>
+            </header>
+
+            <main className="flex-1 overflow-y-auto p-8 space-y-10 scrollbar-hide">
+              <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
+                <div className="lg:col-span-3 space-y-8">
+                  <Section title="Үндсэн мэдээлэл" icon={<Info className="w-4 h-4" />}>
+                    <div className="grid grid-cols-2 gap-5">
+                      <FormInput label="Барааны нэр" placeholder="Nike Air..." value={formData.name} onChange={(v: any) => handleInputChange('name', v)} />
+                      <FormInput label="Үнэ (₮)" type="number" placeholder="0.00" value={formData.price} onChange={(v: any) => handleInputChange('price', v)} />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-gray-500 uppercase ml-1 tracking-widest">Дэлгэрэнгүй тайлбар</label>
+                      <textarea
+                        value={formData.description}
+                        onChange={e => handleInputChange('description', e.target.value)}
+                        placeholder="Барааны шинж чанар..."
+                        className="w-full min-h-32 p-4 rounded-2xl bg-white/5 border border-white/5 text-sm outline-none focus:ring-1 focus:ring-indigo-500/50 transition-all resize-none placeholder:text-gray-600"
+                      />
+                    </div>
+                  </Section>
+
+                  <Section title="Нэмэлт үзүүлэлт" icon={<LayoutGrid className="w-4 h-4" />}>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-5">
+                      <FormInput label="Брэнд" value={formData.brand} onChange={(v: any) => handleInputChange('brand', v)} />
+                      <FormInput label="Категори" value={formData.category} onChange={(v: any) => handleInputChange('category', v)} />
+                      <FormInput label="Үлдэгдэл" type="number" value={formData.stock} onChange={(v: any) => handleInputChange('stock', v)} />
+                    </div>
+                  </Section>
+                </div>
+
+                <div className="lg:col-span-2">
+                  <Section title="Медиа" icon={<ImageIcon className="w-4 h-4" />}>
+                    <div className="relative group h-72 border-2 border-dashed border-white/10 rounded-[2rem] bg-white/2 hover:bg-white/4 transition-all flex flex-col items-center justify-center gap-3 overflow-hidden">
+                      {previews.length > 0 ? (
+                        <div className="absolute inset-0 w-full h-full">
+                          <img src={previews[previews.length - 1]} alt="Preview" className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button
+                              type="button"
+                              onClick={() => { setPreviews([]); setImageFiles([]); }}
+                              className="p-3 bg-red-500 rounded-full shadow-xl hover:scale-110 transition-transform"
+                            >
+                              <X className="w-5 h-5 text-white" />
+                            </button>
+                          </div>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="absolute inset-0 opacity-0 cursor-pointer z-20"
+                            onChange={handleFileChange}
+                          />
+                        </div>
+                      ) : (
+                        <>
+                          <div className="p-4 bg-indigo-500/10 rounded-2xl">
+                            <Upload className="w-6 h-6 text-indigo-400" />
+                          </div>
+                          <p className="text-[11px] font-medium text-gray-400">Зургийг энд чирж оруулна уу</p>
+                          <input type="file" accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer z-20" onChange={handleFileChange} />
+                        </>
+                      )}
+                    </div>
+                  </Section>
+                </div>
               </div>
-            </Section>
- 
-            <Section title="Тайлбар">
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="input min-h-22.5"
-              />
-            </Section>
- 
-            <Section title="Дэлгэрэнгүй">
-              <Input label="Брэнд" value={brand} set={setBrand} />
-              <Input label="Категори" value={category} set={setCategory} />
-              <Input label="Color" value={color} set={setColor} />
-              <Input label="Size" value={size} set={setSize} />
-              <Input label="Stock" type="number" value={stock} set={setStock} />
-            </Section>
- 
-            <div className="flex gap-3 pt-2">
-              <button
-                onClick={() => setOpen(false)}
-                className="
-                flex-1 py-2 rounded-lg
-                bg-gray-700 text-white
-                dark:bg-gray-200 dark:text-black
-              "
-              >
+            </main>
+
+            <footer className="px-8 py-6 bg-white/5 border-t border-white/5 flex gap-4">
+              <Button onClick={handleClose} variant="ghost" className="flex-1 py-6 rounded-2xl font-bold text-gray-400 hover:text-white hover:bg-white/5 transition-all">
                 Болих
-              </button>
- 
-              <button
+              </Button>
+              <Button
                 onClick={handleSubmit}
-                className="
-                flex-1 py-2 rounded-lg
-                bg-indigo-600 text-white hover:opacity-90
-              "
+                disabled={isSubmitting}
+                className="flex-2 py-6 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold shadow-indigo-500/10 shadow-xl disabled:opacity-50"
               >
-                Хадгалах
-              </button>
-            </div>
+                {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : (initialData ? "Хадгалах" : "Барааг бүртгэх")}
+              </Button>
+            </footer>
           </div>
         </div>
       )}
     </>
   );
 }
- 
-function Section({ title, children }: any) {
+
+function Section({ title, icon, children }: any) {
   return (
-    <div className="p-4 rounded-xl bg-white/5 dark:bg-gray-100 space-y-3">
-      <h3 className="text-sm font-semibold text-gray-400 dark:text-gray-600">
-        {title}
-      </h3>
-      {children}
+    <div className="space-y-4">
+      <div className="flex items-center gap-3">
+        <div className="p-1.5 bg-indigo-500/10 rounded-lg text-indigo-400">{icon}</div>
+        <h3 className="text-xs font-bold uppercase tracking-[0.15em] text-gray-400">{title}</h3>
+      </div>
+      <div className="space-y-4">{children}</div>
     </div>
   );
 }
- 
-function Input({ label, value, set, type = "text" }: any) {
+
+function FormInput({ label, value, onChange, type = "text", placeholder = "" }: any) {
   return (
-    <div>
-      <label className="text-xs text-gray-400 dark:text-gray-600">
-        {label}
-      </label>
- 
+    <div className="flex-1 space-y-2">
+      <label className="text-[10px] font-bold text-gray-500 uppercase ml-1 tracking-widest">{label}</label>
       <input
         type={type}
         value={value}
-        onChange={(e) => set(e.target.value)}
-        className="
-        w-full mt-1 p-2 rounded-lg
-        bg-gray-800 text-white
-        dark:bg-white dark:text-black
-        border border-transparent
-        focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500
-        outline-none transition
-      "
+        placeholder={placeholder}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full px-5 py-3.5 rounded-2xl bg-white/5 border border-white/5 text-sm text-white outline-none focus:ring-1 focus:ring-indigo-500/50 transition-all placeholder:text-gray-700"
       />
     </div>
   );

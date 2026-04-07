@@ -1,21 +1,22 @@
+import { Pinecone } from "@pinecone-database/pinecone";
+import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+
+const pc = new Pinecone({ apiKey: process.env.PINECONE_API_KEY! });
+const index = pc.index(process.env.PINECONE_NAME!);
 
 export async function DELETE(req: NextRequest) {
   try {
+    const { userId } = await auth();
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
 
-    if (!id) {
-      return NextResponse.json({ error: "ID шаардлагатай" }, { status: 400 });
-    }
+    if (!userId || !id) return NextResponse.json({ error: "Missing info" }, { status: 400 });
 
-    const product = await prisma.product.delete({
-      where: { id: id },
-    });
+    await index.namespace(userId).deleteOne({id: id});
 
-    return NextResponse.json({ message: "Устлаа", product });
-  } catch (error) {
-    return NextResponse.json({ error: "Алдаа гарлаа" }, { status: 500 });
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
