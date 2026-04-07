@@ -34,9 +34,7 @@ export default function Sidebar() {
       ${collapsed ? "w-20" : "w-64"}
       bg-[#1c2541]/90 backdrop-blur-xl border-r border-white/10 text-white`}
     >
-      {/* TOP */}
       <div>
-        {/* LOGO + AVATAR */}
         <div className="flex items-center justify-between mb-3">
           {!collapsed && (
             <h1 className="text-xl font-bold tracking-wide bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
@@ -56,25 +54,22 @@ export default function Sidebar() {
           </div>
         </div>
 
-        {/* ADMIN BADGE */}
         {!collapsed && role === "admin" && (
           <span
-  className="text-[10px] px-2 py-1 rounded-full text-white mb-4 inline-block
+            className="text-[10px] px-2 py-1 rounded-full text-white mb-4 inline-block
   bg-gradient-to-r from-red-500 via-pink-500 to-orange-500
   animate-pulse shadow-lg shadow-red-500/40"
->
-  ADMIN 🔥
-</span>
+          >
+            ADMIN 🔥
+          </span>
         )}
 
-        {/* MENU */}
         <nav className="space-y-2 mt-4">
           {menu.map((item) => {
             const Icon = item.icon;
 
             return (
               <div key={item.name} className="relative group">
-                {/* ACTIVE LINE */}
                 {path === item.href && (
                   <span className="absolute left-0 top-0 h-full w-1 bg-indigo-400 rounded-r" />
                 )}
@@ -105,7 +100,6 @@ export default function Sidebar() {
         </nav>
       </div>
 
-      {/* SETTINGS */}
       <div className="relative">
         {openSettings && !collapsed && (
           <div className="mb-3 p-4 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/10 space-y-3 animate-fade">
