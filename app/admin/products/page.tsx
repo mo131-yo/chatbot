@@ -10,7 +10,7 @@ export default function ProductsPage() {
         <h1 className="text-xl">Products</h1>
         <ProductForm onSuccess={() => location.reload()} />
       </div>
- 
+ {/* dasdas */}
       <ProductTable />
     </div>
   );
