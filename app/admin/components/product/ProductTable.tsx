@@ -12,11 +12,11 @@ export default function ProductTable() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const res = await fetch("/admin/api/productAllGet");
-      
+
       if (!res.ok) {
         const errorText = await res.text();
         throw new Error(`Server error: ${res.status} - ${errorText}`);
@@ -41,10 +41,12 @@ const fetchData = useCallback(async () => {
     if (!deletingId) return;
     setIsDeleting(true);
     try {
-      const res = await fetch(`/admin/api/productDelete?id=${deletingId}`, { method: "DELETE" });
+      const res = await fetch(`/admin/api/productDelete?id=${deletingId}`, {
+        method: "DELETE",
+      });
       const data = await res.json();
       if (data.success) {
-        setProducts(prev => prev.filter(p => p.id !== deletingId));
+        setProducts((prev) => prev.filter((p) => p.id !== deletingId));
         setDeletingId(null);
       }
     } catch (error) {
@@ -71,8 +73,7 @@ const fetchData = useCallback(async () => {
   }
 
   return (
-    <div className="relative w-full bg-white dark:bg-gray-950 rounded-[2rem] border border-gray-100 dark:border-gray-900 shadow-sm overflow-hidden">
-
+    <div className="relative w-full bg-white dark:bg-gray-950 rounded-[2rem] border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
       {editingProduct && (
         <ProductForm
           key={editingProduct.id}
@@ -91,9 +92,12 @@ const fetchData = useCallback(async () => {
             <div className="w-20 h-20 bg-red-500/10 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-red-500/20">
               <Trash2 className="w-10 h-10 text-red-500" />
             </div>
-            <h3 className="text-2xl font-bold text-white text-center mb-2">Устгах уу?</h3>
+            <h3 className="text-2xl font-bold text-white text-center mb-2">
+              Устгах уу?
+            </h3>
             <p className="text-gray-400 text-center text-sm mb-8 leading-relaxed">
-              Та энэ барааг устгахдаа итгэлтэй байна уу? Энэ үйлдлийг буцаах боломжгүй.
+              Та энэ барааг устгахдаа итгэлтэй байна уу? Энэ үйлдлийг буцаах
+              боломжгүй.
             </p>
             <div className="flex gap-4">
               <button
@@ -107,7 +111,11 @@ const fetchData = useCallback(async () => {
                 disabled={isDeleting}
                 className="flex-1 py-4 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-bold shadow-xl shadow-red-600/20 transition-all flex items-center justify-center gap-2"
               >
-                {isDeleting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Устгах"}
+                {isDeleting ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  "Устгах"
+                )}
               </button>
             </div>
           </div>
@@ -117,7 +125,7 @@ const fetchData = useCallback(async () => {
       <div className="overflow-x-auto">
         <table className="w-full text-sm text-left border-collapse">
           <thead>
-            <tr className="bg-gray-50/50 dark:bg-gray-900/50 text-gray-500 dark:text-gray-400 border-b border-gray-100 dark:border-gray-900 uppercase text-[10px] font-bold tracking-widest">
+            <tr className="bg-gray-50/50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 border-b border-gray-100 dark:border-gray-900 uppercase text-[10px] font-bold tracking-widest">
               <th className="p-5">Зураг</th>
               <th className="p-5">Барааны нэр</th>
               <th className="p-5">Үнэ</th>
@@ -126,7 +134,7 @@ const fetchData = useCallback(async () => {
               <th className="p-5 text-right">Үйлдэл</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-50 dark:divide-gray-900">
+          <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
             {products.length === 0 ? (
               <tr>
                 <td colSpan={6} className="p-20 text-center text-gray-400">
@@ -150,15 +158,21 @@ const fetchData = useCallback(async () => {
                       />
                     </div>
                   </td>
-                  <td className="p-4 font-semibold text-gray-900 dark:text-gray-100">{p.name}</td>
+                  <td className="p-4 font-semibold text-gray-900 dark:text-gray-100">
+                    {p.name}
+                  </td>
                   <td className="p-4 text-indigo-600 dark:text-indigo-400 font-bold font-mono">
                     {new Intl.NumberFormat().format(p.price)}₮
                   </td>
                   <td className="p-4 text-gray-500">{p.brand}</td>
                   <td className="p-4">
-                    <span className={`px-2 py-1 rounded-lg text-[10px] font-bold ${
-                      p.stock > 0 ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"
-                    }`}>
+                    <span
+                      className={`px-2 py-1 rounded-lg text-[10px] font-bold ${
+                        p.stock > 0
+                          ? "bg-green-100 text-green-600"
+                          : "bg-red-100 text-red-600"
+                      }`}
+                    >
                       {p.stock}
                     </span>
                   </td>
@@ -166,7 +180,8 @@ const fetchData = useCallback(async () => {
                     <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => setEditingProduct(p)}
-                        className="p-2 hover:bg-amber-50 text-amber-600 rounded-lg">
+                        className="p-2 hover:bg-amber-50 text-amber-600 rounded-lg"
+                      >
                         <Edit3 className="w-4 h-4" />
                       </button>
                       <button
@@ -185,4 +200,4 @@ const fetchData = useCallback(async () => {
       </div>
     </div>
   );
-} 
+}
