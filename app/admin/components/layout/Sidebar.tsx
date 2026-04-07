@@ -93,7 +93,7 @@ export default function Sidebar() {
         </nav>
       </div>
 
-      {/* SETTINGS */}
+   
       <div className="relative">
         <button
           onClick={() => setOpenSettings(!openSettings)}
