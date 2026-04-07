@@ -1,4 +1,5 @@
 "use client";
+
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import { motion, AnimatePresence } from "framer-motion";
@@ -26,43 +27,58 @@ interface MessageListProps {
   onBuy: (name: string, price: any) => void;
   messagesEndRef: React.RefObject<HTMLDivElement | null>;
 }
- 
+
+const removeImageMarkdown = (content: string): string => {
+  if (!content) return "";
+
+  return content
+    .replace(/!\[[^\]]*\]\([^)]+\)/g, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+};
+
 const extractProducts = (content: string): Product[] => {
   const imgRegex = /!\[([^\]]+)\]\(([^)]+)\)/g;
   const products: Product[] = [];
-  let match;
- 
+  let match: RegExpExecArray | null;
+
   while ((match = imgRegex.exec(content)) !== null) {
     const altText = match[1];
     const imageSrc = match[2];
     const parts = altText.split(",");
  
     products.push({
-      id: parts[3]?.trim() || `temp-${Math.random()}`,
+      id: parts[3]?.trim() || `temp-${Math.random().toString(36).slice(2, 9)}`,
       name: parts[0]?.trim() || "Нэргүй",
       price: parts[1]?.trim() || "0",
-      image: imageSrc.startsWith('http') ? imageSrc : `https://placehold.co/300x400?text=No+Image`,
+      image: imageSrc.startsWith("http")
+        ? imageSrc
+        : "https://placehold.co/300x400?text=No+Image",
       description: parts[2]?.trim() || "",
-      storeId: parts[4]?.trim() || "store-1"
+      storeId: parts[4]?.trim() || "store-1",
     });
   }
+
   return products;
 };
- 
+
 export const MessageList: React.FC<MessageListProps> = ({
   messages,
   isTyping,
   onProductClick,
   onBuy,
-  messagesEndRef
+  messagesEndRef,
 }) => {
   return (
     <div className="max-w-3xl mx-auto pb-20 space-y-6">
       {messages.map((message: any, index: number) => {
-        const products = extractProducts(message.content);
-        
         const isUser = message.role?.toLowerCase() === "user";
-        
+        const products = !isUser ? extractProducts(message.content || "") : [];
+        const hasImage = isUser && !!message.imagePreview;
+        const rawText = removeImageMarkdown(message.content || "");
+        const hasText = rawText.length > 0;
+        const showBubble = hasImage || hasText;
+
         return (
           <motion.div
             key={`msg-${index}`}
@@ -70,23 +86,39 @@ export const MessageList: React.FC<MessageListProps> = ({
             animate={{ opacity: 1, y: 0 }}
             className={`flex flex-col ${isUser ? "items-end" : "items-start"}`}
           >
-            <div className={`max-w-[85%] shadow-sm px-5 py-3 rounded-[2rem] ${
-              isUser
-                ? "bg-[#007AFF] text-white rounded-tr-sm"
-                : "bg-white dark:bg-[#161616] border border-slate-100 dark:border-white/5 rounded-tl-sm"
-            }`}>
-              <div className="prose dark:prose-invert max-w-none">
-                <ReactMarkdown
-                  components={{
-                    img: () => null,
-                    p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>
-                  }}
-                >
-                  {message.content}
-                </ReactMarkdown>
+            {showBubble && (
+              <div
+                className={`max-w-[85%] shadow-sm px-5 py-3 rounded-[2rem] ${
+                  isUser
+                    ? "bg-[#007AFF] text-white rounded-tr-sm"
+                    : "bg-white dark:bg-[#161616] border border-slate-100 dark:border-white/5 rounded-tl-sm"
+                }`}
+              >
+                {hasImage && (
+                  <img
+                    src={message.imagePreview}
+                    alt="Uploaded preview"
+                    className="mb-3 max-h-64 w-auto rounded-2xl object-cover"
+                  />
+                )}
+
+                {hasText && (
+                  <div className="prose dark:prose-invert max-w-none">
+                    <ReactMarkdown
+                      components={{
+                        img: () => null,
+                        p: ({ children }) => (
+                          <p className="mb-2 last:mb-0">{children}</p>
+                        ),
+                      }}
+                    >
+                      {rawText}
+                    </ReactMarkdown>
+                  </div>
+                )}
               </div>
-            </div>
- 
+            )}
+
             {products.length > 0 && (
               <div className="w-full mt-4 overflow-visible">
                 <ProductCarousel
@@ -100,7 +132,7 @@ export const MessageList: React.FC<MessageListProps> = ({
           </motion.div>
         );
       })}
-      
+
       <AnimatePresence mode="wait">
         {isTyping && (
           <motion.div
@@ -112,10 +144,13 @@ export const MessageList: React.FC<MessageListProps> = ({
             <div className="bg-white dark:bg-[#161616] p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-white/5">
               <PulsatingDots />
             </div>
-            <span className="text-slate-500 text-sm animate-pulse">Түр хүлээнэ үү...</span>
+            <span className="text-slate-500 text-sm animate-pulse">
+              Түр хүлээнэ үү...
+            </span>
           </motion.div>
         )}
       </AnimatePresence>
+
       <div ref={messagesEndRef} className="h-2 w-full" />
     </div>
   );

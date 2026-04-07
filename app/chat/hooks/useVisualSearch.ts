@@ -5,10 +5,14 @@ import { useState } from "react";
 export function useVisualSearch() {
   const [isSearching, setIsSearching] = useState(false);
 
+  // useVisualSearch дотор log нэм
   const searchByImage = async (file: File) => {
+    console.log("📁 File:", file.name, file.type, file.size); // ← нэм
     setIsSearching(true);
     const formData = new FormData();
     formData.append("image", file);
+
+    console.log("📤 Sending formData..."); // ← нэм
 
     try {
       const response = await fetch("/chat/api/visual-search", {
@@ -16,11 +20,17 @@ export function useVisualSearch() {
         body: formData,
       });
 
+      console.log("📥 Response status:", response.status); // ← нэм
+
       const contentType = response.headers.get("content-type");
 
       if (response.ok && contentType?.includes("application/json")) {
         const data = await response.json();
-        return { success: true, products: data.products || [data.bestMatch], product: data.bestMatch };
+        return {
+          success: true,
+          products: data.products || [data.bestMatch],
+          product: data.bestMatch,
+        };
       }
 
       if (contentType?.includes("application/json")) {
@@ -31,7 +41,12 @@ export function useVisualSearch() {
       throw new Error("Серверийн алдаа");
     } catch (error: any) {
       console.error("Visual Search Error:", error);
-      return { success: false, error: error.message, products: [], product: null };
+      return {
+        success: false,
+        error: error.message,
+        products: [],
+        product: null,
+      };
     } finally {
       setIsSearching(false);
     }

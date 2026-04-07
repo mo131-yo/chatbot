@@ -115,6 +115,7 @@ export const ChatMessageScalarFieldEnum = {
   chatSessionId: 'chatSessionId',
   role: 'role',
   content: 'content',
+  imagePreview: 'imagePreview',
   createdAt: 'createdAt'
 } as const
 

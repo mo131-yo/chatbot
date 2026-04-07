@@ -80,26 +80,6 @@ export default function Sidebar({
     }
   };
 
-  // const handleDelete = async (id: string) => {
-  //   setHistory((prev) => prev.filter((c) => c.id !== id));
-
-  //   try {
-  //     const response = await fetch(`/chat/api/session/${id}`, {
-  //       method: "DELETE",
-  //     });
-
-  //     if (!response.ok) {
-  //       setHistory(initialHistory);
-  //       console.error("Устгахад алдаа гарлаа");
-  //     } else if (activeChatId === id) {
-  //       router.push("/");
-  //     }
-  //   } catch (err) {
-  //     setHistory(initialHistory);
-  //     console.error("Delete error:", err);
-  //   }
-  // };
-
   return (
     <aside
       className={`flex flex-col h-screen relative z-20 transition-all duration-300 ease-in-out bg-white dark:bg-[#0D0D0D] border-r border-black/10 dark:border-white/5 ${
@@ -116,7 +96,6 @@ export default function Sidebar({
         onPinChat={handlePin}
         onRenameChat={handleRename}
         onShareChat={handleShare}
-        // onDeleteChat={handleDelete}
         onDeleteChat={onDeleteChat}
         isLoading={isLoading}
         activeChatId={activeChatId}

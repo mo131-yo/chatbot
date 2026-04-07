@@ -1,4 +1,8 @@
-import { clerkMiddleware, clerkClient, createRouteMatcher } from "@clerk/nextjs/server";
+import {
+  clerkMiddleware,
+  clerkClient,
+  createRouteMatcher,
+} from "@clerk/nextjs/server";
 
 const isProtectedRoute = createRouteMatcher(["/chat(.*)"]);
 

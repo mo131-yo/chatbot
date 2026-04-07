@@ -22,7 +22,7 @@ export default function Home() {
 
     sendMessage,
     isLoading,
-    addVisualResult, 
+    addVisualResult,
     isStreaming,
     deleteChat: handleDeleteChat,
   } = useChatLogic();
@@ -90,20 +90,19 @@ export default function Home() {
             />
           )}
         </main>
- 
- 
+
         <ChatInput
-        onSendMessage={sendMessage}
-        onVisualResult={(userMsg, result) => {
-          if (result?.type === "product_card") {
-            addVisualResult(userMsg, [result.data]);
-          } else if (Array.isArray(result?.products)) {
-            addVisualResult(userMsg, result.products);
-          }
-        }}
-        history={currentChatMessages}
-        isTyping={isTyping || isStreaming}
-      />
+          onSendMessage={sendMessage}
+          onVisualResult={async (userMsg, result) => {
+            if (result?.type === "product_card") {
+              await addVisualResult(userMsg, result.products || [result.data]);
+            } else if (typeof result === "string") {
+              await addVisualResult(userMsg, []);
+            }
+          }}
+          history={currentChatMessages}
+          isTyping={isTyping || isStreaming}
+        />
       </div>
     </div>
   );
