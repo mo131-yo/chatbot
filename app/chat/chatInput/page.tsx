@@ -3,7 +3,7 @@
 import { SendButton } from "./components/SendButton";
 import { Suggestions } from "./components/Suggestion";
 import { useState, useRef } from "react";
-import { ImagePlus, Loader2 } from "lucide-react"; 
+import { ImagePlus, Loader2 } from "lucide-react";
 import { InputField } from "./components";
 
 interface ChatInputProps {
@@ -30,7 +30,7 @@ export default function ChatInput({
     setInput("");
 
     try {
-      const response = await fetch("/api/chat", {
+      const response = await fetch("/chat/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -47,7 +47,9 @@ export default function ChatInput({
     }
   };
 
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -69,12 +71,11 @@ export default function ChatInput({
       if (!response.ok) throw new Error("Search failed");
 
       const product = await response.json();
-      
+
       onMessageReceived(userImageMsg, {
         type: "product_card",
-        data: product
+        data: product,
       });
-
     } catch (error) {
       onMessageReceived(userImageMsg, "Уучлаарай, зургийг таньж чадсангүй.");
     } finally {
@@ -89,9 +90,8 @@ export default function ChatInput({
       <Suggestions visible={history?.length === 0} onSelect={handleSend} />
 
       <div className="relative flex items-center w-full gap-3 bg-white/5 backdrop-blur-xl p-2 rounded-2xl border border-white/10 shadow-2xl">
-        
-        <input 
-          type="file" 
+        <input
+          type="file"
           ref={fileInputRef}
           onChange={handleImageUpload}
           accept="image/*"
@@ -103,7 +103,11 @@ export default function ChatInput({
           disabled={isLoading}
           className="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded-xl transition-all"
         >
-          {isLoading ? <Loader2 className="animate-spin" size={22} /> : <ImagePlus size={22} />}
+          {isLoading ? (
+            <Loader2 className="animate-spin" size={22} />
+          ) : (
+            <ImagePlus size={22} />
+          )}
         </button>
 
         <InputField

@@ -9,6 +9,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { GiPin } from "react-icons/gi";
+import { useState } from "react";
 
 interface Chat {
   id: string;
@@ -37,6 +38,8 @@ export const ChatHistory = ({
   onShareChat,
   activeChatId,
 }: ChatHistoryProps) => {
+  const [deleteTarget, setDeleteTarget] = useState<Chat | null>(null);
+
   if (!history || !Array.isArray(history)) {
     return (
       <div className="flex-1 px-4 py-6 text-xs text-slate-500 italic">
@@ -60,17 +63,13 @@ export const ChatHistory = ({
     try {
       if (navigator.share) {
         await navigator.share(shareData);
-        console.log("Амжилттай хуваалцлаа");
       } else {
         await navigator.clipboard.writeText(shareData.url);
         alert("Холбоосыг санамжинд (clipboard) хууллаа!");
       }
       onShareChat(chat.id);
     } catch (error: any) {
-      if (error.name === "AbortError") {
-        console.log("Хэрэглэгч хуваалцахыг цуцаллаа.");
-        return;
-      }
+      if (error.name === "AbortError") return;
       console.error("Хуваалцахад алдаа гарлаа:", error);
     }
   };
@@ -88,7 +87,6 @@ export const ChatHistory = ({
         {chat.isPinned && (
           <GiPin size={16} className="text-[#C5A059] rotate-45 shrink-0" />
         )}
-
         <span className="text-sm font-medium truncate pr-6 group-hover:text-[#C5A059]">
           {chat.title || "New Chat"}
         </span>
@@ -132,7 +130,7 @@ export const ChatHistory = ({
 
             <DropdownMenuItem
               className="gap-2 text-red-500 focus:text-red-500 cursor-pointer"
-              onClick={() => confirm("Устгах уу?") && onDeleteChat(chat.id)}
+              onClick={() => setDeleteTarget(chat)}
             >
               <Trash2 size={14} /> Delete
             </DropdownMenuItem>
@@ -143,29 +141,73 @@ export const ChatHistory = ({
   );
 
   return (
-    <div className="flex-1 overflow-y-auto px-3 py-4 space-y-6 custom-scrollbar">
-      {pinnedChats.length > 0 && (
+    <>
+      <div className="flex-1 overflow-y-auto px-3 py-4 space-y-6 custom-scrollbar">
+        {pinnedChats.length > 0 && (
+          <div className="space-y-1">
+            <p className="px-3 text-[10px] uppercase tracking-widest text-[#C5A059] font-bold mb-2 flex items-center gap-2">
+              Pinned
+            </p>
+            {pinnedChats.map((chat) => renderChatItem(chat))}
+            <div className="h-px bg-black/5 dark:bg-white/5 mx-3 my-4" />
+          </div>
+        )}
+
         <div className="space-y-1">
-          <p className="px-3 text-[10px] uppercase tracking-widest text-[#C5A059] font-bold mb-2 flex items-center gap-2">
-            Pinned
+          <p className="px-3 text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-2">
+            Your chat history
           </p>
-          {pinnedChats.map((chat) => renderChatItem(chat))}
-          <div className="h-px bg-black/5 dark:bg-white/5 mx-3 my-4" />
+          {recentChats.length > 0
+            ? recentChats.map((chat) => renderChatItem(chat))
+            : pinnedChats.length === 0 && (
+                <p className="px-3 py-2 text-xs text-slate-500 italic">
+                  No history yet
+                </p>
+              )}
+        </div>
+      </div>
+
+      {deleteTarget && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+          onClick={() => setDeleteTarget(null)}
+        >
+          <div
+            className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-80 p-6 flex flex-col items-center gap-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex flex-col items-center gap-1 text-center">
+              <div className="w-10 h-10 rounded-full bg-red-50 dark:bg-red-500/10 flex items-center justify-center mb-1">
+                <Trash2 size={18} className="text-red-500" />
+              </div>
+              <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
+                Delete chat?
+              </h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Are you sure you want to delete this chat?
+              </p>
+            </div>
+
+            <div className="flex gap-3 w-full">
+              <button
+                onClick={() => setDeleteTarget(null)}
+                className="flex-1 px-4 py-2 rounded-lg text-sm font-medium border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  onDeleteChat(deleteTarget.id);
+                  setDeleteTarget(null);
+                }}
+                className="flex-1 px-4 py-2 rounded-lg text-sm font-medium bg-red-500 hover:bg-red-600 text-white transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
         </div>
       )}
-
-      <div className="space-y-1">
-        <p className="px-3 text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-2">
-          Your chat history
-        </p>
-        {recentChats.length > 0
-          ? recentChats.map((chat) => renderChatItem(chat))
-          : pinnedChats.length === 0 && (
-              <p className="px-3 py-2 text-xs text-slate-500 italic">
-                No history yet
-              </p>
-            )}
-      </div>
-    </div>
+    </>
   );
 };

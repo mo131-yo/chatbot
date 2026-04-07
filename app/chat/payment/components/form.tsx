@@ -31,7 +31,7 @@ const initialFormData: FormData = {
 };
 
 type FormErrors = Partial<Record<keyof Omit<FormData, "lat" | "lng">, string>>;
- 
+
 export default function OrderAddress({ onClose, onConfirm }: Props) {
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [loading, setLoading] = useState(false);
@@ -48,13 +48,13 @@ export default function OrderAddress({ onClose, onConfirm }: Props) {
     return formData.city ? (LOCATION_DATA[formData.city] ?? []) : [];
   }, [formData.city]);
 
-interface FormErrors {
-  city?: string;
-  district?: string;
-  street?: string;
-  address?: string;
-  phone?: string;
-}
+  interface FormErrors {
+    city?: string;
+    district?: string;
+    street?: string;
+    address?: string;
+    phone?: string;
+  }
 
   const LocationPicker = useMemo(
     () =>
@@ -303,7 +303,7 @@ interface FormErrors {
 
       console.log("Final Order Data:", payload);
 
-      onClose();
+      onConfirm();
     } finally {
       setSubmitting(false);
     }
@@ -318,7 +318,6 @@ interface FormErrors {
         : "border-white/10 bg-white/5 focus:border-[#C5A059]"
     }`;
   };
-  
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
@@ -526,9 +525,9 @@ interface FormErrors {
             </div>
           </div>
 
-          <button 
-            onClick={() => onConfirm()}
-            disabled={loading} 
+          <button
+            onClick={handleSubmit}
+            disabled={loading}
             className="w-full py-4 bg-[#C5A059] hover:bg-[#d4b476] text-black font-bold rounded-2xl transition-all"
           >
             {loading ? "Уншиж байна..." : "ХАЯГ БАТАЛГААЖУУЛАХ"}
