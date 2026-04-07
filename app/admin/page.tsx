@@ -2,6 +2,7 @@ import { auth, clerkClient } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
 import RevenueChart from "@/app/admin/components/dashboard/RevenueChart";
+import PageWrapper from "./components/PageWrapper";
 
 export default async function DashboardPage() {
   const { userId } = await auth();
@@ -18,38 +19,36 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="grid grid-cols-2 gap-6">
-      <div
-        className="p-5 rounded-xl
-        bg-indigo-800 text-white
-        dark:bg-indigo-800 dark:text-white
-        transition-colors duration-300"
-      >
-        <p className="text-sm opacity-70">Products</p>
-        <h2 className="text-2xl font-bold">120</h2>
-      </div>
+    <PageWrapper>
+      <div className="grid grid-cols-2 gap-6">
+        <div
+          className="p-5 rounded-xl bg-indigo-800 text-white transition hover:scale-105 hover:shadow-xl duration-300
+        dark:bg-indigo-800 dark:text-white"
+        >
+          <p className="text-sm opacity-70">Products</p>
+          <h2 className="text-2xl font-bold">120</h2>
+        </div>
 
-      <div
-        className="p-5 rounded-xl
-        bg-indigo-800 text-white
-        dark:bg-indigo-800 dark:text-white
-        transition-colors duration-300"
-      >
-        <p className="text-sm opacity-70">Orders</p>
-        <h2 className="text-2xl font-bold">45</h2>
-      </div>
+        <div
+          className="p-5 rounded-xl bg-indigo-800 text-white transition hover:scale-105 hover:shadow-xl duration-300
+        dark:bg-indigo-800 dark:text-white"
+        >
+          <p className="text-sm opacity-70">Orders</p>
+          <h2 className="text-2xl font-bold">45</h2>
+        </div>
 
-      <div></div>
+        <div></div>
 
-      <div
-        className="col-span-2
+        <div
+          className="col-span-2
         bg-white/5 backdrop-blur-md
         dark:bg-white
         rounded-2xl p-4
         transition-colors duration-300"
-      >
-        <RevenueChart />
+        >
+          <RevenueChart />
+        </div>
       </div>
-    </div>
+    </PageWrapper>
   );
 }

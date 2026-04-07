@@ -73,7 +73,8 @@ export default function RevenueChart() {
             stroke="#4f46e5"
             strokeWidth={3}
             dot={{ r: 4 }}
-            activeDot={{ r: 6 }}
+            isAnimationActive={true}
+            animationDuration={800}
           />
         </LineChart>
       </ResponsiveContainer>
