@@ -83,13 +83,14 @@ export async function POST(req: Request) {
       });
 
       const namespaces = [
-        "",
-        "most_used_beauty_cosmetics-namespace",
-        "beauty-namespace",
-        "fashion-namespace",
-        "shoes-namespace",
-        "electronics-namespace",
-        "books-namespace",
+        // "",
+        // "most_used_beauty_cosmetics-namespace",
+        // "beauty-namespace",
+        // "fashion-namespace",
+        // "shoes-namespace",
+        // "electronics-namespace",
+        // "books-namespace",
+        "user_3BSwyjfHAMPysPTaXqJ5CkAIGfM"
       ];
 
       const queryPromises = namespaces.map((ns) =>

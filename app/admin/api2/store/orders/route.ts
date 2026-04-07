@@ -7,18 +7,37 @@ export async function GET(req: NextRequest) {
     const storeId = searchParams.get("storeId");
 
     const orders = await prisma.order.findMany({
-      where: storeId ? { storeId } : {},
-      include: { 
-        product: true 
+      // Хэрэв storeId ирвэл шүүнэ, ирэхгүй бол бүгдийг авна
+      where: storeId ? { 
+        items: {
+          some: {
+            productId: { contains: "" } // Энд шаардлагатай бол логикоо нэмнэ
+          }
+        }
+      } : {},
+      include: {
+        items: true, // Эндээс productName, productImage-ээ авна
+        user: {
+          select: {
+            name: true,
+            email: true,
+            imageUrl: true
+          }
+        }
       },
       orderBy: {
         createdAt: "desc"
       }
     });
 
+    // Хэрэв баазад user байхгүй (Зочин) бол алдаа заахаас сэргийлж 
+    // JSON буцаахдаа анхаарна уу.
     return NextResponse.json(orders);
   } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: "Захиалга авахад алдаа гарлаа" }, { status: 500 });
+    console.error("❌ GET Orders API Error:", error);
+    return NextResponse.json(
+      { error: "Захиалга авахад алдаа гарлаа" }, 
+      { status: 500 }
+    );
   }
 }

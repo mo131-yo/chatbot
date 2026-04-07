@@ -84,17 +84,20 @@ useEffect(() => {
             <p className="text-white text-lg font-bold line-clamp-2 leading-tight mb-1">
               {product.product_name || product.name}
             </p>
-            <p className="text-[#C5A059] text-xl font-black">
-              {(() => {
-                const rawPrice = product.formatted_price || product.price || 0;
-                  
-                const numericPrice = typeof rawPrice === 'string' 
-                  ? parseFloat(rawPrice.replace(/[^0-9.]/g, "")) 
-                  : Number(rawPrice);
+          <p className="text-[#C5A059] text-xl font-black">
+            {(() => {
+              const rawPrice = product.price ?? product.formatted_price ?? 0;
+              
+              const numericString = String(rawPrice).replace(/[^0-9.]/g, "");
+              const numericPrice = parseFloat(numericString);
 
-                return isNaN(numericPrice) ? "Үнэ тодорхойгүй" : numericPrice.toLocaleString() + "₮";
-              })()}
-            </p>
+              if (isNaN(numericPrice) || numericPrice === 0) {
+                return "Үнэ тодорхойгүй";
+              }
+
+              return numericPrice.toLocaleString() + "₮";
+            })()}
+          </p>
           </div>
 
           <AnimatePresence>
