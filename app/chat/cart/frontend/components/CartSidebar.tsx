@@ -2,109 +2,55 @@
 import React, { useState } from "react";
 import { useCart } from "@/app/context/CartContext";
 import { motion, AnimatePresence } from "framer-motion";
-import { useRouter } from "next/navigation";
 import { FaMinus, FaPlus, FaTrash, FaTimes } from "react-icons/fa";
 import LocationForm from "@/app/chat/payment/components/form";
 import QPayPayment from "@/app/chat/payment/components/QPayPayment ";
 
 export default function CartSidebar() {
-  const {
-    cartItems,
-    isCartOpen,
-    setIsCartOpen,
-    removeFromCart,
-    updateQuantity,
-  } = useCart();
-
+  const { cartItems, isCartOpen, setIsCartOpen, removeFromCart, updateQuantity } = useCart();
   const [showLocationForm, setShowLocationForm] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
-  const router = useRouter();
 
-  const totalPrice = cartItems.reduce(
-    (acc, item) => acc + item.price * item.quantity,
-    0,
-  );
-
-  const handleCheckout = () => {
-    setShowLocationForm(true);
-  };
-
-  const handleAddressConfirm = () => {
-    setShowLocationForm(false);
-    setShowPayment(true);
-  };
-
-  const handlePaymentSuccess = (details: any) => {
-    console.log("Payment success:", details);
-    setShowPayment(false);
-    setIsCartOpen(false);
-  };
+  const totalPrice = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
   return (
     <AnimatePresence mode="wait">
-      {/* 1. Location Form - Key: location-step */}
       {showLocationForm && (
-        <motion.div
-          key="location-step"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="relative z-[70]"
-        >
+        <motion.div key="location-step" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="relative z-[70]">
           <LocationForm
             onClose={() => setShowLocationForm(false)}
-            onConfirm={handleAddressConfirm}
+            onConfirm={() => { setShowLocationForm(false); setShowPayment(true); }}
           />
         </motion.div>
       )}
 
-      {/* 2. Payment Form - Key: payment-step */}
       {showPayment && (
-        <motion.div
-          key="payment-step"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.9 }}
-          className="relative z-[70]"
-        >
+        <motion.div key="payment-step" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="relative z-[70]">
           <QPayPayment
             amount={totalPrice}
             orderId={`CART-${Math.floor(Math.random() * 10000)}`}
-            onSuccess={handlePaymentSuccess}
+            onSuccess={() => { setShowPayment(false); setIsCartOpen(false); }}
             onCancel={() => setShowPayment(false)}
           />
         </motion.div>
       )}
 
-      {/* 3. Cart Sidebar - Fragment-ийг устгаад, overlay болон sidebar-г тусад нь key-тэй болгов */}
       {isCartOpen && !showLocationForm && !showPayment && (
-        <motion.div
-          key="cart-overlay"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+        <motion.div key="cart-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
           onClick={() => setIsCartOpen(false)}
           className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
         />
       )}
 
       {isCartOpen && !showLocationForm && !showPayment && (
-        <motion.div
-          key="cart-sidebar-main"
-          initial={{ x: "100%" }}
-          animate={{ x: 0 }}
-          exit={{ x: "100%" }}
+        <motion.div key="cart-sidebar-main"
+          initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
           transition={{ type: "spring", damping: 25, stiffness: 200 }}
           className="fixed right-0 top-0 h-full w-full max-w-md bg-[#0D0D0D] border-l border-white/10 shadow-2xl z-50 flex flex-col"
         >
           <div className="p-6 border-b border-white/10 flex justify-between items-center">
-            <h2 className="text-xl font-bold text-white">
-              Таны сагс ({cartItems.length})
-            </h2>
-            <button
-              onClick={() => setIsCartOpen(false)}
-              className="p-2 hover:bg-white/10 rounded-full transition-all"
-            >
+            <h2 className="text-xl font-bold text-white">Таны сагс ({cartItems.length})</h2>
+            <button onClick={() => setIsCartOpen(false)} className="p-2 hover:bg-white/10 rounded-full transition-all">
               <FaTimes className="text-white" />
             </button>
           </div>
@@ -116,45 +62,23 @@ export default function CartSidebar() {
               </div>
             ) : (
               cartItems.map((item, idx) => (
-                <div
-                  key={`item-${item.id || idx}`}
-                  className="flex gap-4 bg-white/5 p-3 rounded-xl border border-white/5"
-                >
-                  <img
-                    src={item.image}
-                    className="w-20 h-20 object-cover rounded-lg"
-                    alt={item.name}
-                  />
+                <div key={`item-${item.id || idx}`} className="flex gap-4 bg-white/5 p-3 rounded-xl border border-white/5">
+                  <img src={item.image} className="w-20 h-20 object-cover rounded-lg" alt={item.name} />
                   <div className="flex-1 flex flex-col justify-between">
                     <div className="flex justify-between items-start">
-                      <h3 className="text-white font-medium text-sm line-clamp-1">
-                        {item.name}
-                      </h3>
-                      <button
-                        onClick={() => removeFromCart(item.id)}
-                        className="text-gray-500 hover:text-red-500 transition-colors"
-                      >
+                      <h3 className="text-white font-medium text-sm line-clamp-1">{item.name}</h3>
+                      <button onClick={() => removeFromCart(item.id)} className="text-gray-500 hover:text-red-500 transition-colors">
                         <FaTrash size={12} />
                       </button>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-[#C5A059] font-bold">
-                        {(item.price * item.quantity).toLocaleString()}₮
-                      </span>
+                      <span className="text-[#C5A059] font-bold">{(item.price * item.quantity).toLocaleString()}₮</span>
                       <div className="flex items-center gap-3 bg-black/40 px-2 py-1 rounded-lg border border-white/10">
-                        <button
-                          onClick={() => updateQuantity(item.id, -1)}
-                          className="text-white hover:text-[#C5A059] p-1"
-                        >
+                        <button onClick={() => updateQuantity(item.id, -1)} className="text-white hover:text-[#C5A059] p-1">
                           <FaMinus size={10} />
                         </button>
-                        <span className="text-white text-sm font-bold min-w-5 text-center">
-                          {item.quantity}
-                        </span>
-                        <button
-                          onClick={() => updateQuantity(item.id, 1)}
-                          className="text-white hover:text-[#C5A059] p-1"
-                        >
+                        <span className="text-white text-sm font-bold min-w-5 text-center">{item.quantity}</span>
+                        <button onClick={() => updateQuantity(item.id, 1)} className="text-white hover:text-[#C5A059] p-1">
                           <FaPlus size={10} />
                         </button>
                       </div>
@@ -169,14 +93,10 @@ export default function CartSidebar() {
             <div className="p-6 border-t border-white/10 bg-white/5 space-y-4">
               <div className="flex justify-between items-center text-lg font-bold">
                 <span className="text-gray-400">Нийт дүн:</span>
-                <span className="text-[#C5A059]">
-                  {totalPrice.toLocaleString()}₮
-                </span>
+                <span className="text-[#C5A059]">{totalPrice.toLocaleString()}₮</span>
               </div>
-              <button
-                onClick={handleCheckout}
-                className="w-full py-4 bg-[#C5A059] text-black font-black rounded-xl uppercase hover:bg-white transition-all"
-              >
+              <button onClick={() => setShowLocationForm(true)}
+                className="w-full py-4 bg-[#C5A059] text-black font-black rounded-xl uppercase hover:bg-white transition-all">
                 Захиалга өгөх
               </button>
             </div>

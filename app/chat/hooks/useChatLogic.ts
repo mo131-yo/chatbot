@@ -168,9 +168,6 @@ export const useChatLogic = () => {
       } finally {
         setIsTyping(false);
       }
-    },
-    [activeChatId, allChats, createSession, isSignedIn, user?.id],
-  );
 
   const addVisualResult = useCallback(
     async (userMsg: any, products: any[]) => {
@@ -294,9 +291,7 @@ export const useChatLogic = () => {
     [activeChatId, fetchUserHistory],
   );
 
-  const startNewChat = useCallback(() => {
-    setActiveChatIdState(null);
-  }, []);
+  const startNewChat = useCallback(() => { setActiveChatIdState(null); }, []);
 
   return {
     activeChatId,

@@ -56,6 +56,7 @@ export const ModelName = {
   ChatMessage: 'ChatMessage',
   Store: 'Store',
   Product: 'Product',
+  Category: 'Category',
   Cart: 'Cart',
   CartItem: 'CartItem',
   Order: 'Order',
@@ -142,11 +143,11 @@ export const ProductScalarFieldEnum = {
   discountPrice: 'discountPrice',
   brand: 'brand',
   images: 'images',
-  category: 'category',
   subcategory: 'subcategory',
   colors: 'colors',
   sizes: 'sizes',
   tags: 'tags',
+  categoryName: 'categoryName',
   stock: 'stock',
   rating: 'rating',
   reviewCount: 'reviewCount',
@@ -154,11 +155,21 @@ export const ProductScalarFieldEnum = {
   isTrending: 'isTrending',
   status: 'status',
   storeId: 'storeId',
+  categoryId: 'categoryId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type ProductScalarFieldEnum = (typeof ProductScalarFieldEnum)[keyof typeof ProductScalarFieldEnum]
+
+
+export const CategoryScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  slug: 'slug'
+} as const
+
+export type CategoryScalarFieldEnum = (typeof CategoryScalarFieldEnum)[keyof typeof CategoryScalarFieldEnum]
 
 
 export const CartScalarFieldEnum = {

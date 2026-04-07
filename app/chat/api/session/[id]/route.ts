@@ -11,33 +11,26 @@ type RouteContext = {
 export async function GET(_req: NextRequest, { params }: RouteContext) {
   try {
     const { userId: clerkUserId } = await auth();
-
     if (!clerkUserId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id } = await params;
+    const { id: sessionId } = await params;
+    const body = await req.json();
+    const messages: { role: string; content: string }[] = body?.messages || [];
 
-    const dbUser = await prisma.user.findUnique({
-      where: { clerkUserId },
-    });
+    if (!messages.length) {
+      return NextResponse.json({ error: "No messages" }, { status: 400 });
+    }
 
+    const dbUser = await prisma.user.findUnique({ where: { clerkUserId } });
     if (!dbUser) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     const session = await prisma.chatSession.findFirst({
-      where: {
-        id,
-        userId: dbUser.id,
-      },
-      include: {
-        messages: {
-          orderBy: { createdAt: "asc" },
-        },
-      },
+      where: { id: sessionId, userId: dbUser.id },
     });
-
     if (!session) {
       return NextResponse.json(
         { error: "Chat session not found" },
@@ -66,11 +59,14 @@ export async function DELETE(_req: NextRequest, { params }: RouteContext) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id } = await params;
-
-    const dbUser = await prisma.user.findUnique({
-      where: { clerkUserId },
-    });
+    const validRoles = ["USER", "ASSISTANT"];
+    const toInsert = messages
+      .filter(m => validRoles.includes(m.role?.toUpperCase()))
+      .map(m => ({
+        chatSessionId: sessionId,
+        role: m.role.toUpperCase() as "USER" | "ASSISTANT",
+        content: m.content || "",
+      }));
 
     if (!dbUser) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
