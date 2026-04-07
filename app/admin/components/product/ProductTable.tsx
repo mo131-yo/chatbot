@@ -12,26 +12,25 @@ export default function ProductTable() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const fetchData = useCallback(async () => {
-    try {
-      setLoading(true);
-      const res = await fetch("/admin/api/productAllGet");
+const fetchData = useCallback(async () => {
+  try {
+    setLoading(true);
+    const res = await fetch("/admin/api/productAllGet", {
+      cache: "no-store" 
+    });
 
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`Server error: ${res.status} - ${errorText}`);
-      }
+    if (!res.ok) throw new Error(`Server error: ${res.status}`);
 
-      const data = await res.json();
-      if (data.success) {
-        setProducts(data.products || []);
-      }
-    } catch (error) {
-      console.error("Fetch error details:", error);
-    } finally {
-      setLoading(false);
+    const data = await res.json();
+    if (data.success) {
+      setProducts(data.products || []);
     }
-  }, []);
+  } catch (error) {
+    console.error("Fetch error:", error);
+  } finally {
+    setLoading(false);
+  }
+}, []);
 
   useEffect(() => {
     fetchData();
@@ -57,11 +56,12 @@ export default function ProductTable() {
   };
 
   const getProductImage = (p: any): string => {
-    if (Array.isArray(p.images) && p.images.length > 0) return p.images[0];
-    if (p.product_image_url) return p.product_image_url;
-    if (p.image) return p.image;
-    return "https://placehold.co/100x100?text=No+Image";
-  };
+  if (Array.isArray(p.images) && p.images.length > 0) return p.images[0];
+  if (p.product_image_url) return p.product_image_url;
+  if (p.imageUrl) return p.imageUrl;
+  
+  return "https://placehold.co/100x100?text=No+Image";
+};
 
   if (loading) {
     return (
