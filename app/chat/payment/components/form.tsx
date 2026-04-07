@@ -31,7 +31,7 @@ const initialFormData: FormData = {
 };
 
 type FormErrors = Partial<Record<keyof Omit<FormData, "lat" | "lng">, string>>;
- 
+
 export default function OrderAddress({ onClose, onConfirm }: Props) {
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [loading, setLoading] = useState(false);
@@ -48,13 +48,13 @@ export default function OrderAddress({ onClose, onConfirm }: Props) {
     return formData.city ? (LOCATION_DATA[formData.city] ?? []) : [];
   }, [formData.city]);
 
-interface FormErrors {
-  city?: string;
-  district?: string;
-  street?: string;
-  address?: string;
-  phone?: string;
-}
+  interface FormErrors {
+    city?: string;
+    district?: string;
+    street?: string;
+    address?: string;
+    phone?: string;
+  }
 
   const LocationPicker = useMemo(
     () =>
@@ -303,7 +303,7 @@ interface FormErrors {
 
       console.log("Final Order Data:", payload);
 
-      onClose();
+      onConfirm();
     } finally {
       setSubmitting(false);
     }
@@ -318,7 +318,6 @@ interface FormErrors {
         : "border-white/10 bg-white/5 focus:border-[#C5A059]"
     }`;
   };
-  
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
@@ -472,11 +471,11 @@ interface FormErrors {
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
               <label className="px-1 text-[10px] font-bold uppercase tracking-widest text-slate-500">
-                Гудамж
+                Байр / Орц / Тоот
               </label>
               <input
                 name="street"
-                placeholder="Гудамж.."
+                placeholder="Байр, Орц, Тоот"
                 value={formData.street}
                 onChange={(e) => setFieldValue("street", e.target.value)}
                 onBlur={() => handleBlur("street")}
@@ -489,11 +488,11 @@ interface FormErrors {
 
             <div className="flex flex-col gap-1.5">
               <label className="px-1 text-[10px] font-bold uppercase tracking-widest text-slate-500">
-                Байр / Орц / Тоот
+                Гудамж
               </label>
               <input
                 name="address"
-                placeholder="Байр, Орц, Тоот.."
+                placeholder="Гудамж.."
                 value={formData.address}
                 onChange={(e) => setFieldValue("address", e.target.value)}
                 onBlur={() => handleBlur("address")}
@@ -526,9 +525,9 @@ interface FormErrors {
             </div>
           </div>
 
-          <button 
-            onClick={() => onConfirm()}
-            disabled={loading} 
+          <button
+            onClick={handleSubmit}
+            disabled={loading}
             className="w-full py-4 bg-[#C5A059] hover:bg-[#d4b476] text-black font-bold rounded-2xl transition-all"
           >
             {loading ? "Уншиж байна..." : "ХАЯГ БАТАЛГААЖУУЛАХ"}

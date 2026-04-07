@@ -1,4 +1,4 @@
-import { create } from 'zustand';
+import { create } from "zustand";
 
 interface FavoriteStore {
   savedIds: string[];
@@ -16,29 +16,26 @@ export const useFavoriteStore = create<FavoriteStore>((set, get) => ({
   fetchFavorites: async () => {
     try {
       const res = await fetch("/chat/api/favorites");
-      if (res.ok) {
-        const data = await res.json();
-        set({
-          savedIds: data.map((f: any) => f.productId),
-          savedProducts: data.map((f: any) => f.product)
-        });
-      }
-    } catch (err) {
-      console.error("Favorites татахад алдаа гарлаа:", err);
-    }
+      if (res.ok) return;
+      const data = await res.json();
+      set({
+        savedIds: data.map((f: any) => f.productId),
+        savedProducts: data.map((f: any) => f.product),
+      });
+    } catch (err) {}
   },
   toggleFavorite: async (product: any) => {
     const isSaved = get().savedIds.includes(product.id);
-    
+
     if (isSaved) {
       set({
-        savedIds: get().savedIds.filter(id => id !== product.id),
-        savedProducts: get().savedProducts.filter(p => p.id !== product.id)
+        savedIds: get().savedIds.filter((id) => id !== product.id),
+        savedProducts: get().savedProducts.filter((p) => p.id !== product.id),
       });
     } else {
       set({
         savedIds: [...get().savedIds, product.id],
-        savedProducts: [...get().savedProducts, product]
+        savedProducts: [...get().savedProducts, product],
       });
     }
 
@@ -52,11 +49,9 @@ export const useFavoriteStore = create<FavoriteStore>((set, get) => ({
           price: product.price,
           image: product.image,
           description: product.description,
-          storeId: product.storeId
+          storeId: product.storeId,
         }),
       });
-    } catch (err) {
-      console.error("DB Sync Error:", err);
-    }
+    } catch (err) {}
   },
 }));

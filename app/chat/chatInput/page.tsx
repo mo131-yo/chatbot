@@ -4,6 +4,8 @@ import { useState, useRef } from "react";
 import { ImagePlus, Loader2 } from "lucide-react";
 import { SendButton } from "./components/SendButton";
 import { Suggestions } from "./components/Suggestion";
+import { useState, useRef } from "react";
+import { ImagePlus, Loader2 } from "lucide-react";
 import { InputField } from "./components";
 import { useVisualSearch } from "../hooks/useVisualSearch";
 
@@ -30,6 +32,33 @@ export default function ChatInput({
     const text = (textToSend ?? input).trim();
     if (!text || combinedLoading) return;
     setInput("");
+
+    try {
+      const response = await fetch("/chat/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: [...history, { role: "user", content: finalInput }],
+        }),
+      });
+      const data = await response.json();
+      if (data.reply) onMessageReceived(finalInput, data.reply);
+    } catch (error) {
+      onMessageReceived(finalInput, "Холболтын алдаа гарлаа.");
+    } finally {
+      setIsLoading(false);
+      setIsTyping(false);
+    }
+  };
+
+  const handleImageUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsLoading(true);
+    setIsTyping(true);
     onSendMessage(text);
   };
 

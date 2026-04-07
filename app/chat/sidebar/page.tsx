@@ -1,36 +1,46 @@
 "use client";
 import { NewChatBtn, ChatHistory } from "./components";
 import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 
 interface SidebarProps {
   isCollapsed: boolean;
-  history: any[]; 
+  history: any[];
   onNewChat: () => void;
   onSelectChat: (id: string) => void;
-  onDeleteChat: (id: string) => void; 
+  onDeleteChat: (id: string) => void;
   isLoading?: boolean;
-  activeChatId?: string | null;   
+  activeChatId?: string | null;
 }
 
-export default function Sidebar({ 
-  isCollapsed, 
-  history, 
-  onNewChat, 
-  onSelectChat, 
+export default function Sidebar({
+  isCollapsed,
+  history: initialHistory,
+  onNewChat,
+  onSelectChat,
   onDeleteChat,
-  isLoading, 
-  activeChatId
+  isLoading,
+  activeChatId,
 }: SidebarProps) {
   const router = useRouter();
+  const [history, setHistory] = useState(initialHistory);
 
- const handlePin = async (id: string) => {
+  useEffect(() => {
+    setHistory(initialHistory);
+  }, [initialHistory]);
+
+  const handlePin = async (id: string) => {
     try {
       const res = await fetch(`/chat/api/chat/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "pin" })
+        body: JSON.stringify({ action: "pin" }),
       });
-      if (res.ok) router.refresh();
+      if (res.ok) {
+        setHistory((prev) =>
+          prev.map((c) => (c.id === id ? { ...c, isPinned: !c.isPinned } : c)),
+        );
+      }
     } catch (err) {
       console.error("Pin error:", err);
     }
@@ -41,9 +51,13 @@ export default function Sidebar({
       const res = await fetch(`/chat/api/chat/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "rename", title })
+        body: JSON.stringify({ action: "rename", title }),
       });
-      if (res.ok) router.refresh();
+      if (res.ok) {
+        setHistory((prev) =>
+          prev.map((c) => (c.id === id ? { ...c, title } : c)),
+        );
+      }
     } catch (err) {
       console.error("Rename error:", err);
     }
@@ -54,9 +68,8 @@ export default function Sidebar({
       const res = await fetch(`/chat/api/chat/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "share" })
+        body: JSON.stringify({ action: "share" }),
       });
-      
       if (res.ok) {
         const url = `${window.location.origin}/share/chat/${id}`;
         await navigator.clipboard.writeText(url);
@@ -67,27 +80,28 @@ export default function Sidebar({
     }
   };
 
-  const handleDelete = async (id: string) => {
-    try {
-      const response = await fetch(`/chat/api/chat/${id}`, { 
-        method: "DELETE" 
-      });
-      
-      if (response.ok) {
-        router.refresh();
-        if (activeChatId === id) {
-          router.push("/");
-        }
-      } else {
-        console.error("Устгахад алдаа гарлаа");
-      }
-    } catch (err) {
-      console.error("Delete error:", err);
-    }
-  };
+  // const handleDelete = async (id: string) => {
+  //   setHistory((prev) => prev.filter((c) => c.id !== id));
+
+  //   try {
+  //     const response = await fetch(`/chat/api/session/${id}`, {
+  //       method: "DELETE",
+  //     });
+
+  //     if (!response.ok) {
+  //       setHistory(initialHistory);
+  //       console.error("Устгахад алдаа гарлаа");
+  //     } else if (activeChatId === id) {
+  //       router.push("/");
+  //     }
+  //   } catch (err) {
+  //     setHistory(initialHistory);
+  //     console.error("Delete error:", err);
+  //   }
+  // };
 
   return (
-    <aside 
+    <aside
       className={`flex flex-col h-screen relative z-20 transition-all duration-300 ease-in-out bg-white dark:bg-[#0D0D0D] border-r border-black/10 dark:border-white/5 ${
         isCollapsed ? "w-0 overflow-hidden border-r-0" : "w-72"
       }`}
@@ -96,14 +110,15 @@ export default function Sidebar({
         <NewChatBtn onClick={onNewChat} />
       </div>
 
-      <ChatHistory 
+      <ChatHistory
         history={history}
         onSelectChat={onSelectChat}
         onPinChat={handlePin}
         onRenameChat={handleRename}
         onShareChat={handleShare}
-        onDeleteChat={handleDelete}
-        isLoading={isLoading} 
+        // onDeleteChat={handleDelete}
+        onDeleteChat={onDeleteChat}
+        isLoading={isLoading}
         activeChatId={activeChatId}
       />
     </aside>
