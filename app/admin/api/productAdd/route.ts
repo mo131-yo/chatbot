@@ -9,10 +9,21 @@ const index = pc.index(process.env.PINECONE_NAME!);
 export async function POST(req: NextRequest) {
   try {
     const { userId } = await auth();
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!userId)
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await req.json();
-    const { name, description, price, imageUrl, category, brand, color, size, stock } = body;
+    const {
+      name,
+      description,
+      price,
+      imageUrl,
+      category,
+      brand,
+      color,
+      size,
+      stock,
+    } = body;
 
     const textToEmbed = `${name} ${description} ${brand} ${category} ${color} ${size}`;
     const embeddings = new OpenAIEmbeddings({
@@ -21,24 +32,28 @@ export async function POST(req: NextRequest) {
     });
     const vector = await embeddings.embedQuery(textToEmbed);
 
+    if (!vector || !Array.isArray(vector)) {
+      throw new Error("Vector generation failed");
+    }
+
     const generatedId = `prod_${Date.now()}`;
 
-   await index.namespace(userId).upsert({
+    await index.namespace(userId).upsert({
       records: [
         {
           id: generatedId,
           values: vector,
           metadata: {
-            product_name: name,
-            formatted_price: Number(price),
-            description: description,
-            category: category || "General",
-            brand: brand || "Unknown",
-            product_image_url: imageUrl || "",
+            product_name: String(name || "Нэргүй"),
+            formatted_price: Number(price) || 0,
+            description: String(description || ""),
+            category: String(category || "General"),
+            brand: String(brand || "Unknown"),
+            product_image_url: String(imageUrl || ""),
             stock: Number(stock) || 0,
-            color: color || "",
-            size: size || "",
-            store_id: userId
+            color: String(color || ""),
+            size: String(size || ""),
+            store_id: String(userId),
           },
         },
       ],

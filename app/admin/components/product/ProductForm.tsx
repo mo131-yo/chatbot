@@ -144,7 +144,7 @@ export default function ProductForm({ onSuccess, initialData, onClose }: Product
       const data = await response.json();
 
       if (data.success) {
-        setToastMsg(initialData ? "DATABASE RE-SYNCHRONIZED" : "Success");
+        setToastMsg(initialData ? "DATABASE RE-SYNCHRONIZED" : "Success",);
         setShowToast(true);
         
         setTimeout(() => {
