@@ -113,7 +113,7 @@ export async function POST(req: Request) {
       },
     });
 
-    // 4. Product-ыг шинэчлэх эсвэл үүсгэх (Upsert ашиглах нь хамгийн найдвартай)
+
     const updatedProduct = await prisma.product.upsert({
       where: { id: productId },
       update: {
@@ -122,14 +122,14 @@ export async function POST(req: Request) {
         description: description || "",
         brand: brand || "",
         stock: numericStock,
-        images: imageUrl ? [imageUrl] : undefined, // Зөвхөн шинэ зураг ирвэл солино
+        images: imageUrl ? [imageUrl] : undefined, 
         colors: color ? [color] : [],
         sizes: size ? [size] : [],
         categoryName,
         categoryId: categoryRecord.id,
       },
       create: {
-        id: productId, // Хэрэв ID-г өөрөө гараас өгч байгаа бол
+        id: productId, 
         name,
         price: numericPrice,
         description: description || "",
