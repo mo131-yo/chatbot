@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "../ui/button";
+import { useUploadThing } from "@/utils/uploadthing";
 
 export default function ProductForm({ onSuccess }: any) {
   const [open, setOpen] = useState(false);
@@ -17,6 +18,7 @@ export default function ProductForm({ onSuccess }: any) {
   const [brand, setBrand] = useState("");
   const [stock, setStock] = useState("");
   const [category, setCategory] = useState("");
+  
 
  const handleSubmit = async () => {
     try {
@@ -48,12 +50,36 @@ export default function ProductForm({ onSuccess }: any) {
         }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Хадгалахад алдаа гарлаа");
-      }
+    // 1. UploadThing рүү зургуудаа хуулна
+    const uploadRes = await startUpload(imageFiles);
+    
+    if (!uploadRes) {
+      throw new Error("Зураг хуулахад алдаа гарлаа");
+    }
 
-      const data = await response.json();
+    const uploadedUrls = uploadRes.map(file => file.url);
+
+    // 2. Өөрийн API (Pinecone-той) руу мэдээллээ илгээнэ
+    const response = await fetch("/admin/api/productCreate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name,
+        description,
+        price: Number(price),
+        images: uploadedUrls, // Одоо UploadThing-ийн URL-ууд очиж байна
+        category,
+        brand,
+        color,
+        size,
+        stock: Number(stock),
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Хадгалахад алдаа гарлаа");
+    }
 
       if (data.success) {
         console.log("Шинээр үүссэн Pinecone ID:", data.pineconeId);
@@ -68,7 +94,11 @@ export default function ProductForm({ onSuccess }: any) {
       console.error("Фронт дээрх алдаа:", error);
       alert("Алдаа: " + error.message);
     }
-  };
+  } catch (error: any) {
+    console.error("Алдаа:", error);
+    alert(error.message);
+  }
+};
 
   const resetForm = () => {
     setName("");
