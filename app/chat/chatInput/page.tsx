@@ -1,85 +1,91 @@
 "use client";
 
+import { useState, useRef } from "react";
+import { ImagePlus, Loader2 } from "lucide-react";
 import { SendButton } from "./components/SendButton";
-import { VoiceButton } from "./components/VoiceButton";
 import { Suggestions } from "./components/Suggestion";
-import { useState } from "react";
-import { useVoiceToText } from "../hooks/useVoiceToText";
-import { InputField } from "../input/components/InputField";
-
+import { InputField } from "./components";
+import { useVisualSearch } from "../hooks/useVisualSearch";
 
 interface ChatInputProps {
-  onMessageReceived: (userMessage: string, aiReply: string) => void;
+  onSendMessage: (text: string) => void;   
+  onVisualResult: (userMsg: any, aiMsg: any) => void;
   history: { role: string; content: string }[];
-  setIsTyping: (val: boolean) => void;
+  isTyping: boolean;
 }
 
-export default function ChatInput({ onMessageReceived, history, setIsTyping }: ChatInputProps) {
+export default function ChatInput({
+  onSendMessage,
+  onVisualResult,
+  history,
+  isTyping,
+}: ChatInputProps) {
   const [input, setInput] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const { isRecording, isProcessing, startRecording, stopRecording } = useVoiceToText();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { searchByImage, isSearching } = useVisualSearch();
 
-  const handleSend = async (textToSend?: string) => {
-    const finalInput = textToSend || input;
-    if (!finalInput.trim() || isLoading) return;
+  const combinedLoading = isTyping || isSearching;
 
-    setIsLoading(true);
-    setIsTyping(true);
+  const handleSend = (textToSend?: string) => {
+    const text = (textToSend ?? input).trim();
+    if (!text || combinedLoading) return;
     setInput("");
+    onSendMessage(text);
+  };
 
-    const formattedHistory = history.map((h) => ({
-      role: h.role === "assistant" || h.role === "tuslah" ? "assistant" : "user",
-      content: h.content,
-    }));
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || combinedLoading) return;
 
-    try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: [...formattedHistory, { role: "user", content: finalInput }],
-        }),
-      });
-      const data = await response.json();
-      if (data.reply) onMessageReceived(finalInput, data.reply);
-    } catch (error) {
-      onMessageReceived(finalInput, "Холболтын алдаа гарлаа.");
-    } finally {
-      setIsLoading(false);
-      setIsTyping(false);
+    const imageUrl = URL.createObjectURL(file);
+    const userMsg = { type: "image", content: imageUrl };
+
+    const result = await searchByImage(file);
+
+    if (result.success && result.product) {
+      onVisualResult(userMsg, { type: "product_card", data: result.product });
+    } else {
+      onVisualResult(userMsg, "Уучлаарай, тохирох бараа олдсонгүй.");
     }
+
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   return (
     <footer className="w-full max-w-4xl mx-auto p-4 relative z-50">
       <Suggestions visible={history?.length === 0} onSelect={handleSend} />
-      
+
       <div className="relative flex items-center w-full gap-3 bg-white/5 backdrop-blur-xl p-2 rounded-2xl border border-white/10 shadow-2xl">
-        <VoiceButton 
-          isRecording={isRecording} isProcessing={isProcessing} isLoading={isLoading}
-          onStart={() => startRecording((t) => t && handleSend(t))}
-          onStop={stopRecording}
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleImageUpload}
+          accept="image/*"
+          className="hidden"
         />
 
-        <InputField 
-          value={input} onChange={setInput} 
-          onKeyDown={(e: any) => e.key === "Enter" && handleSend()}
-          disabled={isLoading || isProcessing}
-          isProcessing={isProcessing}
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={combinedLoading}
+          className="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded-xl transition-all disabled:opacity-50"
+        >
+          {isSearching ? <Loader2 className="animate-spin" size={22} /> : <ImagePlus size={22} />}
+        </button>
+
+        <InputField
+          value={input}
+          onChange={setInput}
+          onKeyDown={(e: any) => e.key === "Enter" && !e.shiftKey && handleSend()}
+          disabled={combinedLoading}
         />
 
-        <SendButton 
-          onClick={() => handleSend()} 
-          disabled={isLoading || isProcessing || !input.trim()} 
-          isLoading={isLoading} 
+        <SendButton
+          onClick={() => handleSend()}
+          disabled={combinedLoading || !input.trim()}
+          isLoading={isTyping}
         />
       </div>
-
-      {isRecording && (
-        <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-xs text-red-500 font-medium animate-bounce">
-          Яриаг сонсож байна...
-        </div>
-      )}
     </footer>
   );
 }

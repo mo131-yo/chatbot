@@ -1,43 +1,162 @@
+"use client";
+
+import { Ellipsis, Trash2, Edit2, Share2, Pin, PinOff } from "lucide-react";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger,
+  DropdownMenuSeparator
+} from "@/components/ui/dropdown-menu";
+import { GiPin } from "react-icons/gi";
+
+interface Chat {
+  id: string;
+  title: string;
+  isPinned?: boolean;
+}
+
 interface ChatHistoryProps {
-  history: { id: string; title: string }[];
+  history: Chat[];
   onSelectChat: (id: string) => void;
+  onDeleteChat: (id: string) => void;
+  onRenameChat: (id: string, newTitle: string) => void;
+  onPinChat: (id: string) => void;
+  onShareChat: (id: string) => void;
+  activeChatId?: string | null;
   isLoading?: boolean;
 }
 
-export const ChatHistory = ({ history, onSelectChat, isLoading }: ChatHistoryProps) => (
-  <div className="flex-1 overflow-y-auto px-4 space-y-1 custom-scrollbar">
-    <div className="px-4 py-3">
-      <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500 font-medium">
-        Recent Curations
-      </p>
-    </div>
-    
-    {isLoading ? (
-      <div className="space-y-2 px-4">
-        {[1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className="flex items-center gap-3 animate-pulse py-2">
-            <div className="w-4 h-4 bg-white/10 rounded-full" />
-            <div className="h-3 bg-white/10 rounded w-full" />
-          </div>
-        ))}
+export const ChatHistory = ({
+  history = [], 
+  onSelectChat,
+  isLoading,
+  onDeleteChat,
+  onRenameChat,
+  onPinChat,
+  onShareChat,
+  activeChatId
+}: ChatHistoryProps) => {
+  
+  if (!history || !Array.isArray(history)) {
+    return (
+      <div className="flex-1 px-4 py-6 text-xs text-slate-500 italic">
+        Түүх байхгүй
       </div>
-    ) : !history || history.length === 0 ? (
-      <p className="px-4 py-2 text-xs text-slate-600 italic">No chats</p>
-    ) : (
-      history.map((chat) => (
-        <button 
-          key={chat.id} 
-          onClick={() => onSelectChat(chat.id)}
-          className="w-full text-left px-4 py-3 rounded-lg hover:bg-white/10 dark:hover:bg-white/5 transition-all group flex items-center gap-3"
-        >
-          <span className="material-symbols-outlined text-slate-600 group-hover:text-[#C5A059] text-sm transition-colors">
-            chat_bubble
-          </span>
-          <span className="text-sm font-light text-slate-400 group-hover:text-slate-200 transition-colors truncate">
-            {chat.title}
-          </span>
-        </button>
-      ))
-    )}
-  </div>
-);
+    );
+  }
+
+  const pinnedChats = history.filter(chat => chat?.isPinned);
+  const recentChats = history.filter(chat => !chat?.isPinned);
+
+  const handleShareClick = async (e: React.MouseEvent, chat: Chat) => {
+    e.stopPropagation();
+
+    const shareData = {
+      title: "AI Chat Хуваалцах",
+      text: `"${chat.title || 'Шинэ чат'}" яриаг үзээрэй.`,
+      url: `${window.location.origin}/chat/${chat.id}`,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+        console.log("Амжилттай хуваалцлаа");
+      } else {
+        await navigator.clipboard.writeText(shareData.url);
+        alert("Холбоосыг санамжинд (clipboard) хууллаа!");
+      }
+      onShareChat(chat.id);
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        console.log('Хэрэглэгч хуваалцахыг цуцаллаа.');
+        return;
+      }
+      console.error("Хуваалцахад алдаа гарлаа:", error);
+    }
+  };
+
+const renderChatItem = (chat: Chat) => (
+  <div 
+    key={chat.id} 
+    className={`group relative flex items-center rounded-lg transition-all mb-1
+      ${activeChatId === chat.id ? 'bg-black/5 dark:bg-white/10' : 'hover:bg-black/5'}`}
+  >
+    <button
+      onClick={() => onSelectChat(chat.id)}
+      className="flex-1 text-left px-3 py-2.5 flex items-center gap-2 min-w-0"
+    >
+      {/* PIN ICON: Хэрэв бэхэлсэн бол GiPin харуулна */}
+      {chat.isPinned && (
+        <GiPin size={16} className="text-[#C5A059] rotate-45 shrink-0" />
+      )}
+      
+      <span className="text-sm font-medium truncate pr-6 group-hover:text-[#C5A059]">
+        {chat.title || "New Chat"}
+      </span>
+    </button>
+
+      <div className="absolute right-1">
+        <DropdownMenu>
+          <DropdownMenuTrigger
+          className="h-7 w-7 rounded-md hover:bg-black/10 dark:hover:bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center outline-none border-none bg-transparent cursor-pointer text-slate-400 hover:text-white">
+          <Ellipsis size={14} />
+        </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+            <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => onPinChat(chat.id)}>
+              {chat.isPinned ? <PinOff size={14} /> : <Pin size={14} />}
+              {chat.isPinned ? "Unpin" : "Pin"}
+            </DropdownMenuItem>
+            
+            <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => {
+              const newTitle = prompt("Шинэ нэр:", chat.title);
+              if (newTitle) onRenameChat(chat.id, newTitle);
+            }}>
+              <Edit2 size={14} /> Rename
+            </DropdownMenuItem>
+
+            <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => onShareChat(chat.id)}>
+              <Share2 size={14} /> Share
+            </DropdownMenuItem>
+
+            <DropdownMenuSeparator className="bg-slate-100 dark:bg-slate-800" />
+            
+            <DropdownMenuItem 
+              className="gap-2 text-red-500 focus:text-red-500 cursor-pointer"
+              onClick={() => confirm("Устгах уу?") && onDeleteChat(chat.id)}
+            >
+              <Trash2 size={14} /> Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="flex-1 overflow-y-auto px-3 py-4 space-y-6 custom-scrollbar">
+      {pinnedChats.length > 0 && (
+        <div className="space-y-1">
+          <p className="px-3 text-[10px] uppercase tracking-widest text-[#C5A059] font-bold mb-2 flex items-center gap-2">
+             Pinned
+          </p>
+          {pinnedChats.map((chat) => renderChatItem(chat))}
+          <div className="h-px bg-black/5 dark:bg-white/5 mx-3 my-4" />
+        </div>
+      )}
+
+      <div className="space-y-1">
+        <p className="px-3 text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-2">
+          Your chat history
+        </p>
+        {recentChats.length > 0 ? (
+          recentChats.map((chat) => renderChatItem(chat))
+        ) : (
+          pinnedChats.length === 0 && (
+            <p className="px-3 py-2 text-xs text-slate-500 italic">No history yet</p>
+          )
+        )}
+      </div>
+    </div>
+  );
+};
