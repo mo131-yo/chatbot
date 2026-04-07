@@ -4,13 +4,11 @@ import { useState, useRef } from "react";
 import { ImagePlus, Loader2 } from "lucide-react";
 import { SendButton } from "./components/SendButton";
 import { Suggestions } from "./components/Suggestion";
-import { useState, useRef } from "react";
-import { ImagePlus, Loader2 } from "lucide-react";
 import { InputField } from "./components";
 import { useVisualSearch } from "../hooks/useVisualSearch";
 
 interface ChatInputProps {
-  onSendMessage: (text: string) => void;   
+  onSendMessage: (text: string) => void;
   onVisualResult: (userMsg: any, aiMsg: any) => void;
   history: { role: string; content: string }[];
   isTyping: boolean;
@@ -32,33 +30,6 @@ export default function ChatInput({
     const text = (textToSend ?? input).trim();
     if (!text || combinedLoading) return;
     setInput("");
-
-    try {
-      const response = await fetch("/chat/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: [...history, { role: "user", content: finalInput }],
-        }),
-      });
-      const data = await response.json();
-      if (data.reply) onMessageReceived(finalInput, data.reply);
-    } catch (error) {
-      onMessageReceived(finalInput, "Холболтын алдаа гарлаа.");
-    } finally {
-      setIsLoading(false);
-      setIsTyping(false);
-    }
-  };
-
-  const handleImageUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    setIsLoading(true);
-    setIsTyping(true);
     onSendMessage(text);
   };
 
@@ -99,7 +70,11 @@ export default function ChatInput({
           disabled={combinedLoading}
           className="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded-xl transition-all disabled:opacity-50"
         >
-          {isSearching ? <Loader2 className="animate-spin" size={22} /> : <ImagePlus size={22} />}
+          {isSearching ? (
+            <Loader2 className="animate-spin" size={22} />
+          ) : (
+            <ImagePlus size={22} />
+          )}
         </button>
 
         <InputField
