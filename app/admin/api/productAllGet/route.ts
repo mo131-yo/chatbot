@@ -23,8 +23,8 @@ export async function GET() {
     const products = queryResponse.matches.map((match) => ({
       id: match.id,
       ...match.metadata,
-      name: match.metadata?.product_name,
-      price: match.metadata?.formatted_price,
+      name: match.metadata?.name,
+      price: match.metadata?.price,
       brand: match.metadata?.brand,
       stock: match.metadata?.stock,
       images: match.metadata?.product_image_url
