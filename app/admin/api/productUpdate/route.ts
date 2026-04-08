@@ -40,6 +40,7 @@ export async function POST(req: Request) {
       },
     });
 
+
     const updatedProduct = await prisma.product.upsert({
       where: { id: id },
       update: {
@@ -55,7 +56,7 @@ export async function POST(req: Request) {
         categoryId: categoryRecord.id,
       },
       create: {
-        id: id,
+        id: productId, 
         name,
         price: numericPrice,
         description: description || "",
