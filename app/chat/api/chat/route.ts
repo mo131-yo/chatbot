@@ -49,90 +49,116 @@ export async function POST(req: Request) {
     const fallbackUserId = body?.userId as string | undefined;
  
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
-      return NextResponse.json(
-        { error: "Messages array is required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Messages array is required" }, { status: 400 });
     }
- 
-    const lastUserMessage = messages[messages.length - 1]?.content?.trim();
-    if (!lastUserMessage) {
-      return NextResponse.json(
-        { error: "Last message content is required" },
-        { status: 400 },
-      );
-    }
- 
-    const priceRegex = /(\d+(?:\.\d+)?)\s*(k|к|мянган|мян|төг|₮)/gi;
-    const match = priceRegex.exec(lastUserMessage);
-    let maxPrice: number | undefined;
-    if (match) {
-      maxPrice = parseFloat(match[1]);
-      if (
-        match[2] &&
-        ["k", "к", "мянган", "мян"].includes(match[2].toLowerCase())
-      )
-        maxPrice *= 1000;
-    }
- 
+
+    const lastUserMessage = messages[messages.length - 1]?.content?.trim() || "";
+
+    const maxPrice = extractMaxPrice(lastUserMessage);
+
+    const getTargetNamespaces = (text: string): string[] => {
+      const input = text.toLowerCase();
+      const categories = {
+        shoes: {
+          keywords: ["gut", "гут", "shoe", "puse", "пүүз", "кесс", "тавчик"],
+          ns: ["shoes-namespace"]
+        },
+        books: {
+          keywords: ["nom", "ном", "book", "унших", "зохиол", "тууж", "бичиг"],
+          ns: ["books-namespace"]
+        },
+        fashion: {
+          keywords: ["хувц", "өмд", "tsamt", "fashion", "jacket", "цамц"],
+          ns: ["fashion-namespace"]
+        },
+        electronics: {
+          keywords: ["utas", "утс", "phone", "iphone", "elect", "цэнэглэгч", "чихэвч"],
+          ns: ["electronics-namespace"]
+        },
+        beauty: {
+          keywords: ["beauty", "cosmetic", "гоо", "арьс", "маск", "mask", "shamp"],
+          ns: ["beauty-namespace", "most_used_beauty_cosmetics-namespace"]
+        }
+      };
+
+      let selected: string[] = [];
+      for (const cat of Object.values(categories)) {
+        if (cat.keywords.some(keyword => input.includes(keyword))) {
+          selected = [...selected, ...cat.ns];
+        }
+      }
+
+      if (selected.length > 0) return Array.from(new Set(selected));
+
+      return [
+        "", "most_used_beauty_cosmetics-namespace", "beauty-namespace", 
+        "fashion-namespace", "shoes-namespace", "electronics-namespace", 
+        "books-namespace",
+      ];
+    };
+
+    const targetNamespaces = getTargetNamespaces(lastUserMessage);
+
     let context = "";
     try {
       const embedding = await openai.embeddings.create({
         model: "text-embedding-3-small",
         input: lastUserMessage,
       });
- 
-      const namespaces = [
-        "",
-        "most_used_beauty_cosmetics-namespace",
-        "beauty-namespace",
-        "fashion-namespace",
-        "shoes-namespace",
-        "electronics-namespace",
-        "books-namespace",
-        "user_3BSwyjfHAMPysPTaXqJ5CkAIGfM",
-      ];
- 
-      const queryPromises = namespaces.map((ns) =>
+
+      const queryPromises = targetNamespaces.map((ns) =>
         index.namespace(ns).query({
           vector: embedding.data[0].embedding,
-          topK: 8,
+          topK: 10,
           includeMetadata: true,
-          filter: maxPrice
-            ? { formatted_price: { $lte: maxPrice } }
-            : undefined,
-        }),
+          filter: maxPrice ? { formatted_price: { $lte: maxPrice } } : undefined,
+        })
       );
  
       const queryResults = await Promise.all(queryPromises);
-      const allMatches = queryResults.flatMap((res) => res.matches || []);
- 
-      const topMatches = allMatches
+
+      const diversifiedMatches = queryResults.flatMap((res) => {
+        const matches = res.matches || [];
+        return matches.sort((a, b) => (b.score || 0) - (a.score || 0)).slice(0, 3);
+      });
+
+      const topMatches = diversifiedMatches
         .sort((a, b) => (b.score || 0) - (a.score || 0))
-        .slice(0, 10);
- 
+        .slice(0, 15);
+
       context = topMatches
-        .map(
-          (m) =>
-            `БҮТЭЭГДЭХҮҮН: ${m.metadata?.product_name || m.metadata?.name || "Нэргүй"}
-            ҮНЭ: ${m.metadata?.formatted_price || m.metadata?.price}₮
-            ЗУРАГ: ${m.metadata?.product_image_url || m.metadata?.image_url || m.metadata?.image || ""}
-            ТАЙЛБАР: ${m.metadata?.description || "Тайлбар байхгүй"}
-            ID: ${m.id}
-            STORE_ID: ${m.metadata?.store_id || "store-001"}`,
-        )
+        .map((m) => {
+          const rawPrice = m.metadata?.formatted_price || m.metadata?.price;
+          const finalPrice = rawPrice && rawPrice !== "0" ? `${rawPrice}₮` : "Үнэ тодорхойгүй";
+          return `БҮТЭЭГДЭХҮҮН: ${m.metadata?.product_name || m.metadata?.name || "Нэргүй"}
+                  ДЭЛГҮҮР: ${m.metadata?.store_name}
+                  ҮНЭ: ${finalPrice}
+                  ЗУРАГ: ${m.metadata?.product_image_url || m.metadata?.image_url || ""}
+                  ТАЙЛБАР: ${m.metadata?.description || "Тайлбар байхгүй"}
+                  ID: ${m.id}
+                  STORE_ID: ${m.metadata?.store_id || "store-001"}`;
+        })
         .join("\n---\n");
     } catch (err) {
       console.error("Vector Search Error:", err);
     }
- 
-    const chatResponse = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content: `Чи бол Монголын хамгийн ухаалаг, найрсаг онлайн дэлгүүрийн "Senior Shopping Assistant" юм. Чиний зорилго бол зүгээр л бараа зарах биш, хэрэглэгчийн амьдралын хэв маягт тохирсон хамгийн зөв сонголтыг хийхэд нь туслах "Shopping Consultant" байх юм.
- 
+
+const chatResponse = await openai.chat.completions.create({
+  model: "gpt-4o-mini",
+  messages: [
+    {
+      role: "system",
+      content: `Чи бол Монголын хамгийн ухаалаг, найрсаг онлайн дэлгүүрийн "Senior Shopping Assistant" юм. Чиний зорилго бол зүгээр л бараа зарах биш, хэрэглэгчийн амьдралын хэв маягт тохирсон хамгийн зөв сонголтыг хийхэд нь туслах "Shopping Consultant" байх юм.
+
+      --- ЧУХАЛ ---
+      1. Хэрэглэгчийн асуусан төрөл (category) контекст доторх барааны төрөлтэй тохирч байгааг шалга. 
+      2. Хэрэглэгч гутал асуусан байхад чихэвч санал болгож болохгүй.
+      3. Хэрэглэгчийн асуусан бараа доорх "КОНТЕКСТ"-д байвал заавал санал болго.
+      4. Барааг харуулахдаа ЗӨВХӨН дараах Markdown форматыг ашигла:
+        ![Нэр, Үнэ, Тайлбар, ProductID, StoreID](Зургийн_URL)
+      5. Хэрэв КОНТЕКСТ-д тохирох бараа байвал "Байхгүй байна" гэж хэлж болохгүй.
+      6. Барааны үнийг яг байгаагаар нь бич.
+
       --- ХАРИЛЦААНЫ СТРАТЕГИ (ADVANCED PERSONA) ---
       1. Эмпати ба Мэдрэмж: Хэрэглэгчийн хэрэгцээг мэдэр. Жишээ нь: "Удахгүй орох баяр наадмаар өмсөх гоёлын гутал хайж байна уу?" эсвэл "Оройн гоёлд тань энэ цүнх маш сайн зохицно гэдэгт итгэлтэй байна" гэх мэтээр сэтгэл хөдлөл нэм.
       2. Эргэцүүлэн бодох (Reasoning): Хэрэглэгч "Nike гутал байна уу?" гэвэл шууд жагсаахын оронд "Мэдээж, Nike бол чанар. Танд гүйлтийн зориулалттай нь хэрэгтэй юу, эсвэл өдөр тутам өмсөх Street-style сонирхож байна уу?" гэж тодруулж асуу.
@@ -148,7 +174,12 @@ export async function POST(req: Request) {
       --- ЗУРГИЙН УТГА (CONTEXTUAL IMAGES) ---
       - Context доторх 'ЗУРАГ' линкийг ашигла.
       - Хэрэв зураг байхгүй бол: https://loremflickr.com/800/800/{item_name_english,shopping} ашиглана.
- 
+
+      --- ХАТУУ ШҮҮЛТҮҮР ---
+      - Хэрэв хэрэглэгч "Nike" гэж асуусан бол КОНТЕКСТ доторх барааны нэр (product_name) эсвэл тайлбарт "Nike" гэсэн үг заавал байх ёстой. 
+      - Хэрэв байхгүй бол тухайн барааг БҮҮ ХАРУУЛ.
+      - Хэрэглэгчийн асуултад 100% тохирохгүй барааг "орлуулаад" харуулж болохгүй.
+
       --- TRANSACTIONAL LOGIC ---
       1. Захиалга өгөх үед: "Маш зөв сонголт! Энэ бараа танд таалагдана гэдэгт 100% итгэлтэй байна. Одоо захиалгыг тань үүсгэе." гээд PAYMENT_TRIGGER-ээ хавсарга.
       2. PAYMENT_TRIGGER Формат: PAYMENT_TRIGGER:{"id":"id","name":"name","price":price}
