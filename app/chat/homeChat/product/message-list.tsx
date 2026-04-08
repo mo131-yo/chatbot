@@ -34,21 +34,21 @@ const removeImageMarkdown = (content: string): string => {
 const extractProducts = (content: string): Product[] => {
   const imgRegex = /!\[([^\]]+)\]\(([^)]+)\)/g;
   const products: Product[] = [];
-  let match: RegExpExecArray | null;
+  let match;
 
   while ((match = imgRegex.exec(content)) !== null) {
     const altText = match[1]; 
     const imageSrc = match[2]; 
-    const parts = altText.split(",").map(p => p.trim());
+    const parts = altText.split(/[,;|]/).map(p => p.trim());
 
     if (parts.length >= 2) {
       products.push({
-        id: parts[3] || `temp-${Math.random().toString(36).slice(2, 9)}`,
-        name: parts[0] || "Нэргүй",
+        id: parts[3] || `id-${Math.random()}`,
+        name: parts[0] || "Нэргүй бараа",
         price: parts[1] || "0",
-        image: imageSrc.startsWith("http") ? imageSrc : "/placeholder.png",
+        image: imageSrc,
         description: parts[2] || "",
-        storeId: parts[4] || "store-1",
+        storeId: parts[4] || "store-001",
       });
     }
   }
