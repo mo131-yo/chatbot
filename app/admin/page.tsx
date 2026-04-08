@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 
 import RevenueChart from "@/app/admin/components/dashboard/RevenueChart";
 import PageWrapper from "./components/PageWrapper";
+import { prisma } from "@/lib/prisma";
+
 
 export default async function DashboardPage() {
   const { userId } = await auth();
@@ -13,11 +15,11 @@ export default async function DashboardPage() {
 
   const client = await clerkClient();
   const user = await client.users.getUser(userId);
-
+  
   if (user.publicMetadata?.role !== "admin") {
     return redirect("/");
   }
-
+// const index =pinecone.Index("products")
   return (
     <PageWrapper>
       <div className="grid grid-cols-2 gap-6">
@@ -34,7 +36,7 @@ export default async function DashboardPage() {
         dark:bg-indigo-800 dark:text-white"
         >
           <p className="text-sm opacity-70">Orders</p>
-          <h2 className="text-2xl font-bold">45</h2>
+          <h2 className="text-2xl font-bold">50</h2>
         </div>
 
         <div></div>
