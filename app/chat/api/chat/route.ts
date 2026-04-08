@@ -3,17 +3,17 @@ import OpenAI from "openai";
 import { auth } from "@clerk/nextjs/server";
 import { index } from "@/lib/api/pinecone";
 import { prisma } from "@/lib/prisma";
-
+ 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_KEY,
   timeout: 30000,
 });
-
+ 
 type IncomingMessage = {
   role: "USER" | "ASSISTANT" | "SYSTEM" | "user" | "assistant" | "system";
   content: string;
 };
-
+ 
 function normalizeOpenAIRole(
   role: IncomingMessage["role"],
 ): "user" | "assistant" | "system" {
@@ -21,33 +21,33 @@ function normalizeOpenAIRole(
   if (r === "user" || r === "assistant" || r === "system") return r as any;
   return "user";
 }
-
+ 
 function extractMaxPrice(text: string): number | null {
   const priceRegex =
     /(\d+(?:\.\d+)?)\s*(k|к|мянган|мян|төгрөг|төг|t|₮|tg|tugrug|say|сая|zuu|зуу)/gi;
   const matches = [...text.matchAll(priceRegex)];
   if (matches.length === 0) return null;
-
+ 
   const lastMatch = matches[matches.length - 1];
   let value = parseFloat(lastMatch[1]);
   const unit = (lastMatch[2] || "").toLowerCase();
-
+ 
   if (["k", "к", "мянган", "мян"].includes(unit)) value *= 1000;
   else if (["say", "сая"].includes(unit)) value *= 1000000;
   else if (value < 1000) value *= 1000;
-
+ 
   return Number.isFinite(value) ? value : null;
 }
-
+ 
 export async function POST(req: Request) {
   try {
     const { userId: clerkUserId } = await auth();
     const body = await req.json();
-
+ 
     const messages = body?.messages as IncomingMessage[] | undefined;
     const chatId = body?.chatId as string | undefined;
     const fallbackUserId = body?.userId as string | undefined;
-
+ 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return NextResponse.json({ error: "Messages array is required" }, { status: 400 });
     }
@@ -114,7 +114,7 @@ export async function POST(req: Request) {
           filter: maxPrice ? { formatted_price: { $lte: maxPrice } } : undefined,
         })
       );
-
+ 
       const queryResults = await Promise.all(queryPromises);
 
       const diversifiedMatches = queryResults.flatMap((res) => {
@@ -164,13 +164,13 @@ const chatResponse = await openai.chat.completions.create({
       2. Эргэцүүлэн бодох (Reasoning): Хэрэглэгч "Nike гутал байна уу?" гэвэл шууд жагсаахын оронд "Мэдээж, Nike бол чанар. Танд гүйлтийн зориулалттай нь хэрэгтэй юу, эсвэл өдөр тутам өмсөх Street-style сонирхож байна уу?" гэж тодруулж асуу.
       3. Үнийн сэтгэл зүй: Хямд барааг "боломжийн үнэтэй", үнэтэй барааг "чанартай бөгөөд тансаг, урт хугацааны хэрэглээ" гэж тодорхойл.
       4. Сэтгэл хөдлөлийн илэрхийлэл: Найрсаг Emoji (✨, 🛍️, 🙌, 😊) ашигла. Хэзээ ч робот шиг нэг хэвийн хариулж болохгүй.
-
+ 
       --- БАРАА ХАРУУЛАХ ТУШААЛ (ХАТУУ ДҮРЭМ) ---
       - Бараа санал болгохын өмнө хэрэглэгчийн сонголтыг магтсан эсвэл тайлбарласан 1-2 өгүүлбэр бич.
       - Бараануудыг ЗӨВХӨН дараах Markdown форматыг ашиглаж харуулна:
         ![Нэр, Үнэ, Тайлбар, ProductID, StoreID](Зургийн_URL)
       - Текстээр барааны жагсаалт (1. Гутал, 2. Цүнх гэх мэт) ХЭЗЭЭ Ч бүү гарга.
-
+ 
       --- ЗУРГИЙН УТГА (CONTEXTUAL IMAGES) ---
       - Context доторх 'ЗУРАГ' линкийг ашигла.
       - Хэрэв зураг байхгүй бол: https://loremflickr.com/800/800/{item_name_english,shopping} ашиглана.
@@ -184,30 +184,30 @@ const chatResponse = await openai.chat.completions.create({
       1. Захиалга өгөх үед: "Маш зөв сонголт! Энэ бараа танд таалагдана гэдэгт 100% итгэлтэй байна. Одоо захиалгыг тань үүсгэе." гээд PAYMENT_TRIGGER-ээ хавсарга.
       2. PAYMENT_TRIGGER Формат: PAYMENT_TRIGGER:{"id":"id","name":"name","price":price}
       3. Үнийг товчилж болохгүй (Жишээ нь: 150k биш 150,000₮ гэх).
-
+ 
       --- ХЭРЭГЛЭГЧИЙН КОНТЕКСТ ---
       ${context}`,
-    },
-    ...messages.map((m) => ({
-      role: normalizeOpenAIRole(m.role),
-      content: m.content,
-    })),
-  ],
-  temperature: 0.8,
-  presence_penalty: 0.6, 
-  frequency_penalty: 0.5, 
-});
-
+        },
+        ...messages.map((m) => ({
+          role: normalizeOpenAIRole(m.role),
+          content: m.content,
+        })),
+      ],
+      temperature: 0.8,
+      presence_penalty: 0.6,
+      frequency_penalty: 0.5,
+    });
+ 
     const aiReply =
       chatResponse.choices[0]?.message?.content?.trim() || "Хариу олдсонгүй.";
-
+ 
     const effectiveUserId = clerkUserId || fallbackUserId;
     const isGuestSession = chatId?.startsWith("guest_");
-
+ 
     if (effectiveUserId && chatId && !isGuestSession) {
       try {
         const stringChatId = String(chatId);
-
+ 
         const dbUser = await prisma.user.upsert({
           where: { clerkUserId: effectiveUserId },
           update: {},
@@ -218,7 +218,7 @@ const chatResponse = await openai.chat.completions.create({
             name: "User",
           },
         });
-
+ 
         const session = await prisma.chatSession.upsert({
           where: { id: stringChatId },
           update: {
@@ -231,7 +231,7 @@ const chatResponse = await openai.chat.completions.create({
             title: lastUserMessage.slice(0, 40),
           },
         });
-
+ 
         await prisma.chatMessage.createMany({
           data: [
             {
@@ -250,11 +250,11 @@ const chatResponse = await openai.chat.completions.create({
         console.error("PRISMA_SAVE_ERROR:", dbError);
       }
     }
-
+ 
     return NextResponse.json({ reply: aiReply });
   } catch (error: any) {
     console.error("API_GLOBAL_ERROR:", error);
-
+ 
     return NextResponse.json(
       {
         error: "Internal Server Error",

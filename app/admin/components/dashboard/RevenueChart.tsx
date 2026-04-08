@@ -11,23 +11,58 @@ import {
   CartesianGrid,
 } from "recharts";
 
-const data = [
-  { day: "Mon", revenue: 200 },
-  { day: "Tue", revenue: 400 },
-  { day: "Wed", revenue: 300 },
-  { day: "Thu", revenue: 600 },
-  { day: "Fri", revenue: 800 },
-  { day: "Sat", revenue: 500 },
-  { day: "Sun", revenue: 900 },
-];
-
 export default function RevenueChart() {
   const [dark, setDark] = useState(true);
+  const [data, setData] = useState<any[]>([]);
 
   useEffect(() => {
     const isDark = document.documentElement.classList.contains("dark");
     setDark(isDark);
+
+    fetchData();
   }, []);
+
+  const fetchData = async () => {
+    try {
+      const res = await fetch("/admin/api/orders");
+      const orders = await res.json();
+
+      // 👉 өдөрөөр group хийх
+      const grouped: Record<string, number> = {};
+
+     orders.forEach((o: any) => {
+    const rawDate = o.createdAt || o.date;
+
+    const total = Number(
+      o.total ??
+      o.totalPrice ??
+      o.price ??
+      0
+    );
+
+    if (!rawDate || isNaN(total)) return;
+
+    const day = new Date(rawDate).toLocaleDateString("en-US", {
+      weekday: "short",
+    });
+
+    if (!grouped[day]) grouped[day] = 0;
+
+    grouped[day] += total;
+  });
+
+      // 👉 chart format болгох
+      const chartData = Object.entries(grouped).map(([day, revenue]) => ({
+        day,
+        revenue,
+      }));
+
+      setData(chartData);
+
+    } catch (err) {
+      console.error("Revenue fetch error:", err);
+    }
+  };
 
   return (
     <div
@@ -35,13 +70,13 @@ export default function RevenueChart() {
       bg-white/5 border-white/10 text-white
       dark:bg-white dark:border-gray-200 dark:text-black"
     >
-     
+      {/* HEADER */}
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold">Revenue</h2>
-        <span className="text-green-400 text-sm">+12.5%</span>
+        <span className="text-green-400 text-sm">Live</span>
       </div>
 
-   
+      {/* CHART */}
       <ResponsiveContainer width="100%" height={250}>
         <LineChart data={data}>
           <CartesianGrid
@@ -73,7 +108,7 @@ export default function RevenueChart() {
             stroke="#4f46e5"
             strokeWidth={3}
             dot={{ r: 4 }}
-            isAnimationActive={true}
+            isAnimationActive
             animationDuration={800}
           />
         </LineChart>

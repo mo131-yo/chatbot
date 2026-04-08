@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { useUser, useClerk } from "@clerk/nextjs"; // useClerk нэмэв
+import { useUser, useClerk } from "@clerk/nextjs";
+import { title } from "process";
 
 type ChatRole = "USER" | "ASSISTANT" | "SYSTEM";
 type ChatMessage = { role: ChatRole; content: string; imagePreview?: string };
@@ -13,16 +14,15 @@ type HistorySession = {
 
 export const useChatLogic = () => {
   const { user, isSignedIn, isLoaded } = useUser();
-  const { openSignIn } = useClerk(); // Нэвтрэх цонх нээх функц
+  const { openSignIn } = useClerk();
   const [activeChatId, setActiveChatIdState] = useState<string | null>(null);
   const [allChats, setAllChats] = useState<Record<string, ChatMessage[]>>({});
   const [sidebarHistory, setSidebarHistory] = useState<SidebarChatItem[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // 1. Хэрэглэгчийн түүх татах
   const fetchUserHistory = useCallback(async () => {
-    if (!isLoaded || !isSignedIn) return; // Нэвтрээгүй бол түүх татахгүй
+    if (!isLoaded || !isSignedIn) return;
     try {
       setIsLoading(true);
       const res = await fetch("/chat/api/history", { cache: "no-store" });
@@ -37,7 +37,7 @@ export const useChatLogic = () => {
         id: s.id,
         title: s.title || s.messages?.[0]?.content?.slice(0, 20) || "Шинэ чат",
       }));
-      
+
       const chatsMap: Record<string, ChatMessage[]> = {};
       sessions.forEach((s) => {
         chatsMap[s.id] = (s.messages || []).map((m) => ({
@@ -56,7 +56,6 @@ export const useChatLogic = () => {
     }
   }, [isLoaded, isSignedIn]);
 
-  // 2. Хэрэглэгч бүртгэх/синк хийх
   const syncUser = useCallback(async () => {
     if (!isSignedIn) return;
     try {
@@ -72,29 +71,29 @@ export const useChatLogic = () => {
       syncUser();
       fetchUserHistory();
     } else {
-      // Нэвтрээгүй бол state-үүдийг цэвэрлэх
       setSidebarHistory([]);
       setAllChats({});
       setActiveChatIdState(null);
     }
   }, [isLoaded, isSignedIn, syncUser, fetchUserHistory]);
 
-  // 3. Шинэ сесс үүсгэх
-  const createSession = useCallback(async (title: string) => {
-    if (!isSignedIn) {
-      openSignIn(); // Нэвтрээгүй бол нэвтрэх цонх гаргана
-      throw new Error("Unauthorized");
-    }
-    const res = await fetch("/chat/api/session", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title }),
-    });
-    if (!res.ok) throw new Error(await res.text());
-    return res.json();
-  }, [isSignedIn, openSignIn]);
+  const createSession = useCallback(
+    async (title: string) => {
+      if (!isSignedIn) {
+        openSignIn();
+        throw new Error("Unauthorized");
+      }
+      const res = await fetch("/chat/api/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      return res.json();
+    },
+    [isSignedIn, openSignIn],
+  );
 
-  // 4. Чатыг ачаалах
   const loadChat = useCallback(
     async (chatId: string | null) => {
       if (!chatId) {
@@ -106,19 +105,34 @@ export const useChatLogic = () => {
         return;
       }
       setActiveChatIdState(chatId);
-      if (allChats[chatId]) return;
+
       try {
         setIsLoading(true);
-        const res = await fetch(`/chat/api/session/${chatId}`, { cache: "no-store" });
+        const res = await fetch(`/chat/api/session/${chatId}`, {
+          cache: "no-store",
+        });
         if (!res.ok) throw new Error("Failed to load");
+
         const session = await res.json();
+
+        const uniqueMessages: ChatMessage[] = [];
+        const seen = new Set();
+
+        (session.messages || []).forEach((m: any) => {
+          const identifier = `${m.role}-${m.content}`;
+          if (!seen.has(identifier)) {
+            seen.add(identifier);
+            uniqueMessages.push({
+              role: m.role,
+              content: m.content,
+              imagePreview: m.imagePreview ?? undefined,
+            });
+          }
+        });
+
         setAllChats((prev) => ({
           ...prev,
-          [chatId]: (session.messages || []).map((m: any) => ({
-            role: m.role,
-            content: m.content,
-            imagePreview: m.imagePreview ?? undefined,
-          })),
+          [chatId]: uniqueMessages,
         }));
       } catch (e) {
         console.error("loadChat error:", e);
@@ -126,64 +140,61 @@ export const useChatLogic = () => {
         setIsLoading(false);
       }
     },
-    [allChats, isSignedIn, openSignIn]
+    [isSignedIn, openSignIn],
   );
 
-  // 5. Мессеж илгээх
   const sendMessage = useCallback(
     async (message: string) => {
-      if (!message.trim()) return;
-      
-      // ХАМГААЛАЛТ: Нэвтрээгүй бол мессеж явуулахгүй
+      if (!message.trim() || isTyping) return;
       if (!isSignedIn) {
         openSignIn();
         return;
       }
 
       setIsTyping(true);
+      let chatId = activeChatId;
+
       try {
-        let chatId = activeChatId;
-        
         if (!chatId) {
-          const session = await createSession(message.slice(0, 40) || "Шинэ чат");
+          const title = message.slice(0, 40) || "Шинэ чат";
+          const session = await createSession(title);
           chatId = session.id;
           setActiveChatIdState(chatId);
-          setSidebarHistory((prev) => [
-            { id: session.id, title: session.title || message.slice(0, 40) },
-            ...prev,
-          ]);
+          setSidebarHistory((prev) => [{ id: session.id, title }, ...prev]);
           setAllChats((prev) => ({ ...prev, [chatId!]: [] }));
         }
 
-        const nextMessages: ChatMessage[] = [
-          ...(allChats[chatId!] || []),
-          { role: "USER", content: message },
-        ];
-        
-        setAllChats((prev) => ({ ...prev, [chatId!]: nextMessages }));
+        const userMessage: ChatMessage = { role: "USER", content: message };
+
+        setAllChats((prev) => ({
+          ...prev,
+          [chatId!]: [...(prev[chatId!] || []), userMessage],
+        }));
 
         const res = await fetch("/chat/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            messages: nextMessages.map((m) => ({
-              role: m.role.toLowerCase(),
-              content: m.content,
-            })),
+            messages: [
+              ...(allChats[chatId!] || []),
+              { role: "user", content: message },
+            ],
             chatId,
             userId: user?.id,
           }),
         });
 
-        if (!res.ok) throw new Error(await res.text());
+        if (!res.ok) throw new Error("API error");
         const data = await res.json();
+
+        const aiMessage: ChatMessage = {
+          role: "ASSISTANT",
+          content: data.reply,
+        };
 
         setAllChats((prev) => ({
           ...prev,
-          [chatId!]: [
-            ...(prev[chatId!] || []),
-            { role: "ASSISTANT", content: data.reply },
-          ],
+          [chatId!]: [...(prev[chatId!] || []), aiMessage],
         }));
       } catch (e) {
         console.error("sendMessage error:", e);
@@ -191,13 +202,36 @@ export const useChatLogic = () => {
         setIsTyping(false);
       }
     },
-    [activeChatId, allChats, createSession, isSignedIn, openSignIn, user?.id]
+    [
+      activeChatId,
+      allChats,
+      createSession,
+      isSignedIn,
+      openSignIn,
+      user?.id,
+      isTyping,
+      setIsTyping,
+      setSidebarHistory,
+    ],
   );
+  const generateTitleFromProducts = (products: any[], fallback?: string) => {
+    if (products?.length > 0) {
+      const names = products
+        .slice(0, 2)
+        .map((p) => (p.metadata || p).name)
+        .filter(Boolean);
 
-  // 6. Зургаар хайх
+      if (names.length === 1) return names[0];
+      if (names.length > 1) return `${names[0]} +${products.length - 1}`;
+
+      return fallback || "New Chat";
+    }
+
+    return fallback || "New Chat";
+  };
+
   const addVisualResult = useCallback(
     async (userMsg: any, products: any[]) => {
-      // ХАМГААЛАЛТ: Нэвтрээгүй бол зургаар хайхгүй
       if (!isSignedIn) {
         openSignIn();
         return;
@@ -206,35 +240,47 @@ export const useChatLogic = () => {
       let chatId = activeChatId;
 
       if (!chatId) {
-        const title = userMsg.content?.slice(0, 20) || "Зургийн хайлт";
+        const title = generateTitleFromProducts(
+          products,
+          userMsg.content?.slice(0, 40),
+        );
+
         try {
           const session = await createSession(title);
           chatId = session.id;
+
           setActiveChatIdState(chatId);
-          setSidebarHistory(prev => [{ id: session.id, title }, ...prev]);
-          setAllChats(prev => ({ ...prev, [chatId!]: [] }));
-        } catch (e) { return; }
+
+          setSidebarHistory((prev) => [{ id: session.id, title }, ...prev]);
+
+          setAllChats((prev) => ({ ...prev, [chatId!]: [] }));
+        } catch (e) {
+          return;
+        }
       }
 
       const newUserMsg: ChatMessage = {
         role: "USER",
         content: userMsg.content || "Зургаар хайж байна...",
-        imagePreview: userMsg.imagePreview
+        imagePreview: userMsg.imagePreview,
       };
 
-      const productLines = (products || []).map((p: any) => {
-        const m = p.metadata || p;
-        return `![${m.name}, ${m.price}, ${m.description || ""}, ${p.id || m.id}, ${m.store_id}](${m.image_url || m.image})`;
-      }).join("\n");
+      const productLines = (products || [])
+        .map((p: any) => {
+          const m = p.metadata || p;
+          return `![${m.name}, ${m.price}, ${m.description || ""}, ${p.id || m.id}, ${m.store_id}](${m.image_url || m.image})`;
+        })
+        .join("\n");
 
-      const newAiMsg: ChatMessage = { 
-        role: "ASSISTANT", 
-        content: products.length > 0 
-          ? `Зургаас ${products.length} тохирох бараа олдлоо!\n\n${productLines}`
-          : "Уучлаарай, тохирох бараа олдсонгүй."
+      const newAiMsg: ChatMessage = {
+        role: "ASSISTANT",
+        content:
+          products.length > 0
+            ? `Зургаас ${products.length} тохирох бараа олдлоо!\n\n${productLines}`
+            : "Уучлаарай, тохирох бараа олдсонгүй.",
       };
 
-      setAllChats(prev => ({
+      setAllChats((prev) => ({
         ...prev,
         [chatId!]: [...(prev[chatId!] || []), newUserMsg, newAiMsg],
       }));
@@ -245,9 +291,17 @@ export const useChatLogic = () => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             chatId,
+            title: generateTitleFromProducts(
+              products,
+              userMsg.content?.slice(0, 40),
+            ),
             messages: [
-              { role: "USER", content: newUserMsg.content, imagePreview: newUserMsg.imagePreview },
-              { role: "ASSISTANT", content: newAiMsg.content }
+              {
+                role: "USER",
+                content: newUserMsg.content,
+                imagePreview: newUserMsg.imagePreview,
+              },
+              { role: "ASSISTANT", content: newAiMsg.content },
             ],
           }),
         });
@@ -255,16 +309,16 @@ export const useChatLogic = () => {
         console.error("Save error:", e);
       }
     },
-    [activeChatId, createSession, isSignedIn, openSignIn]
+    [activeChatId, createSession, isSignedIn, openSignIn],
   );
 
-  // 7. Чат устгах
   const deleteChat = useCallback(
     async (chatId: string) => {
       if (!isSignedIn) return;
       setSidebarHistory((prev) => {
         const updated = prev.filter((c) => c.id !== chatId);
-        if (activeChatId === chatId) setActiveChatIdState(updated[0]?.id || null);
+        if (activeChatId === chatId)
+          setActiveChatIdState(updated[0]?.id || null);
         return updated;
       });
       setAllChats((prev) => {
@@ -279,7 +333,7 @@ export const useChatLogic = () => {
         await fetchUserHistory();
       }
     },
-    [activeChatId, fetchUserHistory, isSignedIn]
+    [activeChatId, fetchUserHistory, isSignedIn],
   );
 
   const startNewChat = useCallback(() => {
@@ -301,6 +355,6 @@ export const useChatLogic = () => {
     refetchHistory: fetchUserHistory,
     deleteChat,
     addVisualResult,
-    isSignedIn, // Нэвтэрсэн эсэхийг UI-д ашиглахад хэрэгтэй
+    isSignedIn,
   };
 };

@@ -73,13 +73,13 @@ export default function ProductTable({ search }: { search: string }) {
       </div>
     );
   }
-  
+
   const filtered = products.filter((p) => {
-  const productName = p?.name || ""; 
-  const searchTerm = search || "";
-  
-  return productName.toLowerCase().includes(searchTerm.toLowerCase());
-});
+    const productName = p?.name || "";
+    const searchTerm = search || "";
+
+    return productName.toLowerCase().includes(searchTerm.toLowerCase());
+  });
   return (
     <div className="relative w-full bg-white dark:bg-gray-950 rounded-[2rem] border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
       {editingProduct && (
@@ -154,7 +154,7 @@ export default function ProductTable({ search }: { search: string }) {
                 </td>
               </tr>
             ) : (
-              products.map((p) => {
+              filtered.map((p) => {
                 const meta = p.metadata || {};
                 const name = meta.product_name || p.name || "Нэргүй";
                 const price = meta.formatted_price || p.price || 0;
