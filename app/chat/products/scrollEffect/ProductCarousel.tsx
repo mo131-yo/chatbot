@@ -16,7 +16,7 @@ interface ProductCarouselProps {
   products: Product[]; 
   onSelect: (product: Product) => void;
   onBuy: (name: string, price: any) => void;
-  history?: any[]; // ✅ Энэ мөрийг нэмж өгснөөр алдаа арилна
+  history?: any[];
 }
 
 export const ProductCarousel = ({ products, onBuy, onSelect, history }: ProductCarouselProps) => {

@@ -48,7 +48,6 @@ export const VisualSearchResults: React.FC<VisualSearchResultsProps> = ({
       </motion.div>
 
       <div className="flex gap-3">
-        {/* Source image — зүүн талд жижгээр */}
         {sourceImage && (
           <motion.div
             initial={{ opacity: 0, scale: 0.85 }}
@@ -65,7 +64,6 @@ export const VisualSearchResults: React.FC<VisualSearchResultsProps> = ({
           </motion.div>
         )}
 
-        {/* Product grid */}
         <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
           {products.map((product, i) => {
             const isHovered = hoveredId === product.id;
@@ -93,7 +91,6 @@ export const VisualSearchResults: React.FC<VisualSearchResultsProps> = ({
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/5 to-transparent" />
 
-                    {/* Bottom info */}
                     <div className="absolute bottom-0 left-0 right-0 p-2">
                       <p className="text-white text-[11px] font-semibold leading-tight line-clamp-2 mb-0.5">{product.name}</p>
                       <p className="text-[#C5A059] text-xs font-black">
@@ -101,7 +98,6 @@ export const VisualSearchResults: React.FC<VisualSearchResultsProps> = ({
                       </p>
                     </div>
 
-                    {/* Hover buy button */}
                     <AnimatePresence>
                       {isHovered && (
                         <motion.div
@@ -128,7 +124,6 @@ export const VisualSearchResults: React.FC<VisualSearchResultsProps> = ({
         </div>
       </div>
 
-      {/* Detail modal */}
       <AnimatePresence>
         {selected && (
           <>

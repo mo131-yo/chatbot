@@ -5,14 +5,13 @@ import { useState } from "react";
 export function useVisualSearch() {
   const [isSearching, setIsSearching] = useState(false);
 
-  // useVisualSearch дотор log нэм
   const searchByImage = async (file: File) => {
-    console.log("📁 File:", file.name, file.type, file.size); // ← нэм
+    console.log("📁 File:", file.name, file.type, file.size); 
     setIsSearching(true);
     const formData = new FormData();
     formData.append("image", file);
 
-    console.log("📤 Sending formData..."); // ← нэм
+    console.log("📤 Sending formData...");
 
     try {
       const response = await fetch("/chat/api/visual-search", {
@@ -20,7 +19,7 @@ export function useVisualSearch() {
         body: formData,
       });
 
-      console.log("📥 Response status:", response.status); // ← нэм
+      console.log("📥 Response status:", response.status);
 
       const contentType = response.headers.get("content-type");
 

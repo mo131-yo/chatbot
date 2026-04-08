@@ -55,7 +55,6 @@ export default function ProductTable({ search }: { search: string }) {
     }
   };
 
-  // Зургийн замыг Metadata-аас давхар шалгах
   const getProductImage = (p: any): string => {
     const meta = p.metadata || {};
     const imgUrl = meta.product_image_url || p.imageUrl || p.image;
@@ -76,7 +75,6 @@ export default function ProductTable({ search }: { search: string }) {
   }
   
   const filtered = products.filter((p) => {
-  // p.name байхгүй бол хоосон текст "" гэж үзнэ
   const productName = p?.name || ""; 
   const searchTerm = search || "";
   
@@ -97,7 +95,7 @@ export default function ProductTable({ search }: { search: string }) {
       )}
 
       {deletingId && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[200] flex items-center justify-center p-4 animate-in fade-in duration-300">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-200 flex items-center justify-center p-4 animate-in fade-in duration-300">
           <div className="bg-gray-900 border border-white/10 w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
             <div className="w-20 h-20 bg-red-500/10 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-red-500/20">
               <Trash2 className="w-10 h-10 text-red-500" />
@@ -157,7 +155,6 @@ export default function ProductTable({ search }: { search: string }) {
               </tr>
             ) : (
               products.map((p) => {
-                // Metadata болон үндсэн объектоос өгөгдлийг нэгтгэж авах
                 const meta = p.metadata || {};
                 const name = meta.product_name || p.name || "Нэргүй";
                 const price = meta.formatted_price || p.price || 0;

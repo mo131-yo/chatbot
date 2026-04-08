@@ -70,7 +70,6 @@ export const MessageList: React.FC<MessageListProps> = ({
         const isUser = message.role?.toLowerCase() === "user";
         const products = !isUser ? extractProducts(message.content || "") : [];
         
-        // Зөвхөн URL эсвэл base64 байвал зураг гэж үзнэ
         const displayImage = (message.imagePreview || message.image);
         const isActualImage = displayImage && (displayImage.startsWith('data:image') || displayImage.startsWith('http') || displayImage.startsWith('/'));
         
@@ -86,72 +85,65 @@ export const MessageList: React.FC<MessageListProps> = ({
             className={`flex flex-col ${isUser ? "items-end" : "items-start"} w-full`}
           >
 
-{isUser ? (
-  <div className="flex flex-col items-end gap-2 max-w-[85%]">
-    {/* Хэрэглэгчийн илгээсэн зураг */}
-    {isActualImage && (
-      <div className="relative group rounded-2xl overflow-hidden shadow-lg border border-white/5 bg-[#1e1e1e] transition-transform hover:scale-[1.02]">
-        <img
-          src={displayImage}
-          alt="User Upload"
-          className="w-full h-auto max-w-[320px] object-cover max-h-80 rounded-2xl block"
-          onError={(e) => {
-            (e.target as HTMLImageElement).style.display = 'none';
-          }}
-        />
-        {/* Зургийн дээрх тунгалаг давхарга (загварын хувьд) */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
-      </div>
-    )}
-    
-    {/* Текст мессеж */}
-    {hasText && (
-      <div className="px-5 py-3 rounded-[1.5rem] rounded-tr-sm bg-[#007AFF] text-white shadow-sm font-medium">
-        <ReactMarkdown components={{ img: () => null, p: ({ children }) => <p className="mb-0">{children}</p> }}>
-          {rawText}
-        </ReactMarkdown>
-      </div>
-    )}
-  </div>
-) : (
-  // AI-ийн хариулт (Assistant)
-  <div className="w-full space-y-4">
-    {/* AI Текст */}
-    {hasText && (
-      <div className="max-w-[85%] px-5 py-3 rounded-[1.8rem] rounded-tl-sm bg-white dark:bg-[#1A1A1A] border border-slate-100 dark:border-white/5 shadow-sm">
-        <div className="prose dark:prose-invert max-w-none text-sm md:text-base leading-relaxed">
-          <ReactMarkdown components={{ img: () => null, p: ({ children }) => <p className="mb-0">{children}</p> }}>
-            {rawText}
-          </ReactMarkdown>
-        </div>
-      </div>
-    )}
+          {isUser ? (
+            <div className="flex flex-col items-end gap-2 max-w-[85%]">
+              {isActualImage && (
+                <div className="relative group rounded-2xl overflow-hidden shadow-lg border border-white/5 bg-[#1e1e1e] transition-transform hover:scale-[1.02]">
+                  <img
+                    src={displayImage}
+                    alt="User Upload"
+                    className="w-full h-auto max-w-[320px] object-cover max-h-80 rounded-2xl block"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent pointer-events-none" />
+                </div>
+              )}
+              
+              {hasText && (
+                <div className="px-5 py-3 rounded-[1.5rem] rounded-tr-sm bg-[#007AFF] text-white shadow-sm font-medium">
+                  <ReactMarkdown components={{ img: () => null, p: ({ children }) => <p className="mb-0">{children}</p> }}>
+                    {rawText}
+                  </ReactMarkdown>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="w-full space-y-4">
+              {hasText && (
+                <div className="max-w-[85%] px-5 py-3 rounded-[1.8rem] rounded-tl-sm bg-white dark:bg-[#1A1A1A] border border-slate-100 dark:border-white/5 shadow-sm">
+                  <div className="prose dark:prose-invert max-w-none text-sm md:text-base leading-relaxed">
+                    <ReactMarkdown components={{ img: () => null, p: ({ children }) => <p className="mb-0">{children}</p> }}>
+                      {rawText}
+                    </ReactMarkdown>
+                  </div>
+                </div>
+              )}
 
-    {/* Барааны карусель (Картууд) */}
-    {products.length > 0 && (
-      <div className="w-full mt-2">
-        {isVisual && (
-          <div className="pl-4 mb-3 flex items-center gap-3">
-            <div className="w-1.5 h-1.5 rounded-full bg-[#C5A059] animate-pulse" />
-            <span className="text-[11px] font-bold tracking-widest text-[#C5A059] uppercase">
-              Олдсон бараа ({products.length})
-            </span>
-          </div>
-        )}
-        
-        {/* Барааны картууд */}
-        <div className="w-full overflow-visible">
-          <ProductCarousel 
-            products={products} 
-            onBuy={onBuy} 
-            onSelect={onProductClick} 
-            history={[]} 
-          />
-        </div>
-      </div>
-    )}
-  </div>
-)}
+              {products.length > 0 && (
+                <div className="w-full mt-2">
+                  {isVisual && (
+                    <div className="pl-4 mb-3 flex items-center gap-3">
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#C5A059] animate-pulse" />
+                      <span className="text-[11px] font-bold tracking-widest text-[#C5A059] uppercase">
+                        Олдсон бараа ({products.length})
+                      </span>
+                    </div>
+                  )}
+                  
+                  <div className="w-full overflow-visible">
+                    <ProductCarousel 
+                      products={products} 
+                      onBuy={onBuy} 
+                      onSelect={onProductClick} 
+                      history={[]} 
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
           </motion.div>
         );
       })}

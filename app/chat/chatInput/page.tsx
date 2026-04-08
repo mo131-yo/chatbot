@@ -3,13 +3,11 @@
 import { useState, useRef } from "react";
 import { ImagePlus, Loader2, X } from "lucide-react";
 import { SendButton } from "./components/SendButton";
-// import { Suggestions } from "./components/Suggestion";
 import { InputField } from "./components";
 import { useVisualSearch } from "../hooks/useVisualSearch";
 
 interface ChatInputProps {
   onSendMessage: (text: string) => void;
-  // userMsg + products[] — addVisualResult-тэй тохирох signature
   onVisualResult: (userMsg: any, products: any[]) => void;
   history: { role: string; content: string }[];
   isTyping: boolean;
@@ -31,7 +29,6 @@ export default function ChatInput({
 
   
   const combinedLoading = isTyping || isSearching;
-// Зургийг Base64 болгох туслах функц
 const fileToBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -47,22 +44,18 @@ const handleSend = async (textToSend?: string) => {
   if (previewImage) {
     const { file } = previewImage;
     
-    // UI-ийг шууд цэвэрлэх
     setPreviewImage(null);
     setInput("");
 
     try {
-      // АЛХАМ 1: Base64 хөрвүүлэлт
       const base64Image = await fileToBase64(file);
 
-      // АЛХАМ 2: Объект үүсгэх
       const userMsg = {
         role: "USER",
         content: text || "Зургаар хайж байна...",
-        imagePreview: base64Image, // Энэ дата DB-д хадгалагдана
+        imagePreview: base64Image,
       };
 
-      // АЛХАМ 3: Хайлт хийх
       const result = await searchByImage(file);
 
       if (result.success && result.products) {
@@ -96,7 +89,6 @@ const handleSend = async (textToSend?: string) => {
 
   return (
     <footer className="w-full max-w-4xl mx-auto p-4 relative z-50">
-      {/* <Suggestions visible={history?.length === 0} onSelect={handleSend} /> */}
 
       <div className="flex flex-col w-full bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
         {previewImage && (

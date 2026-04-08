@@ -48,16 +48,14 @@ export async function POST(req: Request) {
         customerPhone: customerPhone ?? "88888888",
         address: "Online Order",
         items: {
-  create: items.map((item: any) => ({
-    productId: item.productId || item.id || "unknown",
-    // Энд 'name' болон 'product_name' хоёуланг нь шалгана
-    productName: item.name || item.product_name || item.productName || "Нэр олдоогүй", 
-    // Зургийн URL-г мөн адил
-    productImage: item.image || item.product_image_url || item.imageUrl || item.productImage || "/placeholder.png", 
-    quantity: Number(item.quantity) || 1,
-    price: Number(item.price) || 0,
-  })),
-},
+        create: items.map((item: any) => ({
+            productId: item.productId || item.id || "unknown",
+            productName: item.name || item.product_name || item.productName || "Нэр олдоогүй", 
+            productImage: item.image || item.product_image_url || item.imageUrl || item.productImage || "/placeholder.png", 
+            quantity: Number(item.quantity) || 1,
+            price: Number(item.price) || 0,
+        })),
+        },
       },
     });
 
