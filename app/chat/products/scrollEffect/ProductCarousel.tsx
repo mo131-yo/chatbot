@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { HorizontalProductStack } from "../HorizontalProductStack/page";
 import { ProductDetailSidebar } from "../detail/ProductDetailSidebar";
+import HorizontalProductStack from "../HorizontalProductStack/page";
 
 interface Product {
   id: string;
