@@ -92,17 +92,14 @@ export default function Home() {
         </main>
 
         <ChatInput
-          onSendMessage={sendMessage}
-          onVisualResult={async (userMsg, result) => {
-            if (result?.type === "product_card") {
-              await addVisualResult(userMsg, result.products || [result.data]);
-            } else if (typeof result === "string") {
-              await addVisualResult(userMsg, []);
-            }
-          }}
-          history={currentChatMessages}
-          isTyping={isTyping || isStreaming}
-        />
+  onSendMessage={sendMessage}
+  onVisualResult={async (userMsg, products) => {
+    // Энд ирж буй 'products' нь шууд массив байх ёстой
+    await addVisualResult(userMsg, products);
+  }}
+  history={currentChatMessages}
+  isTyping={isTyping || isStreaming}
+/>
       </div>
     </div>
   );
