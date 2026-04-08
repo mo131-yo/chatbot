@@ -41,6 +41,7 @@ export async function POST(req: Request) {
     });
 
 
+
     const updatedProduct = await prisma.product.upsert({
       where: { id: id },
       update: {
@@ -56,7 +57,7 @@ export async function POST(req: Request) {
         categoryId: categoryRecord.id,
       },
       create: {
-        id: productId, 
+        id: id, // <--- ЭНД 'productId'-ийг 'id' болгож засав
         name,
         price: numericPrice,
         description: description || "",
@@ -70,6 +71,7 @@ export async function POST(req: Request) {
         slug: name?.toLowerCase().trim().replace(/\s+/g, "-") || `prod-${Date.now()}`,
       },
     });
+
 
     console.log("✅ PRISMA SUCCESS:", updatedProduct.id);
     return NextResponse.json({ success: true, product: updatedProduct });

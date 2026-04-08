@@ -143,7 +143,7 @@ model Product {
   cartItems  CartItem[]
   // orderItems OrderItem[]
   // orders     Order[]
-  // favorites Favorite[]
+  favorites Favorite[]
   // embedding  ProductEmbedding?
 
   createdAt DateTime @default(now())
@@ -280,7 +280,7 @@ model Favorite {
   createdAt DateTime @default(now())
 
   user      User     @relation(fields: [userId], references: [id])
-  // product   Product  @relation(fields: [productId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
 
   @@unique([userId, productId])
   @@index([userId])
