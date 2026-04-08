@@ -30,15 +30,26 @@ export default function RevenueChart() {
       // 👉 өдөрөөр group хийх
       const grouped: Record<string, number> = {};
 
-      orders.forEach((o: any) => {
-        const date = new Date(o.createdAt).toLocaleDateString("en-US", {
-          weekday: "short",
-        });
+     orders.forEach((o: any) => {
+    const rawDate = o.createdAt || o.date;
 
-        if (!grouped[date]) grouped[date] = 0;
+    const total = Number(
+      o.total ??
+      o.totalPrice ??
+      o.price ??
+      0
+    );
 
-        grouped[date] += o.total;
-      });
+    if (!rawDate || isNaN(total)) return;
+
+    const day = new Date(rawDate).toLocaleDateString("en-US", {
+      weekday: "short",
+    });
+
+    if (!grouped[day]) grouped[day] = 0;
+
+    grouped[day] += total;
+  });
 
       // 👉 chart format болгох
       const chartData = Object.entries(grouped).map(([day, revenue]) => ({
