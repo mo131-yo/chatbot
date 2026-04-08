@@ -4,7 +4,7 @@ import { Pinecone } from "@pinecone-database/pinecone";
 import RevenueChart from "@/app/admin/components/dashboard/RevenueChart";
 import PageWrapper from "./components/PageWrapper";
 import { prisma } from "@/lib/prisma";
- 
+
 export default async function DashboardPage() {
   const { userId } = await auth();
  
@@ -45,7 +45,7 @@ export default async function DashboardPage() {
           <p className="text-sm opacity-70">Orders</p>
           <h2 className="text-3xl font-bold">{orderCount}</h2>
         </div>
- 
+
         <div className="col-span-2 bg-white/5 backdrop-blur-md dark:bg-white rounded-2xl p-4 transition-colors duration-300">
           <RevenueChart />
         </div>
