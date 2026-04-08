@@ -154,7 +154,7 @@ export default function ProductTable({ search }: { search: string }) {
                 </td>
               </tr>
             ) : (
-              products.map((p) => {
+              filtered.map((p) => {
                 const meta = p.metadata || {};
                 const name = meta.product_name || p.name || "Нэргүй";
                 const price = meta.formatted_price || p.price || 0;
