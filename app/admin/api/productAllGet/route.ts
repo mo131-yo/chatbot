@@ -3,7 +3,7 @@ import { OpenAIEmbeddings } from "@langchain/openai";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 const pc = new Pinecone({ apiKey: process.env.PINECONE_API_KEY! });
 const index = pc.index(process.env.PINECONE_NAME!);
@@ -15,16 +15,16 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const queryResponse = await index.namespace(userId).query({
-      vector: Array(1536).fill(0), 
+      vector: Array(1536).fill(0),
       topK: 100,
-      includeMetadata: true, 
+      includeMetadata: true,
     });
 
     const products = queryResponse.matches.map((match) => ({
       id: match.id,
       ...match.metadata,
-      name: match.metadata?.product_name,
-      price: match.metadata?.formatted_price,
+      name: match.metadata?.name,
+      price: match.metadata?.price,
       brand: match.metadata?.brand,
       stock: match.metadata?.stock,
       images: match.metadata?.product_image_url
