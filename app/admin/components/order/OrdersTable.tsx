@@ -110,7 +110,11 @@ export default function OrdersTable() {
                                 )}
                               </div>
                               <div>
-                                <p className="text-sm font-bold text-gray-100">{item.productName || "Нэр тодорхойгүй"}</p>
+                                {/* <p className="text-sm font-bold text-gray-100">{item.productName || "Нэр тодорхойгүй"}</p> */}
+<p className="text-sm font-bold text-gray-100">
+  {/* Баазаас ирж буй productName-г шалгана, байхгүй бол item.name-г оролдоно */}
+  {item.productName || item.name || "Нэр олдоогүй"}
+</p>
                                 <p className="text-[11px] text-gray-500 font-medium">
                                   {item.quantity} ш × {Number(item.price).toLocaleString()}₮
                                 </p>

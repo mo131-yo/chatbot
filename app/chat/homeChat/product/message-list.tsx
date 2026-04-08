@@ -5,7 +5,7 @@ import ReactMarkdown from "react-markdown";
 import { motion, AnimatePresence } from "framer-motion";
 import PulsatingDots from "@/lib/utils/loading/pulsating-loader";
 import { ProductCarousel } from "@/app/chat/products/scrollEffect/ProductCarousel";
- 
+
 interface Product {
   id: string;
   name: string;
@@ -14,12 +14,7 @@ interface Product {
   description: string;
   storeId?: string;
 }
- 
-interface LocalChatMessage {
-  role: string;
-  content: string;
-}
- 
+
 interface MessageListProps {
   messages: any[];
   isTyping: boolean;
@@ -30,7 +25,6 @@ interface MessageListProps {
 
 const removeImageMarkdown = (content: string): string => {
   if (!content) return "";
-
   return content
     .replace(/!\[[^\]]*\]\([^)]+\)/g, "")
     .replace(/\n{3,}/g, "\n\n")
@@ -43,114 +37,135 @@ const extractProducts = (content: string): Product[] => {
   let match: RegExpExecArray | null;
 
   while ((match = imgRegex.exec(content)) !== null) {
-    const altText = match[1];
-    const imageSrc = match[2];
-    const parts = altText.split(",");
- 
-    products.push({
-      id: parts[3]?.trim() || `temp-${Math.random().toString(36).slice(2, 9)}`,
-      name: parts[0]?.trim() || "Нэргүй",
-      price: parts[1]?.trim() || "0",
-      image: imageSrc.startsWith("http")
-        ? imageSrc
-        : "https://placehold.co/300x400?text=No+Image",
-      description: parts[2]?.trim() || "",
-      storeId: parts[4]?.trim() || "store-1",
-    });
-  }
+    const altText = match[1]; 
+    const imageSrc = match[2]; 
+    const parts = altText.split(",").map(p => p.trim());
 
+    if (parts.length >= 2) {
+      products.push({
+        id: parts[3] || `temp-${Math.random().toString(36).slice(2, 9)}`,
+        name: parts[0] || "Нэргүй",
+        price: parts[1] || "0",
+        image: imageSrc.startsWith("http") ? imageSrc : "/placeholder.png",
+        description: parts[2] || "",
+        storeId: parts[4] || "store-1",
+      });
+    }
+  }
   return products;
 };
 
+function isVisualSearchReply(messages: any[], index: number): boolean {
+  if (index === 0) return false;
+  const prev = messages[index - 1];
+  return prev?.role?.toLowerCase() === "user" && (!!prev?.imagePreview || !!prev?.image);
+}
+
 export const MessageList: React.FC<MessageListProps> = ({
-  messages,
-  isTyping,
-  onProductClick,
-  onBuy,
-  messagesEndRef,
+  messages, isTyping, onProductClick, onBuy, messagesEndRef,
 }) => {
   return (
-    <div className="max-w-3xl mx-auto pb-20 space-y-6">
+    <div className="max-w-3xl mx-auto pb-20 flex flex-col space-y-8">
       {messages.map((message: any, index: number) => {
         const isUser = message.role?.toLowerCase() === "user";
         const products = !isUser ? extractProducts(message.content || "") : [];
-        const hasImage = isUser && !!message.imagePreview;
+        
+        // Зөвхөн URL эсвэл base64 байвал зураг гэж үзнэ
+        const displayImage = (message.imagePreview || message.image);
+        const isActualImage = displayImage && (displayImage.startsWith('data:image') || displayImage.startsWith('http') || displayImage.startsWith('/'));
+        
         const rawText = removeImageMarkdown(message.content || "");
         const hasText = rawText.length > 0;
-        const showBubble = hasImage || hasText;
+        const isVisual = !isUser && isVisualSearchReply(messages, index) && products.length > 0;
 
         return (
-          <motion.div
-            key={`msg-${index}`}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className={`flex flex-col ${isUser ? "items-end" : "items-start"}`}
+          <motion.div 
+            key={`msg-${index}`} 
+            initial={{ opacity: 0, y: 15 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            className={`flex flex-col ${isUser ? "items-end" : "items-start"} w-full`}
           >
-            {showBubble && (
-              <div
-                className={`max-w-[85%] shadow-sm px-5 py-3 rounded-[2rem] ${
-                  isUser
-                    ? "bg-[#007AFF] text-white rounded-tr-sm"
-                    : "bg-white dark:bg-[#161616] border border-slate-100 dark:border-white/5 rounded-tl-sm"
-                }`}
-              >
-                {hasImage && (
-                  <img
-                    src={message.imagePreview}
-                    alt="Uploaded preview"
-                    className="mb-3 max-h-64 w-auto rounded-2xl object-cover"
-                  />
-                )}
 
-                {hasText && (
-                  <div className="prose dark:prose-invert max-w-none">
-                    <ReactMarkdown
-                      components={{
-                        img: () => null,
-                        p: ({ children }) => (
-                          <p className="mb-2 last:mb-0">{children}</p>
-                        ),
-                      }}
-                    >
-                      {rawText}
-                    </ReactMarkdown>
-                  </div>
-                )}
-              </div>
-            )}
+{isUser ? (
+  <div className="flex flex-col items-end gap-2 max-w-[85%]">
+    {/* Хэрэглэгчийн илгээсэн зураг */}
+    {isActualImage && (
+      <div className="relative group rounded-2xl overflow-hidden shadow-lg border border-white/5 bg-[#1e1e1e] transition-transform hover:scale-[1.02]">
+        <img
+          src={displayImage}
+          alt="User Upload"
+          className="w-full h-auto max-w-[320px] object-cover max-h-80 rounded-2xl block"
+          onError={(e) => {
+            (e.target as HTMLImageElement).style.display = 'none';
+          }}
+        />
+        {/* Зургийн дээрх тунгалаг давхарга (загварын хувьд) */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+      </div>
+    )}
+    
+    {/* Текст мессеж */}
+    {hasText && (
+      <div className="px-5 py-3 rounded-[1.5rem] rounded-tr-sm bg-[#007AFF] text-white shadow-sm font-medium">
+        <ReactMarkdown components={{ img: () => null, p: ({ children }) => <p className="mb-0">{children}</p> }}>
+          {rawText}
+        </ReactMarkdown>
+      </div>
+    )}
+  </div>
+) : (
+  // AI-ийн хариулт (Assistant)
+  <div className="w-full space-y-4">
+    {/* AI Текст */}
+    {hasText && (
+      <div className="max-w-[85%] px-5 py-3 rounded-[1.8rem] rounded-tl-sm bg-white dark:bg-[#1A1A1A] border border-slate-100 dark:border-white/5 shadow-sm">
+        <div className="prose dark:prose-invert max-w-none text-sm md:text-base leading-relaxed">
+          <ReactMarkdown components={{ img: () => null, p: ({ children }) => <p className="mb-0">{children}</p> }}>
+            {rawText}
+          </ReactMarkdown>
+        </div>
+      </div>
+    )}
 
-            {products.length > 0 && (
-              <div className="w-full mt-4 overflow-visible">
-                <ProductCarousel
-                  products={products}
-                  onBuy={onBuy}
-                  onSelect={onProductClick}
-                  history={[]}
-                />
-              </div>
-            )}
+    {/* Барааны карусель (Картууд) */}
+    {products.length > 0 && (
+      <div className="w-full mt-2">
+        {isVisual && (
+          <div className="pl-4 mb-3 flex items-center gap-3">
+            <div className="w-1.5 h-1.5 rounded-full bg-[#C5A059] animate-pulse" />
+            <span className="text-[11px] font-bold tracking-widest text-[#C5A059] uppercase">
+              Олдсон бараа ({products.length})
+            </span>
+          </div>
+        )}
+        
+        {/* Барааны картууд */}
+        <div className="w-full overflow-visible">
+          <ProductCarousel 
+            products={products} 
+            onBuy={onBuy} 
+            onSelect={onProductClick} 
+            history={[]} 
+          />
+        </div>
+      </div>
+    )}
+  </div>
+)}
           </motion.div>
         );
       })}
 
       <AnimatePresence mode="wait">
         {isTyping && (
-          <motion.div
-            key="loading"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex items-center gap-3 py-4 px-2"
-          >
+          <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-3 py-4 px-2">
             <div className="bg-white dark:bg-[#161616] p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-white/5">
               <PulsatingDots />
             </div>
-            <span className="text-slate-500 text-sm animate-pulse">
-              Түр хүлээнэ үү...
-            </span>
+            <span className="text-slate-500 text-sm animate-pulse">Түр хүлээнэ үү...</span>
           </motion.div>
         )}
       </AnimatePresence>
-
       <div ref={messagesEndRef} className="h-2 w-full" />
     </div>
   );

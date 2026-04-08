@@ -173,77 +173,68 @@ export const useChatLogic = () => {
     },
     [activeChatId, allChats, createSession, isSignedIn, user?.id]
   );
+const addVisualResult = useCallback(
+  async (userMsg: any, products: any[]) => {
+    let chatId = activeChatId;
 
-  // 6. Визуал хайлтын үр дүн нэмэх
-  const addVisualResult = useCallback(
-    async (userMsg: any, products: any[]) => {
-      let chatId = activeChatId;
-      const firstProductName = products[0]?.product_name || products[0]?.name || "Зургаар хайлт";
-      const sessionTitle = `🔍 ${firstProductName.slice(0, 30)}`;
-
-      if (!chatId) {
-        try {
-          const session = await createSession(sessionTitle);
-          chatId = session.id;
-          setActiveChatIdState(chatId);
-          setSidebarHistory((prev) => [{ id: session.id, title: sessionTitle }, ...prev]);
-          setAllChats((prev) => ({ ...prev, [chatId!]: [] }));
-        } catch (e) {
-          console.error("Session үүсгэж чадсангүй:", e);
-          return;
-        }
-      } else {
-        setSidebarHistory((prev) =>
-          prev.map((c) => (c.id === chatId ? { ...c, title: sessionTitle } : c))
-        );
-        try {
-          await fetch(`/chat/api/session/${chatId}`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ title: sessionTitle }),
-          });
-        } catch (e) {}
-      }
-
-      const productLines = (products || [])
-        .filter(Boolean)
-        .map((p) => `![${p.product_name || p.name || "Нэргүй"}, ${p.formatted_price || p.price || "0"}, ${p.description || ""}, ${p.id || "temp"}, ${p.store_id || "store-default"}](${p.image || ""})`)
-        .join("\n");
-
-      const aiContent = products.length > 0
-        ? `Зургаас ${products.length} тохирох бараа олдлоо!\n\n${productLines}`
-        : "Уучлаарай, тохирох бараа олдсонгүй.";
-
-      const newUserMsg = {
-        role: "USER" as const,
-        content: userMsg?.text || "",
-        imagePreview: userMsg?.base64 || userMsg?.content,
-      };
-      
-      const newAiMsg = { role: "ASSISTANT" as const, content: aiContent };
-
-      setAllChats((prev) => ({
-        ...prev,
-        [chatId!]: [...(prev[chatId!] || []), newUserMsg, newAiMsg],
-      }));
-
+    // 1. Session байхгүй бол үүсгэх
+    if (!chatId) {
+      const title = userMsg.content?.slice(0, 20) || "Зургийн хайлт";
       try {
-        await fetch("/chat/api/chat/save", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            chatId,
-            title: sessionTitle,
-            messages: [newUserMsg, newAiMsg],
-          }),
-        });
-        await fetchUserHistory();
-      } catch (e) {
-        console.error("Visual result хадгалж чадсангүй:", e);
-      }
-    },
-    [activeChatId, createSession, fetchUserHistory]
-  );
+        const session = await createSession(title);
+        chatId = session.id;
+        setActiveChatIdState(chatId);
+        setSidebarHistory(prev => [{ id: session.id, title }, ...prev]);
+        setAllChats(prev => ({ ...prev, [chatId!]: [] }));
+      } catch (e) { return; }
+    }
+
+    // 2. Хэрэглэгчийн мессеж (Зургийг content дотор биш, тусад нь preview талбарт)
+    const newUserMsg: ChatMessage = {
+      role: "USER",
+      content: userMsg.content || "Зургаар хайж байна...",
+      imagePreview: userMsg.imagePreview // Энд Base64 дата байна
+    };
+
+    // 3. AI хариулт - Бараануудыг Markdown форматаар бэлдэх
+    const productLines = (products || []).map((p: any) => {
+      const m = p.metadata || p;
+      return `![${m.name}, ${m.price}, ${m.description || ""}, ${p.id || m.id}, ${m.store_id}](${m.image_url || m.image})`;
+    }).join("\n");
+
+    const newAiMsg: ChatMessage = { 
+      role: "ASSISTANT", 
+      content: products.length > 0 
+        ? `Зургаас ${products.length} тохирох бараа олдлоо!\n\n${productLines}`
+        : "Уучлаарай, тохирох бараа олдсонгүй."
+    };
+
+    // 4. State шинэчлэх (Дэлгэц дээр шууд харагдуулна)
+    setAllChats(prev => ({
+      ...prev,
+      [chatId!]: [...(prev[chatId!] || []), newUserMsg, newAiMsg],
+    }));
+
+    // 5. Өгөгдлийн санд хадгалах
+    try {
+      await fetch("/chat/api/chat/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chatId,
+          messages: [
+            { role: "USER", content: newUserMsg.content, imagePreview: newUserMsg.imagePreview },
+            { role: "ASSISTANT", content: newAiMsg.content }
+          ],
+        }),
+      });
+    } catch (e) {
+      console.error("Save error:", e);
+    }
+  },
+  [activeChatId, createSession]
+);
+
 
   // 7. Чат устгах
   const deleteChat = useCallback(

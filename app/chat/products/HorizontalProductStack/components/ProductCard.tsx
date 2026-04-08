@@ -10,120 +10,110 @@ export const ProductCard = ({
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-
-useEffect(() => {
-  const getProductImage = async () => {
-    setLoading(true);
-    
-    const existingImg = product.product_image_url || product.image || product.image_url;
-    if (existingImg && existingImg.startsWith('http')) {
-      setImageUrl(existingImg);
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const query = product.product_name || product.name || "product";
-      const response = await fetch(`/api/search-image?q=${encodeURIComponent(query)}`);
-      
-      if (response.ok) {
-        const data = await response.json();
-        setImageUrl(data.imageUrl);
-      } else {
-        setImageUrl(`https://loremflickr.com/800/800/${encodeURIComponent(query)}`);
+  useEffect(() => {
+    const getProductImage = async () => {
+      setLoading(true);
+      const existingImg = product.product_image_url || product.image || product.image_url;
+      if (existingImg && existingImg.startsWith('http')) {
+        setImageUrl(existingImg);
+        setLoading(false);
+        return;
       }
-    } catch (error) {
-      setImageUrl(`https://loremflickr.com/800/800/shopping`);
-    } finally { 
-      setLoading(false);
-    }
-  };
-
-  getProductImage();
-}, [product.name, product.id]); 
+      try {
+        const query = product.product_name || product.name || "product";
+        const response = await fetch(`/api/search-image?q=${encodeURIComponent(query)}`);
+        if (response.ok) {
+          const data = await response.json();
+          setImageUrl(data.imageUrl);
+        } else {
+          setImageUrl(`https://loremflickr.com/800/800/${encodeURIComponent(query)}`);
+        }
+      } catch (error) {
+        setImageUrl(`https://loremflickr.com/800/800/shopping`);
+      } finally { 
+        setLoading(false);
+      }
+    };
+    getProductImage();
+  }, [product.name, product.id]); 
 
   return (
     <div
-      className={`relative mx-auto h-105 w-70 md:h-120 md:w-[320px] overflow-hidden rounded-[2.5rem] bg-[#121212] border transition-all duration-700 ${
+      className={`relative mx-auto flex flex-col h-[480px] w-72 md:w-[320px] overflow-hidden rounded-[2.5rem] bg-[#121212] border transition-all duration-700 ${
         isCurrent
-          ? "border-[#C5A059] shadow-[0_0_50px_rgba(197,160,89,0.2)]"
-          : "border-white/5 shadow-none"
+          ? "border-[#C5A059] shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
+          : "border-white/5"
       }`}
     >
-      <div className="h-full w-full relative group overflow-hidden">
+      {/* 1. Зургийн хэсэг (Дээд талд) */}
+      <div className="relative h-[280px] w-full overflow-hidden shrink-0">
         {loading ? (
           <div className="h-full w-full flex items-center justify-center bg-white/5 animate-pulse">
             <ImageIcon className="text-white/20" size={40} />
           </div>
         ) : (
-          <img onClick={() => {
-            onSelect({ ...product, image: imageUrl || product.image });
-          }}
-          src={imageUrl || '/default-product.png'}
-          alt={product.name}
-          className="h-full w-full object-cover select-none transition-transform duration-500 group-hover:scale-110 cursor-pointer"
-        />
+          <img 
+            onClick={() => onSelect({ ...product, image: imageUrl || product.image })}
+            src={imageUrl || '/default-product.png'}
+            alt={product.name}
+            className="h-full w-full object-cover select-none cursor-pointer hover:scale-105 transition-transform duration-500"
+          />
         )}
         
-        <div className="absolute inset-0 bg-linear-to-t from-black via-black/40 to-transparent pointer-events-none opacity-90" />
-
+        {/* Хадгалах товч */}
         <div className="absolute top-4 right-4 z-20">
           <button
             onClick={(e) => { e.stopPropagation(); onSave(product.id); }}
-            className="p-3 rounded-full bg-black/30 backdrop-blur-md border border-white/10 hover:scale-110 active:scale-90 transition-all"
+            className="p-3 rounded-full bg-black/40 backdrop-blur-md border border-white/10"
           >
-            <Heart
-              size={20}
-              className={savedIds?.includes(product.id) ? "text-red-500 fill-red-500" : "text-white"}
-            />
+            <Heart size={18} className={savedIds?.includes(product.id) ? "text-red-500 fill-red-500" : "text-white"} />
           </button>
         </div>
+      </div>
 
-        <div className="absolute bottom-6 left-6 right-6 z-20 flex flex-col gap-4">
-          <div className="transition-all duration-500">
-            <p className="text-white text-lg font-bold line-clamp-2 leading-tight mb-1">
-              {product.product_name || product.name}
-            </p>
+      {/* 2. Мэдээллийн хэсэг (Доод талд - Тогтмол байрлалтай) */}
+      <div className="flex flex-col flex-1 p-6 justify-between bg-[#121212]">
+        <div>
+          {/* Нэр - line-clamp ашиглан 2 мөрөнд багтаана, доод талыг дарахгүй */}
+          <h3 className="text-white text-lg font-bold leading-snug line-clamp-2 mb-2">
+            {product.product_name || product.name}
+          </h3>
           <p className="text-[#C5A059] text-xl font-black">
             {(() => {
               const rawPrice = product.price ?? product.formatted_price ?? 0;
-              
-              const numericString = String(rawPrice).replace(/[^0-9.]/g, "");
-              const numericPrice = parseFloat(numericString);
-
-              if (isNaN(numericPrice) || numericPrice === 0) {
-                return "Үнэ тодорхойгүй";
-              }
-
-              return numericPrice.toLocaleString() + "₮";
+              const numericPrice = parseFloat(String(rawPrice).replace(/[^0-9.]/g, ""));
+              return isNaN(numericPrice) ? "Үнэгүй" : numericPrice.toLocaleString() + "₮";
             })()}
           </p>
-          </div>
+        </div>
 
+        {/* 3. Үйлдэл хийх товчлуурууд (Зөвхөн идэвхтэй карт дээр) */}
+        <div className="h-[52px]"> {/* Тогтмол өндөр авснаар текст доошоо орохгүй */}
           <AnimatePresence>
             {isCurrent && (
               <motion.div
-                initial={{ opacity: 0, height: 0, marginTop: 0 }}
-                animate={{ opacity: 1, height: "auto", marginTop: 4 }}
-                exit={{ opacity: 0, height: 0, marginTop: 0 }}
-                className="flex gap-2.5 overflow-hidden"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                className="flex gap-2"
               >
                 <button
-                onClick={() => onOrder({ ...product, image: imageUrl || product.image })}
-                className="flex-1 h-12 bg-[#C5A059] rounded-2xl text-white font-bold active:scale-95 transition-transform shadow-lg">
-                  Захиалах
-                 </button>
-                <button
-                  onClick={() => onShare(product.id)}
-                  className="p-3 rounded-full bg-white/5 backdrop-blur-md border border-white/10 text-white hover:bg-[#C5A059]/20 transition-colors"
+                  onClick={() => onOrder({ ...product, image: imageUrl || product.image })}
+                  className="flex-1 h-12 bg-[#C5A059] rounded-2xl text-black font-bold active:scale-95 transition-all text-sm"
                 >
-                  <Share2 size={20} />
+                  Захиалах
                 </button>
                 <button
                   onClick={() => onAddToCart(product)}
-                  className="bg-[#C5A059] text-black h-12 w-12 rounded-2xl flex items-center justify-center active:scale-95 transition-transform shadow-lg"
+                  className="bg-white/5 text-white h-12 w-12 rounded-2xl flex items-center justify-center border border-white/10"
                 >
                   <ShoppingBag size={18} />
+                </button>
+                <button
+                  onClick={() => onShare(product.id)}
+                  className="bg-white/5 text-white h-12 w-12 rounded-2xl flex items-center justify-center border border-white/10"
+                >
+                  <Share2 size={18} />
                 </button>
               </motion.div>
             )}

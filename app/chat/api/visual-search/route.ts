@@ -2,101 +2,76 @@ import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { Pinecone } from "@pinecone-database/pinecone";
 
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
-
-// Environment variables-ийг дээр нь зарлаж өгөх
-const openaiKey = process.env.OPENAI_KEY;
-const pineconeApiKey = process.env.PINECONE_API_KEY;
-const pineconeIndexName = process.env.PINECONE_NAME;
+const openai = new OpenAI({ apiKey: process.env.OPENAI_KEY });
+const pc = new Pinecone({ apiKey: process.env.PINECONE_API_KEY! });
 
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
     const file = formData.get("image") as File;
 
-    if (!file) {
-      return NextResponse.json({ error: "Зураг олдсонгүй" }, { status: 400 });
-    }
+    if (!file) return NextResponse.json({ error: "Зураг олдсонгүй" }, { status: 400 });
 
-    // Env шалгах
-    if (!openaiKey || !pineconeApiKey || !pineconeIndexName) {
-      return NextResponse.json({ error: "Серверийн тохиргооны алдаа (Env)" }, { status: 500 });
-    }
-
-    const openai = new OpenAI({ apiKey: openaiKey });
-    const pc = new Pinecone({ apiKey: pineconeApiKey });
-
-    // 1. Зургийг Base64 формат руу шилжүүлэх
+    // 1. Зургийг Vision-д зориулж Base64 болгох
     const bytes = await file.arrayBuffer();
     const base64Image = Buffer.from(bytes).toString("base64");
 
-    // 2. GPT-4o-mini ашиглан зургийг текст болгох (Vision)
-    const visionResponse = await openai.chat.completions.create({
+    // 2. Vision ашиглан зургийг тайлбарлах
+    const vision = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
         {
           role: "user",
           content: [
-            {
-              type: "text",
-              text: "Describe this product briefly for a search engine. Include brand, color, and item type in English.",
-            },
-            {
-              type: "image_url",
-              image_url: { url: `data:image/jpeg;base64,${base64Image}` },
-            },
+            { type: "text", text: "Describe this product for search. Item type, color, brand, style." },
+            { type: "image_url", image_url: { url: `data:image/jpeg;base64,${base64Image}` } },
           ],
         },
       ],
     });
 
-    const description = visionResponse.choices[0].message.content;
-    if (!description) throw new Error("Vision description failed");
+    // ✅ Заавал string байхыг баталгаажуулав
+    const description: string = vision.choices[0]?.message?.content || "No description provided";
 
-    // 3. Текстээс Embedding (Vector) үүсгэх
+    // 3. Тайлбараас Embedding үүсгэх
     const embeddingResponse = await openai.embeddings.create({
       model: "text-embedding-3-small",
       input: description,
     });
-    const vector = embeddingResponse.data[0].embedding;
 
-    // 4. Pinecone-оос хайх
-    const index = pc.index(pineconeIndexName);
-    const queryResponse = await index.query({
-      vector,
-      topK: 8,      
+    // ❗ АЛДАА ГАРЧ БАЙСАН ХЭСЭГ: Энд дата байгаа эсэхийг заавал шалгах ёстой
+    const vector = embeddingResponse.data[0]?.embedding;
+    if (!vector) {
+      throw new Error("Embedding үүсгэж чадсангүй.");
+    }
+
+    // 4. Pinecone-оос ижил төстэй барааг хайх
+    const indexName = process.env.PINECONE_NAME;
+    if (!indexName) throw new Error("Pinecone index name is missing");
+
+    const index = pc.index(indexName);
+    const queryResult = await index.query({
+      vector: vector, // Одоо энд алдаа заахгүй
+      topK: 6,
       includeMetadata: true,
     });
 
-    const matches = queryResponse.matches || [];
-
-    // 5. Score-оор шүүх (0.20-оос дээш тохиролтойг нь авах)
-    const MIN_SCORE = 0.20;
-    const goodMatches = matches
-      .filter(m => (m.score || 0) >= MIN_SCORE)
-      .map(m => ({
+    // ✅ Metadata-г string формат руу хөрвүүлж баталгаажуулах
+    const products = queryResult.matches.map(m => {
+      const meta = (m.metadata || {}) as any;
+      return {
         id: m.id,
-        score: m.score,
-        ...(m.metadata as any) // Metadata-г задлаж өгөх
-      }));
-
-    if (goodMatches.length === 0) {
-      return NextResponse.json({ error: "Тохирох бараа олдсонгүй." }, { status: 404 });
-    }
-
-    // Олдсон бүх сайн тохирсон бараануудыг буцаана
-    return NextResponse.json({ 
-      success: true, 
-      products: goodMatches,
-      description: description // AI юу гэж ойлгосныг харах зорилгоор
+        name: String(meta.product_name || meta.name || "Нэргүй"),
+        price: String(meta.formatted_price || meta.price || "0"),
+        image: String(meta.product_image_url || meta.image_url || meta.image || ""),
+        description: String(meta.description || ""),
+        store_id: String(meta.store_id || meta.storeId || "default")
+      };
     });
 
+    return NextResponse.json({ products, description });
   } catch (error: any) {
-    console.error("🚨 Visual Search Error:", error);
-    return NextResponse.json(
-      { error: "Visual search failed", details: error.message },
-      { status: 500 }
-    );
+    console.error("Vision Search Error:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
