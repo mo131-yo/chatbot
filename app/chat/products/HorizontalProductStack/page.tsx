@@ -15,7 +15,7 @@ interface Product {
 }
 
 interface HorizontalProductStackProps {
-  products?: Product[]; // Сонголттой болгов
+  products?: Product[];
   onSelect?: (product: Product) => void;
   onSave?: (productId: string) => void;
   onBuy?: (name: string, price: string) => void;
@@ -23,7 +23,7 @@ interface HorizontalProductStackProps {
 }
 
 export default function HorizontalProductStack({
-  products = [], // Default утга
+  products = [],
   onSelect = () => {},
   onSave = () => {},
   onBuy = () => {},
@@ -32,10 +32,9 @@ export default function HorizontalProductStack({
   const [currentIndex, setCurrentIndex] = useState(0);
   const lastNavigationTime = useRef(0);
 
-  // Хамгаалалт: Бараа байхгүй үед build алдаа өгөхөөс сэргийлнэ
   if (!products || products.length === 0) {
     return (
-      <div className="flex items-center justify-center h-[300px] text-slate-500 italic">
+      <div className="flex items-center justify-center h-75 text-slate-500 italic">
         Одоогоор бараа олдсонгүй...
       </div>
     );
@@ -62,7 +61,6 @@ export default function HorizontalProductStack({
     const total = products.length;
     let diff = index - currentIndex;
     
-    // Цикл хэлбэрээр эргэх логик
     if (diff > total / 2) diff -= total;
     if (diff < -total / 2) diff += total;
 
@@ -80,7 +78,7 @@ export default function HorizontalProductStack({
 
   return (
     <div className="relative flex h-[550px] w-full items-center justify-center overflow-visible select-none">
-      {/* Navigation Buttons */}
+
       <div className="absolute left-0 md:left-4 z-[60]">
         <button 
           onClick={() => navigate(-1)} 
@@ -95,7 +93,6 @@ export default function HorizontalProductStack({
           const style = getCardStyle(index);
           const isCurrent = index === currentIndex;
           
-          // Харагдахгүй байгаа картуудыг render хийхгүй
           if (style.opacity === 0 && !isCurrent) return null;
 
           return (

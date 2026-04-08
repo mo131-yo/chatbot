@@ -14,18 +14,15 @@ export async function GET() {
     if (!userId)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    // Хамгийн чухал хэсэг: includeMetadata: true
     const queryResponse = await index.namespace(userId).query({
-      vector: Array(1536).fill(0), // Бүх барааг авахын тулд хоосон вектор ашиглаж болно
+      vector: Array(1536).fill(0), 
       topK: 100,
-      includeMetadata: true, // ЭНЭ МӨР ЗААВАЛ БАЙХ ЁСТОЙ
+      includeMetadata: true, 
     });
 
-    // Датаг фронтод ойлгомжтой болгож цэгцлэх
     const products = queryResponse.matches.map((match) => ({
       id: match.id,
-      ...match.metadata, // Metadata-г гадагшлуулж байна
-      // Хэрэв фронт 'name' гэж хүлээж авч байгаа бол:
+      ...match.metadata,
       name: match.metadata?.product_name,
       price: match.metadata?.formatted_price,
       brand: match.metadata?.brand,

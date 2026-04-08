@@ -45,7 +45,6 @@ export const ProductCard = ({
           : "border-white/5"
       }`}
     >
-      {/* 1. Зургийн хэсэг (Дээд талд) */}
       <div className="relative h-[280px] w-full overflow-hidden shrink-0">
         {loading ? (
           <div className="h-full w-full flex items-center justify-center bg-white/5 animate-pulse">
@@ -60,7 +59,6 @@ export const ProductCard = ({
           />
         )}
         
-        {/* Хадгалах товч */}
         <div className="absolute top-4 right-4 z-20">
           <button
             onClick={(e) => { e.stopPropagation(); onSave(product.id); }}
@@ -71,7 +69,6 @@ export const ProductCard = ({
         </div>
       </div>
 
-      {/* 2. Мэдээллийн хэсэг (Доод талд - Тогтмол байрлалтай) */}
       <div className="flex flex-col flex-1 p-6 justify-between bg-[#121212]">
         <div>
           {/* Нэр - line-clamp ашиглан 2 мөрөнд багтаана, доод талыг дарахгүй */}
@@ -87,8 +84,7 @@ export const ProductCard = ({
           </p>
         </div>
 
-        {/* 3. Үйлдэл хийх товчлуурууд (Зөвхөн идэвхтэй карт дээр) */}
-        <div className="h-[52px]"> {/* Тогтмол өндөр авснаар текст доошоо орохгүй */}
+        <div className="h-13"> 
           <AnimatePresence>
             {isCurrent && (
               <motion.div

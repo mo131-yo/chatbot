@@ -48,7 +48,6 @@ export default function OrdersTable() {
         <tbody>
           {orders.map((order) => (
             <React.Fragment key={order.id}>
-              {/* Main Row */}
               <tr 
                 className="border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer" 
                 onClick={() => toggleOrder(order.id)}
@@ -80,9 +79,8 @@ export default function OrdersTable() {
                 <td className="px-6 py-4 text-[#C5A059] font-bold">Харах</td>
               </tr>
 
-              {/* Expanded Details Row */}
               {expandedOrderId === order.id && (
-                <tr className="bg-white/[0.03]">
+                <tr className="bg-white/3">
                   <td colSpan={6} className="p-6">
                     <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
                       <h4 className="text-[#C5A059] font-bold text-[10px] uppercase tracking-widest mb-2 flex items-center gap-2">
@@ -111,7 +109,6 @@ export default function OrdersTable() {
                               </div>
                               <div> 
                               <p className="text-sm font-bold text-gray-100">
-                                {/* Баазаас ирж буй productName-г шалгана, байхгүй бол item.name-г оролдоно */}
                                 {item.productName || item.name || "Нэр олдоогүй"}
                               </p>
                                 <p className="text-[11px] text-gray-500 font-medium">

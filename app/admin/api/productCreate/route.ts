@@ -42,13 +42,12 @@ export async function POST(req: Request) {
         id: generatedId,
         values: vector,
         metadata: {
-  name: name, // product_name биш name болгох
-  price: Number(price) || 0,
-  product_image_url: imageUrl || "",
+          name: name,
+          price: Number(price) || 0,
+          product_image_url: imageUrl || "",
           description: description,
           category: category || "General",
           brand: brand || "Unknown",
-          // product_image_url: imageUrl || "",
           stock: Number(stock) || 0,
           color: color || "",
           size: size || ""

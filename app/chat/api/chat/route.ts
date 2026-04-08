@@ -107,31 +107,27 @@ export async function POST(req: Request) {
       const queryResults = await Promise.all(queryPromises);
       const allMatches = queryResults.flatMap((res) => res.matches || []);
 
-      
-    // ... Pinecone query хийсний дараа
-const topMatches = allMatches
-  .sort((a, b) => (b.score || 0) - (a.score || 0))
-  .slice(0, 10);
+      const topMatches = allMatches
+        .sort((a, b) => (b.score || 0) - (a.score || 0))
+        .slice(0, 10);
 
-// ЭНЭ ХЭСГИЙГ ӨӨРЧЛӨХ:
-// ЭНЭ ХЭСГИЙГ ӨӨРЧЛӨХ (context-ийг илүү тодорхой болгох):
-context = topMatches
-  .map(
-    (m) =>
-      `БҮТЭЭГДЭХҮҮН: ${m.metadata?.product_name || m.metadata?.name || "Нэргүй"}
-       ҮНЭ: ${m.metadata?.formatted_price || m.metadata?.price}₮
-       ЗУРАГ: ${m.metadata?.product_image_url || m.metadata?.image_url || m.metadata?.image || ""}
-       ТАЙЛБАР: ${m.metadata?.description || "Тайлбар байхгүй"}
-       ID: ${m.id}
-       STORE_ID: ${m.metadata?.store_id || "store-001"}`
-  )
-  .join("\n---\n");
-    } catch (err) {
-      console.error("Vector Search Error:", err);
-    }
+      context = topMatches
+        .map(
+          (m) =>
+            `БҮТЭЭГДЭХҮҮН: ${m.metadata?.product_name || m.metadata?.name || "Нэргүй"}
+            ҮНЭ: ${m.metadata?.formatted_price || m.metadata?.price}₮
+            ЗУРАГ: ${m.metadata?.product_image_url || m.metadata?.image_url || m.metadata?.image || ""}
+            ТАЙЛБАР: ${m.metadata?.description || "Тайлбар байхгүй"}
+            ID: ${m.id}
+            STORE_ID: ${m.metadata?.store_id || "store-001"}`
+        )
+        .join("\n---\n");
+          } catch (err) {
+            console.error("Vector Search Error:", err);
+          }
 
 const chatResponse = await openai.chat.completions.create({
-  model: "gpt-4o-mini", // Хэрэв боломжтой бол 'gpt-4o' ашиглавал бүр илүү ухаалаг болно
+  model: "gpt-4o-mini",
   messages: [
     {
       role: "system",
@@ -166,9 +162,9 @@ const chatResponse = await openai.chat.completions.create({
       content: m.content,
     })),
   ],
-  temperature: 0.8, // Бага зэрэг нэмэгдүүлснээр хариулт илүү "Human-like" (хүн шиг) болно
-  presence_penalty: 0.6, // Нэг үгээ олон дахин давтахаас сэргийлнэ
-  frequency_penalty: 0.5, // Илүү баялаг үгсийн сантай хариулт өгнө
+  temperature: 0.8,
+  presence_penalty: 0.6, 
+  frequency_penalty: 0.5, 
 });
 
     const aiReply =

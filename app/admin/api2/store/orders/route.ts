@@ -7,16 +7,15 @@ export async function GET(req: NextRequest) {
     const storeId = searchParams.get("storeId");
 
     const orders = await prisma.order.findMany({
-      // Хэрэв storeId ирвэл шүүнэ, ирэхгүй бол бүгдийг авна
       where: storeId ? { 
         items: {
           some: {
-            productId: { contains: "" } // Энд шаардлагатай бол логикоо нэмнэ
+            productId: { contains: "" } 
           }
         }
       } : {},
       include: {
-        items: true, // Эндээс productName, productImage-ээ авна
+        items: true,
         user: {
           select: {
             name: true,
@@ -30,8 +29,6 @@ export async function GET(req: NextRequest) {
       }
     });
 
-    // Хэрэв баазад user байхгүй (Зочин) бол алдаа заахаас сэргийлж 
-    // JSON буцаахдаа анхаарна уу.
     return NextResponse.json(orders);
   } catch (error) {
     console.error("❌ GET Orders API Error:", error);

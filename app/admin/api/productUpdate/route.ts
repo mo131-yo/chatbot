@@ -57,7 +57,7 @@ export async function POST(req: Request) {
         categoryId: categoryRecord.id,
       },
       create: {
-        id: id, // <--- ЭНД 'productId'-ийг 'id' болгож засав
+        id: id, 
         name,
         price: numericPrice,
         description: description || "",

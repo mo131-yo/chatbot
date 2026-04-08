@@ -8,7 +8,7 @@ export interface CartItem {
   image: string;
   quantity: number;
   storeId: string;
-  product?: any; // Сонголттой болгох
+  product?: any;
 }
 
 
@@ -83,15 +83,14 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     const price = Number(product.price) || 0; 
     const image = product.image || (product.images && product.images[0]) || "/placeholder.png";
 
-    // ... addToCart функц дотор
     return [...prev, { 
       id: product.id,
-      productId: product.id, // Нэмэв
+      productId: product.id, 
       name: product.name || "Нэргүй бараа", 
-      productName: product.name || "Нэргүй бараа", // Нэмэв
+      productName: product.name || "Нэргүй бараа",
       price: price,
       image: image,
-      productImage: image, // Нэмэв
+      productImage: image,
       quantity,
       storeId: product.storeId || "",
       product: product
