@@ -208,7 +208,7 @@ import { useEffect, useState, useCallback } from "react";
 import { Loader2, PackageOpen, Trash2, Edit3 } from "lucide-react";
 import ProductForm from "./ProductForm";
 
-export default function ProductTable() {
+export default function ProductTable({ search }: { search: string }) {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingProduct, setEditingProduct] = useState<any>(null);
@@ -219,19 +219,18 @@ export default function ProductTable() {
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await fetch("/admin/api/productAllGet");
+      const res = await fetch("/admin/api/productAllGet", {
+        cache: "no-store",
+      });
 
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`Server error: ${res.status} - ${errorText}`);
-      }
+      if (!res.ok) throw new Error(`Server error: ${res.status}`);
 
       const data = await res.json();
       if (data.success) {
         setProducts(data.products || []);
       }
     } catch (error) {
-      console.error("Fetch error details:", error);
+      console.error("Fetch error:", error);
     } finally {
       setLoading(false);
     }
@@ -279,6 +278,9 @@ export default function ProductTable() {
       </div>
     );
   }
+  const filtered = products.filter((p) =>
+    p.name.toLowerCase().includes(search.toLowerCase()),
+  );
 
   return (
     <div className="relative w-full bg-white dark:bg-gray-950 rounded-[2rem] border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
@@ -345,7 +347,10 @@ export default function ProductTable() {
           <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
             {products.length === 0 ? (
               <tr>
-                <td colSpan={6} className="p-20 text-center text-gray-400">
+                <td
+                  colSpan={6}
+                  className="p-20 text-center text-gray-400 animate-pulse"
+                >
                   <PackageOpen className="w-10 h-10 mx-auto mb-2" />
                   <p>Бараа олдсонгүй.</p>
                 </td>

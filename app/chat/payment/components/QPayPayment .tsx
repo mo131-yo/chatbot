@@ -79,7 +79,7 @@ const QPayPayment = ({ amount, orderId, onSuccess, onCancel }: QPayPaymentProps)
 
                 <div className="text-center space-y-1">
                   <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Төлөх нийт дүн</p>
-                  <h2 className="text-4xl font-black text-[#C5A059] font-mono">₮{amount.toLocaleString()}</h2>
+                  <h2 className="text-4xl font-black text-[#C5A059] font-mono">{amount.toLocaleString()}₮</h2>
                 </div>
 
                 <div className="space-y-4 pt-4">

@@ -36,25 +36,25 @@ export async function POST(req: Request) {
     const vector = await embeddings.embedQuery(textToEmbed);
     const generatedId = `prod_${Date.now()}`;
 
-await index.upsert({
-  records: [
-    {
-      id: generatedId,
-      values: vector,
-      metadata: {
-        product_name: name,
-        formatted_price: Number(price) || 0,
-        description: description,
-        category: category || "General",
-        brand: brand || "Unknown",
-        product_image_url: imageUrl || "",
-        stock: Number(stock) || 0,
-        color: color || "",
-        size: size || ""
-      },
-    },
-  ],
-}); 
+  await index.upsert({
+    records: [
+      {
+        id: generatedId,
+        values: vector,
+        metadata: {
+          product_name: name,
+          formatted_price: Number(price) || 0,
+          description: description,
+          category: category || "General",
+          brand: brand || "Unknown",
+          product_image_url: imageUrl || "",
+          stock: Number(stock) || 0,
+          color: color || "",
+          size: size || ""
+        },
+      },  
+    ],
+  }); 
 
     console.log(`✅ Success: ${name} added to Pinecone.`);
 

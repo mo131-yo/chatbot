@@ -27,6 +27,8 @@ const config: Config = {
       },
       animation: {
         spotlight: "spotlight 2s ease .75s 1 forwards",
+        shimmer: "shimmer 2s infinite",
+        fade: "fade 0.3s ease-in-out",
       },
       keyframes: {
         spotlight: {
@@ -38,6 +40,14 @@ const config: Config = {
             opacity: "1",
             transform: "translate(-50%,-40%) scale(1)",
           },
+        },
+        shimmer: {
+          "0%": { transform: "translateX(-100%)" },
+          "100%": { transform: "translateX(100%)" },
+        },
+        fade: {
+          "0%": { opacity: 0, transform: "translateY(10px)" },
+          "100%": { opacity: 1, transform: "translateY(0)" },
         },
       },
     },
