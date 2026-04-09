@@ -1,4 +1,3 @@
-// app/admin/api/productAdd/route.ts
 import { index } from "@/lib/api/pinecone";
 import { auth } from "@clerk/nextjs/server";
 import { OpenAIEmbeddings } from "@langchain/openai";
@@ -12,7 +11,6 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { name, description, price, imageUrl, category, brand, stock, storeName } = body;
 
-    // storeName байхгүй бол алдаа буцаана (400 error-оос сэргийлнэ)
     if (!storeName) {
       return NextResponse.json({ error: "Дэлгүүрийн нэр (storeName) байхгүй байна." }, { status: 400 });
     }
@@ -25,7 +23,6 @@ export async function POST(req: NextRequest) {
     const vector = await embeddings.embedQuery(`Бүтээгдэхүүн: ${name}. Тайлбар: ${description}`);
     const generatedId = `prod_${Date.now()}`;
 
-    // ✅ Анх үүсгэсэн storeName-ээр namespace болгон хадгалах
     await index.namespace(storeName).upsert({
       records: [  
         {

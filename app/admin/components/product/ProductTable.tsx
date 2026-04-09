@@ -63,14 +63,30 @@ const fetchData = useCallback(async () => {
   };
 
   const getProductImage = (p: any): string => {
-    const imgUrl = p.metadata?.product_image_url || p.metadata?.imageUrl || p.imageUrl;
-    return imgUrl || "https://placehold.co/400x400?text=No+Image";
-  };
+  const meta = p.metadata || p;
+
+  return (
+    meta.product_image_url || 
+    meta.imageUrl || 
+    meta.image || 
+    "https://placehold.co/400x400?text=No+Image"
+  );
+};
 
   const filtered = products.filter((p) => {
-    const name = p.metadata?.name || p.name || "";
+    const meta = p.metadata || {};
+    const name = meta.name || p.name || "";
     return name.toLowerCase().includes((search || "").toLowerCase());
   });
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center p-20 space-y-4">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+        <p className="text-gray-400 text-sm animate-pulse font-medium">Бараануудыг ачаалж байна...</p>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
