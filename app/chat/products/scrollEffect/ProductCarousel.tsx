@@ -4,12 +4,16 @@ import { useState } from "react";
 import { ProductDetailSidebar } from "../detail/ProductDetailSidebar";
 import HorizontalProductStack from "../HorizontalProductStack/page";
 
+
 interface Product {
   id: string;
   name: string;
   price: string;
   image: string;
   description: string;
+  storeId?: string;
+  brand?: string;
+  storeName?: string;
 }
 
 interface ProductCarouselProps {

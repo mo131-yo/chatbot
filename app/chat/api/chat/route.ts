@@ -14,29 +14,10 @@ type IncomingMessage = {
   content: string;
 };
 
-function normalizeOpenAIRole(
-  role: IncomingMessage["role"],
-): "user" | "assistant" | "system" {
+function normalizeOpenAIRole(role: IncomingMessage["role"]): "user" | "assistant" | "system" {
   const r = role.toLowerCase();
   if (r === "user" || r === "assistant" || r === "system") return r as any;
   return "user";
-}
-
-function extractMaxPrice(text: string): number | null {
-  const priceRegex =
-    /(\d+(?:\.\d+)?)\s*(k|к|мянган|мян|төгрөг|төг|t|₮|tg|tugrug|say|сая|zuu|зуу)/gi;
-  const matches = [...text.matchAll(priceRegex)];
-  if (matches.length === 0) return null;
-
-  const lastMatch = matches[matches.length - 1];
-  let value = parseFloat(lastMatch[1]);
-  const unit = (lastMatch[2] || "").toLowerCase();
-
-  if (["k", "к", "мянган", "мян"].includes(unit)) value *= 1000;
-  else if (["say", "сая"].includes(unit)) value *= 1000000;
-  else if (value < 1000) value *= 1000;
-
-  return Number.isFinite(value) ? value : null;
 }
 
 export async function POST(req: Request) {
@@ -49,32 +30,15 @@ export async function POST(req: Request) {
     const fallbackUserId = body?.userId as string | undefined;
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
-      return NextResponse.json(
-        { error: "Messages array is required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Messages array is required" }, { status: 400 });
     }
 
     const lastUserMessage = messages[messages.length - 1]?.content?.trim();
     if (!lastUserMessage) {
-      return NextResponse.json(
-        { error: "Last message content is required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Last message content is required" }, { status: 400 });
     }
 
-    const priceRegex = /(\d+(?:\.\d+)?)\s*(k|к|мянган|мян|төг|₮)/gi;
-    const match = priceRegex.exec(lastUserMessage);
-    let maxPrice: number | undefined;
-    if (match) {
-      maxPrice = parseFloat(match[1]);
-      if (
-        match[2] &&
-        ["k", "к", "мянган", "мян"].includes(match[2].toLowerCase())
-      )
-        maxPrice *= 1000;
-    }
-
+    // --- VECTOR SEARCH ---
     let context = "";
     try {
       const embedding = await openai.embeddings.create({
@@ -82,15 +46,14 @@ export async function POST(req: Request) {
         input: lastUserMessage,
       });
 
-      const namespaces = ["Turuu's store"];
+      const namespaces = ["Turuu's store", "Orgil's shop"];
 
       const queryPromises = namespaces.map((ns) =>
         index.namespace(ns).query({
           vector: embedding.data[0].embedding,
-          topK: 10,
+          topK: 20,
           includeMetadata: true,
-          filter: maxPrice ? { price: { $lte: maxPrice } } : undefined,
-        }),
+        })
       );
 
       const queryResults = await Promise.all(queryPromises);
@@ -98,63 +61,62 @@ export async function POST(req: Request) {
 
       const topMatches = allMatches
         .sort((a, b) => (b.score || 0) - (a.score || 0))
-        .slice(0, 10);
+        .slice(0, 20);
 
-      if (topMatches.length > 0) {
-        context = topMatches
-          .map(
-            (m) =>
-              `БҮТЭЭГДЭХҮҮН: ${m.metadata?.name}
-              БрэнД: ${m.metadata?.brand || ""}
-              ҮНЭ: ${m.metadata?.price}₮
-              ЗУРАГ: ${m.metadata?.product_image_url || m.metadata?.image_url || ""}
-              ТАЙЛБАР: ${m.metadata?.description}
-              ID: ${m.id}
-              ДЭЛГҮҮР: ${m.metadata?.store_name || "Official Store"}
-              STORE_ID: ${m.metadata?.store_id}`,
-          )
-          .join("\n---\n");
-        console.log("Олдсон барааны тоо:", topMatches.length);
-      } else {
-        context = "СИСТЕМД ТОХИРОХ БАРАА ОЛДСОНГҮЙ. Гэхдээ хэрэглэгчийг хоосон орхиж болохгүй. Өөрийн мэдлэгт байгаа хамгийн ойр төрлийн барааг 'Орлуулах санал' болгон харуул. Зургийг нь https://loremflickr.com/800/800/{барааны_нэр} ашиглан харуул.";
-        console.log("Pinecone-оос илэрц олдсонгүй, Fallback горим идэвхжлээ.");
-      }
+      context = topMatches
+        .map((m) => {
+          const name = m.metadata?.name || m.metadata?.product_name || "Нэргүй бараа";
+          const price = m.metadata?.price || m.metadata?.formatted_price || "0";
+          const img = m.metadata?.product_image_url || m.metadata?.image_url || "";
+          const desc = m.metadata?.description || "Тайлбар байхгүй";
+          const storeName = m.metadata?.store_name || "Official Store";
+          
+          return `БҮТЭЭГДЭХҮҮН: ${name}
+          ҮНЭ: ${price}₮
+          ЗУРАГ: ${img}
+          ТАЙЛБАР: ${desc}
+          ID: ${m.id}
+          STORE_NAME: ${storeName}
+          STORE_ID: ${m.metadata?.store_id || "store-001"}`;
+        })
+        .join("\n---\n");
+
+      console.log("Олдсон барааны тоо:", topMatches.length);
     } catch (err) {
       console.error("Vector Search Error:", err);
-      context = "Хайлтын системд алдаа гарлаа. Гэхдээ хэрэглэгчийн хүсэлтийг ерөнхий байдлаар шийдэж өгнө үү.";
     }
-
+ 
     const chatResponse = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
-          // FIX: Use | (pipe) as separator in the image markdown format.
-          // This avoids conflicts with Mongolian text that naturally contains commas.
-          // Format: ![Нэр|Үнэ|Тайлбар|ProductID|StoreID](Зургийн_URL)
           content: `Чи бол зөвхөн өгөгдсөн Context (Pinecone дата) дээр үндэслэн ажилладаг Монголын хамгийн ухаалаг "Shopping Assistant" юм.
           
- --- ЧУХАЛ: ХАТУУ ХЯЗГААРЛАЛТ (CRITICAL RULES) ---
-      1. ЗӨВХӨН CONTEXT АШИГЛА: Өгөгдсөн Context дотор байхгүй барааг хэзээ ч бүү зохио. Хэрэв Context дотор хэрэглэгчийн хайсан бараа (жишээ нь: Nike) байхгүй бол "Уучлаарай, манайд яг одоо [барааны нэр] алга байна" гэж хариул.
-      2. ХӨНДЛӨНГИЙН МЭДЛЭГ ХОРИГЛОХ: Өөрийн сургагдсан мэдээллийн санд байгаа (Nike, Adidas, Apple гэх мэт) ерөнхий мэдлэгээ ашиглан бараа санал болгохыг ХАТУУ ХОРИГЛОНО. 
+      --- ЧУХАЛ: ХАТУУ ХЯЗГААРЛАЛТ (CRITICAL RULES) ---
+      1. ЗӨВХӨН CONTEXT АШИГЛА: Өгөгдсөн Context дотор байхгүй барааг хэзээ ч бүү зохио. Хэрэв Context дотор хэрэглэгчийн хайсан бараа байхгүй бол "Уучлаарай, манайд яг одоо [барааны нэр] алга байна" гэж хариул.
+      2. ХӨНДЛӨНГИЙН МЭДЛЭГ ХОРИГЛОХ: Өөрийн сургагдсан мэдээллийн санд байгаа ерөнхий мэдлэгээ ашиглан бараа санал болгохыг ХАТУУ ХОРИГЛОНО.
       3. ЗУРГИЙН ДҮРЭМ: Зөвхөн Context дотор ирсэн 'image_url' эсвэл 'ЗУРАГ' линкийг ашигла. Хэрэв Context-д зураг байхгүй бол зургийн хэсгийг хоосон орхи эсвэл "Зураггүй бараа" гэж тэмдэглэ. ХЭЗЭЭ Ч гадны (loremflickr, google гэх мэт) линк бүү ашигла.
       4. TEMPERATURE CHECK: Чи маш бодит (grounded) байх ёстой. Барааны нэр, үнэ, тайлбар бүгд Context-той 100% таарах ёстой.
-
+      5. БАЙХГҮЙ БАРААГ ОРЛУУЛАХ: Хэрэв хэрэглэгчийн хайсан бараа эсвэл брэнд Context дотор ОРТ БАЙХГҮЙ бол "Уучлаарай, яг таны хайсан [нэр] манайд байхгүй байна. Гэхдээ манай дэлгүүрт байгаа дараах бараанууд танд таалагдаж магадгүй:" гээд Context-д байгаа ОЙРОЛЦОО төрлийн эсвэл байгаа брэндүүдийг санал болго. 
+         - Жишээ нь: Adidas хайхад байхгүй бол байгаа Nike-г нь "Мөн адил спортын алдартай брэнд" гэх мэтээр тайлбарлаж харуул.
+ 
       --- ХАРИЛЦААНЫ ХЭЛБЕР ---
-      - Найрсаг, эелдэг, туслахад бэлэн бай (✨, 😊).
-      - Хэрэглэгчийг сонголтоо тодорхой болгоход нь туслах асуулт асуу (Жишээ нь: "Танд ямар хэмжээтэй нь хэрэгтэй вэ?").
-
+      1. Найрсаг, эелдэг, туслахад бэлэн бай (✨, 😊).
+      2. Хэрэглэгчийг сонголтоо тодорхой болгоход нь туслах асуулт асуу (Жишээ нь: "Танд ямар хэмжээтэй нь хэрэгтэй вэ?").
+      3. УЯН ХАТАН ХАЙЛТ: Хэрэглэгч "Nike" гэж асуухад Context дотор "Nike Air Max" байвал үүнийг шууд харуул. Барааны нэр яг таг таарах албагүй, утгын хувьд ойролцоо (Semantic match) байхад хангалттай.
+ 
       --- БАРАА ХАРУУЛАХ ФОРМАТ (MARKDOWN) ---
-      Бараа бүрийг заавал дараах форматаар харуулна:
+      1. Бараа бүрийг заавал дараах форматаар харуулна:
       ![Нэр|Үнэ|Тайлбар|ProductID|StoreID](Зургийн_URL)
       
       *Санамж: Тусгаарлагч нь ЗААВАЛ | (pipe) байх ёстой.*
-
+ 
       --- ТӨЛБӨРИЙН ЛОГИК ---
-      Хэрэглэгч захиалъя эсвэл авъя гэвэл:
+      1. Хэрэглэгч захиалъя эсвэл авъя гэвэл:
       "Маш зөв сонголт! Одоо танд төлбөрийн мэдээллийг хүргэе." гээд доорхыг хавсарга:
       PAYMENT_TRIGGER:{"id":"id","name":"name","price":price}
-
+ 
       --- CONTEXT (ӨГӨГДӨЛ) ---
       [Энд Pinecone-оос ирсэн хайлтын үр дүнгүүд (metadata) байрлана]
  
@@ -170,17 +132,13 @@ export async function POST(req: Request) {
       presence_penalty: 0.6,
       frequency_penalty: 0.5,
     });
+ 
+    const aiReply = chatResponse.choices[0]?.message?.content?.trim() || "Хариу олдсонгүй.";
 
-    const aiReply =
-      chatResponse.choices[0]?.message?.content?.trim() || "Хариу олдсонгүй.";
-
+    // --- DB SAVE (PRISMA) ---
     const effectiveUserId = clerkUserId || fallbackUserId;
-    const isGuestSession = chatId?.startsWith("guest_");
-
-    if (effectiveUserId && chatId && !isGuestSession) {
+    if (effectiveUserId && chatId && !chatId.startsWith("guest_")) {
       try {
-        const stringChatId = String(chatId);
-
         const dbUser = await prisma.user.upsert({
           where: { clerkUserId: effectiveUserId },
           update: {},
@@ -193,33 +151,18 @@ export async function POST(req: Request) {
         });
 
         const session = await prisma.chatSession.upsert({
-          where: { id: stringChatId },
-          update: {
-            updatedAt: new Date(),
-            userId: dbUser.id,
-          },
-          create: {
-            id: stringChatId,
-            userId: dbUser.id,
-            title: lastUserMessage.slice(0, 40),
-          },
+          where: { id: String(chatId) },
+          update: { updatedAt: new Date(), userId: dbUser.id },
+          create: { id: String(chatId), userId: dbUser.id, title: lastUserMessage.slice(0, 40) },
         });
 
         await prisma.chatMessage.createMany({
           data: [
-            {
-              chatSessionId: session.id,
-              role: "USER",
-              content: lastUserMessage,
-            },
-            {
-              chatSessionId: session.id,
-              role: "ASSISTANT",
-              content: aiReply,
-            },
+            { chatSessionId: session.id, role: "USER", content: lastUserMessage },
+            { chatSessionId: session.id, role: "ASSISTANT", content: aiReply },
           ],
         });
-      } catch (dbError: any) {
+      } catch (dbError) {
         console.error("PRISMA_SAVE_ERROR:", dbError);
       }
     }
@@ -227,13 +170,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ reply: aiReply });
   } catch (error: any) {
     console.error("API_GLOBAL_ERROR:", error);
-
-    return NextResponse.json(
-      {
-        error: "Internal Server Error",
-        details: error?.message || "Unknown error",
-      },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Internal Error", details: error.message }, { status: 500 });
   }
 }
