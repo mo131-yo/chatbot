@@ -27,7 +27,6 @@ export default function RevenueChart() {
       const res = await fetch("/admin/api/orders");
       const orders = await res.json();
 
-      // 👉 өдөрөөр group хийх
       const grouped: Record<string, number> = {};
 
      orders.forEach((o: any) => {
@@ -51,7 +50,6 @@ export default function RevenueChart() {
     grouped[day] += total;
   });
 
-      // 👉 chart format болгох
       const chartData = Object.entries(grouped).map(([day, revenue]) => ({
         day,
         revenue,
@@ -70,13 +68,11 @@ export default function RevenueChart() {
       bg-white/5 border-white/10 text-white
       dark:bg-white dark:border-gray-200 dark:text-black"
     >
-      {/* HEADER */}
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold">Revenue</h2>
         <span className="text-green-400 text-sm">Live</span>
       </div>
 
-      {/* CHART */}
       <ResponsiveContainer width="100%" height={250}>
         <LineChart data={data}>
           <CartesianGrid

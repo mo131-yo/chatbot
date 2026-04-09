@@ -1,10 +1,7 @@
-import { Pinecone } from "@pinecone-database/pinecone";
-import { OpenAIEmbeddings } from "@langchain/openai";
+import { index } from "@/lib/api/pinecone";
 import { auth } from "@clerk/nextjs/server";
+import { OpenAIEmbeddings } from "@langchain/openai";
 import { NextRequest, NextResponse } from "next/server";
-
-const pc = new Pinecone({ apiKey: process.env.PINECONE_API_KEY! });
-const index = pc.index(process.env.PINECONE_NAME!);
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,64 +9,42 @@ export async function POST(req: NextRequest) {
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await req.json();
-    const {
-      name,
-      description,
-      price,
-      imageUrl,
-      category,
-      brand,
-      color,
-      size,
-      stock,
-      storeName,
-    } = body;
+    const { name, description, price, imageUrl, category, brand, stock } = body;
 
-    const cleanNamespace = storeName
-      .toLowerCase()
-      .trim()
-      .replace(/\s+/g, '-')   
-      .replace(/[^a-z0-9-]/g, '')   
-      || "general-store";
-
+    const fetchStore = await index.namespace("admin-registry").fetch({ids:[userId]});
+    const storeName = fetchStore.records[userId]?.metadata?.store_name as string || "Unknown Store";
 
     const embeddings = new OpenAIEmbeddings({
       openAIApiKey: process.env.OPENAI_KEY,
       modelName: "text-embedding-3-small",
     });
 
-    const textToEmbed = `${name} ${description} ${brand} ${category} ${color} ${size}`;
-    const vector = await embeddings.embedQuery(textToEmbed);
-
+    const vector = await embeddings.embedQuery(`Бүтээгдэхүүн: ${name}. Дэлгүүр: ${storeName}`);
     const generatedId = `prod_${Date.now()}`;
 
 
-await index.namespace(cleanNamespace).upsert({
-  records: [
+await index.namespace(userId).upsert({
+  records: [  
     {
       id: generatedId,
       values: vector,
       metadata: {
         name,
-        price: Number(price) || 0,
-        product_image_url: imageUrl || "",
+        price: Number(price),
+        product_image_url: imageUrl,
         description,
-        category: category || "General",
-        brand: brand || "Unknown",
-        stock: Number(stock) || 0,
-        color: color || "",
-        size: size || "",
+        category,
+        brand,
+        stock: Number(stock),
         store_id: userId,
-        store_name: storeName
+        store_name: storeName 
       },
     },
   ],
 });
 
-
-    return NextResponse.json({ success: true, id: generatedId, namespace: cleanNamespace });
+    return NextResponse.json({ success: true });
   } catch (error: any) {
-    console.error("Pinecone API Error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
