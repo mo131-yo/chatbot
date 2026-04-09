@@ -6,9 +6,21 @@ import {
 
 const isProtectedRoute = createRouteMatcher(["/chat(.*)"]);
 
+// ✅ API route-уудыг public болго
+const isPublicRoute = createRouteMatcher([
+  "/chat/api/(.*)", // бүх chat API
+  "/login(.*)",
+  "/sign-in(.*)",
+  "/sign-up(.*)",
+  "/api/(.*)",
+]);
+
 export default clerkMiddleware(async (auth, req) => {
   const { userId } = await auth();
   const pathname = req.nextUrl.pathname;
+
+  // ✅ Public route бол шалгахгүй
+  if (isPublicRoute(req)) return;
 
   if (isProtectedRoute(req) && !userId) {
     return Response.redirect(new URL("/login", req.url));
@@ -32,6 +44,3 @@ export default clerkMiddleware(async (auth, req) => {
 export const config = {
   matcher: ["/((?!_next|.*\\..*).*)"],
 };
-
-
-// shaa2 sda

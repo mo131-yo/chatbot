@@ -3,12 +3,23 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart, Share2, ShoppingBag, ImageIcon, Store } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useCart } from "@/app/chat/hooks/useCart";
 
-export const ProductCard = ({ 
-  product, isCurrent, onSelect, onSave, onOrder, onShare, onAddToCart, savedIds 
+export const ProductCard = ({
+  product,
+  isCurrent,
+  onSelect,
+  onSave,
+  onOrder,
+  onShare,
+  onAddToCart,
+  savedIds,
 }: any) => {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const { addToCart } = useCart();
+  const productId = product.id ?? product.product_id ?? product.name;
+  const productWithImage = { ...product, image: imageUrl || product.image };
 
   const name = product.product_name || product.name || "Нэргүй бараа";
   const storeName = product.metadata?.store_name || product.store_name || "Official Store";
@@ -17,30 +28,35 @@ export const ProductCard = ({
   useEffect(() => {
     const getProductImage = async () => {
       setLoading(true);
-      const existingImg = product.product_image_url || product.metadata?.product_image_url || product.image;
-      
-      if (existingImg && existingImg.startsWith('http')) {
+      const existingImg =
+        product.product_image_url || product.image || product.image_url;
+      if (existingImg && existingImg.startsWith("http")) {
         setImageUrl(existingImg);
         setLoading(false);
         return;
       }
       
       try {
-        const response = await fetch(`/api/search-image?q=${encodeURIComponent(name)}`);
+        const query = product.product_name || product.name || "product";
+        const response = await fetch(
+          `/api/search-image?q=${encodeURIComponent(query)}`,
+        );
         if (response.ok) {
           const data = await response.json();
           setImageUrl(data.imageUrl);
         } else {
-          setImageUrl(`https://loremflickr.com/800/800/${encodeURIComponent(name)}`);
+          setImageUrl(
+            `https://loremflickr.com/800/800/${encodeURIComponent(query)}`,
+          );
         }
-      } catch (error) {
+      } catch {
         setImageUrl(`https://loremflickr.com/800/800/shopping`);
-      } finally { 
+      } finally {
         setLoading(false);
       }
     };
     getProductImage();
-  }, [name, product.id]); 
+  }, [product.name, product.id]);
 
   return (
     <div
@@ -56,43 +72,59 @@ export const ProductCard = ({
             <ImageIcon className="text-white/20" size={40} />
           </div>
         ) : (
-          <img 
-            onClick={() => onSelect({ ...product, image: imageUrl })}
-            src={imageUrl || '/default-product.png'}
-            alt={name}
+          <img
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={() => onSelect?.(productWithImage)}
+            src={imageUrl || "/default-product.png"}
+            alt={product.product_name || product.name}
             className="h-full w-full object-cover select-none cursor-pointer hover:scale-105 transition-transform duration-500"
           />
         )}
-        
+
         <div className="absolute top-4 right-4 z-20">
           <button
-            onClick={(e) => { e.stopPropagation(); onSave(product.id); }}
-            className="p-3 rounded-full bg-black/40 backdrop-blur-md border border-white/10"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              onSave?.(product);
+            }}
+            className="p-3 rounded-full bg-black/40 backdrop-blur-md border border-white/10 active:scale-95 transition-all"
           >
-            <Heart size={18} className={savedIds?.includes(product.id) ? "text-red-500 fill-red-500" : "text-white"} />
+            <Heart
+              size={18}
+              className={
+                savedIds?.includes(product.id)
+                  ? "text-red-500 fill-red-500"
+                  : "text-white"
+              }
+            />
           </button>
         </div>
       </div>
 
-      <div className="flex flex-col flex-1 p-6 justify-between bg-[#121212]">
-        <div className="space-y-2">
-          <div className="flex items-center gap-1.5">
-            <Store size={12} className="text-[#C5A059]" />
-            <span className="text-[10px] bg-[#C5A059]/10 text-[#C5A059] px-2 py-0.5 rounded-full uppercase font-bold tracking-wider">
-              {storeName}
-            </span>
-          </div>
+      <ProductCard product={product} onAddToCart={addToCart} />
 
-          <h3 className="text-white text-lg font-bold leading-tight line-clamp-2">
-            {name}
+      <div className="flex flex-col flex-1 p-6 justify-between bg-[#121212]">
+        <div>
+          <h3 className="text-white text-lg font-bold leading-snug line-clamp-2 mb-2">
+            {product.product_name || product.name}
           </h3>
           
           <p className="text-[#C5A059] text-xl font-black">
-            {parseFloat(String(price)).toLocaleString()}₮
+            {(() => {
+              const rawPrice = product.price ?? product.formatted_price ?? 0;
+              const numericPrice = parseFloat(
+                String(rawPrice).replace(/[^0-9.]/g, ""),
+              );
+              return isNaN(numericPrice)
+                ? "Үнэгүй"
+                : numericPrice.toLocaleString() + "₮";
+            })()}
           </p>
         </div>
 
-        <div className="h-14 mt-4"> 
+        <div className="h-13">
           <AnimatePresence>
             {isCurrent && (
               <motion.div
@@ -102,20 +134,37 @@ export const ProductCard = ({
                 className="flex gap-2"
               >
                 <button
-                  onClick={() => onOrder({ ...product, image: imageUrl })}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    onOrder?.(productWithImage);
+                  }}
                   className="flex-1 h-12 bg-[#C5A059] rounded-2xl text-black font-bold active:scale-95 transition-all text-sm"
                 >
                   Захиалах
                 </button>
+
                 <button
-                  onClick={() => onAddToCart(product)}
-                  className="bg-white/5 text-white h-12 w-12 rounded-2xl flex items-center justify-center border border-white/10 hover:bg-white/10"
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    onAddToCart?.(productWithImage);
+                  }}
+                  className="bg-white/5 text-white h-12 w-12 rounded-2xl flex items-center justify-center border border-white/10 active:scale-95 transition-all"
                 >
                   <ShoppingBag size={18} />
                 </button>
+
                 <button
-                  onClick={() => onShare(product.id)}
-                  className="bg-white/5 text-white h-12 w-12 rounded-2xl flex items-center justify-center border border-white/10 hover:bg-white/10"
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    onShare?.(productId);
+                  }}
+                  className="bg-white/5 text-white h-12 w-12 rounded-2xl flex items-center justify-center border border-white/10 active:scale-95 transition-all"
                 >
                   <Share2 size={18} />
                 </button>

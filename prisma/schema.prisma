@@ -127,24 +127,20 @@ model Product {
   sizes         String[]
   tags          String[]
   categoryName  String?
+  storeId       String?
+  store         Store?  @relation(fields: [storeId], references: [id])
   stock         Int      @default(0)
   rating        Float    @default(0)
   reviewCount   Int      @default(0)
   isFeatured    Boolean  @default(false)
   isTrending    Boolean  @default(false)
   status        ProductStatus @default(AVAILABLE)
-
-  storeId String?
-  store   Store?  @relation(fields: [storeId], references: [id], onDelete: SetNull)
-
+  
   categoryId    String
   category      Category @relation(fields: [categoryId], references: [id])
-
   cartItems  CartItem[]
-  // orderItems OrderItem[]
-  // orders     Order[]
   favorites Favorite[]
-  // embedding  ProductEmbedding?
+ 
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
