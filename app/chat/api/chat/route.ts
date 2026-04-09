@@ -3,17 +3,17 @@ import OpenAI from "openai";
 import { auth } from "@clerk/nextjs/server";
 import { index } from "@/lib/api/pinecone";
 import { prisma } from "@/lib/prisma";
- 
+
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_KEY,
   timeout: 30000,
 });
- 
+
 type IncomingMessage = {
   role: "USER" | "ASSISTANT" | "SYSTEM" | "user" | "assistant" | "system";
   content: string;
 };
- 
+
 function normalizeOpenAIRole(
   role: IncomingMessage["role"],
 ): "user" | "assistant" | "system" {
@@ -21,84 +21,110 @@ function normalizeOpenAIRole(
   if (r === "user" || r === "assistant" || r === "system") return r as any;
   return "user";
 }
- 
+
 function extractMaxPrice(text: string): number | null {
   const priceRegex =
     /(\d+(?:\.\d+)?)\s*(k|к|мянган|мян|төгрөг|төг|t|₮|tg|tugrug|say|сая|zuu|зуу)/gi;
   const matches = [...text.matchAll(priceRegex)];
   if (matches.length === 0) return null;
- 
+
   const lastMatch = matches[matches.length - 1];
   let value = parseFloat(lastMatch[1]);
   const unit = (lastMatch[2] || "").toLowerCase();
- 
+
   if (["k", "к", "мянган", "мян"].includes(unit)) value *= 1000;
   else if (["say", "сая"].includes(unit)) value *= 1000000;
   else if (value < 1000) value *= 1000;
- 
+
   return Number.isFinite(value) ? value : null;
 }
- 
+
 export async function POST(req: Request) {
   try {
     const { userId: clerkUserId } = await auth();
     const body = await req.json();
- 
+
     const messages = body?.messages as IncomingMessage[] | undefined;
     const chatId = body?.chatId as string | undefined;
     const fallbackUserId = body?.userId as string | undefined;
- 
+
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
-      return NextResponse.json({ error: "Messages array is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Messages array is required" },
+        { status: 400 },
+      );
     }
 
-    const lastUserMessage = messages[messages.length - 1]?.content?.trim() || "";
+    const lastUserMessage = messages[messages.length - 1]?.content?.trim();
+    if (!lastUserMessage) {
+      return NextResponse.json(
+        { error: "Last message content is required" },
+        { status: 400 },
+      );
+    }
 
-    const maxPrice = extractMaxPrice(lastUserMessage);
+    const priceRegex = /(\d+(?:\.\d+)?)\s*(k|к|мянган|мян|төг|₮)/gi;
+    const match = priceRegex.exec(lastUserMessage);
+    let maxPrice: number | undefined;
+    if (match) {
+      maxPrice = parseFloat(match[1]);
+      if (
+        match[2] &&
+        ["k", "к", "мянган", "мян"].includes(match[2].toLowerCase())
+      )
+        maxPrice *= 1000;
+    }
 
-    const getTargetNamespaces = (text: string): string[] => {
-      const input = text.toLowerCase();
-      const categories = {
-        shoes: {
-          keywords: ["gut", "гут", "shoe", "puse", "пүүз", "кесс", "тавчик"],
-          ns: ["shoes-namespace"]
-        },
-        books: {
-          keywords: ["nom", "ном", "book", "унших", "зохиол", "тууж", "бичиг"],
-          ns: ["books-namespace"]
-        },
-        fashion: {
-          keywords: ["хувц", "өмд", "tsamt", "fashion", "jacket", "цамц"],
-          ns: ["fashion-namespace"]
-        },
-        electronics: {
-          keywords: ["utas", "утс", "phone", "iphone", "elect", "цэнэглэгч", "чихэвч"],
-          ns: ["electronics-namespace"]
-        },
-        beauty: {
-          keywords: ["beauty", "cosmetic", "гоо", "арьс", "маск", "mask", "shamp"],
-          ns: ["beauty-namespace", "most_used_beauty_cosmetics-namespace"]
-        }
-      };
+    // let context = "";
+    // try {
+    //   const embedding = await openai.embeddings.create({
+    //     model: "text-embedding-3-small",
+    //     input: lastUserMessage,
+    //   });
 
-      let selected: string[] = [];
-      for (const cat of Object.values(categories)) {
-        if (cat.keywords.some(keyword => input.includes(keyword))) {
-          selected = [...selected, ...cat.ns];
-        }
-      }
+    //   const namespaces = [
+    //     "",
+    //     "most_used_beauty_cosmetics-namespace",
+    //     "beauty-namespace",
+    //     "fashion-namespace",
+    //     "shoes-namespace",
+    //     "electronics-namespace",
+    //     "books-namespace",
+    //     "user_3BSwyjfHAMPysPTaXqJ5CkAIGfM",
+    //   ];
 
-      if (selected.length > 0) return Array.from(new Set(selected));
+    //   const queryPromises = namespaces.map((ns) =>
+    //     index.namespace(ns).query({
+    //       vector: embedding.data[0].embedding,
+    //       topK: 8,
+    //       includeMetadata: true,
+    //       filter: maxPrice
+    //         ? { price: { $lte: maxPrice } }
+    //         : undefined,
+    //     }),
+    //   );
 
-      return [
-        "", "most_used_beauty_cosmetics-namespace", "beauty-namespace", 
-        "fashion-namespace", "shoes-namespace", "electronics-namespace", 
-        "books-namespace",
-      ];
-    };
+    //   const queryResults = await Promise.all(queryPromises);
+    //   const allMatches = queryResults.flatMap((res) => res.matches || []);
 
-    const targetNamespaces = getTargetNamespaces(lastUserMessage);
+    //   const topMatches = allMatches
+    //     .sort((a, b) => (b.score || 0) - (a.score || 0))
+    //     .slice(0, 10);
 
+    //   context = topMatches
+    //     .map(
+    //       (m) =>
+    //         `БҮТЭЭГДЭХҮҮН: ${m.metadata?.name || "Нэргүй"}
+    //         ҮНЭ: ${m.metadata?.price}₮
+    //         ЗУРАГ: ${m.metadata?.product_image_url || m.metadata?.image_url || m.metadata?.image || ""}
+    //         ТАЙЛБАР: ${m.metadata?.description || "Тайлбар байхгүй"}
+    //         ID: ${m.id}
+    //         STORE_ID: ${m.metadata?.store_id || "store-001"}`,
+    //     )
+    //     .join("\n---\n");
+    // } catch (err) {
+    //   console.error("Vector Search Error:", err);
+    // }
     let context = "";
     try {
       const embedding = await openai.embeddings.create({
@@ -106,59 +132,59 @@ export async function POST(req: Request) {
         input: lastUserMessage,
       });
 
-      const queryPromises = targetNamespaces.map((ns) =>
+      const namespaces = [
+        "",
+        "most_used_beauty_cosmetics-namespace",
+        "beauty-namespace",
+        "fashion-namespace",
+        "shoes-namespace",
+        "shoes-namespace",
+        "electronics-namespace",
+        clerkUserId,
+        "user_3BSwyjfHAMPysPTaXqJ5CkAIGfM",
+      ].filter(Boolean) as string[];
+
+      const queryPromises = namespaces.map((ns) =>
         index.namespace(ns).query({
           vector: embedding.data[0].embedding,
           topK: 10,
           includeMetadata: true,
-          filter: maxPrice ? { formatted_price: { $lte: maxPrice } } : undefined,
-        })
+
+          filter: maxPrice ? { price: { $lte: maxPrice } } : undefined,
+        }),
       );
- 
+
       const queryResults = await Promise.all(queryPromises);
+      const allMatches = queryResults.flatMap((res) => res.matches || []);
 
-      const diversifiedMatches = queryResults.flatMap((res) => {
-        const matches = res.matches || [];
-        return matches.sort((a, b) => (b.score || 0) - (a.score || 0)).slice(0, 3);
-      });
-
-      const topMatches = diversifiedMatches
+      const topMatches = allMatches
         .sort((a, b) => (b.score || 0) - (a.score || 0))
         .slice(0, 15);
 
       context = topMatches
-        .map((m) => {
-          const rawPrice = m.metadata?.formatted_price || m.metadata?.price;
-          const finalPrice = rawPrice && rawPrice !== "0" ? `${rawPrice}₮` : "Үнэ тодорхойгүй";
-          return `БҮТЭЭГДЭХҮҮН: ${m.metadata?.product_name || m.metadata?.name || "Нэргүй"}
-                  ДЭЛГҮҮР: ${m.metadata?.store_name}
-                  ҮНЭ: ${finalPrice}
-                  ЗУРАГ: ${m.metadata?.product_image_url || m.metadata?.image_url || ""}
-                  ТАЙЛБАР: ${m.metadata?.description || "Тайлбар байхгүй"}
-                  ID: ${m.id}
-                  STORE_ID: ${m.metadata?.store_id || "store-001"}`;
-        })
+        .map(
+          (m) =>
+            `БҮТЭЭГДЭХҮҮН: ${m.metadata?.name || "Нэргүй"}
+            ҮНЭ: ${m.metadata?.price || null}₮
+            ЗУРАГ: ${m.metadata?.product_image_url || m.metadata?.image_url || ""}
+            ТАЙЛБАР: ${m.metadata?.description || "Тайлбар байхгүй"}
+            ID: ${m.id}
+            STORE_ID: ${m.metadata?.store_id || "store-001"}`,
+        )
         .join("\n---\n");
+
+      console.log("Олдсон барааны тоо:", topMatches.length);
     } catch (err) {
       console.error("Vector Search Error:", err);
     }
 
-const chatResponse = await openai.chat.completions.create({
-  model: "gpt-4o-mini",
-  messages: [
-    {
-      role: "system",
-      content: `Чи бол Монголын хамгийн ухаалаг, найрсаг онлайн дэлгүүрийн "Senior Shopping Assistant" юм. Чиний зорилго бол зүгээр л бараа зарах биш, хэрэглэгчийн амьдралын хэв маягт тохирсон хамгийн зөв сонголтыг хийхэд нь туслах "Shopping Consultant" байх юм.
-
-      --- ЧУХАЛ ---
-      1. Хэрэглэгчийн асуусан төрөл (category) контекст доторх барааны төрөлтэй тохирч байгааг шалга. 
-      2. Хэрэглэгч гутал асуусан байхад чихэвч санал болгож болохгүй.
-      3. Хэрэглэгчийн асуусан бараа доорх "КОНТЕКСТ"-д байвал заавал санал болго.
-      4. Барааг харуулахдаа ЗӨВХӨН дараах Markdown форматыг ашигла:
-        ![Нэр, Үнэ, Тайлбар, ProductID, StoreID](Зургийн_URL)
-      5. Хэрэв КОНТЕКСТ-д тохирох бараа байвал "Байхгүй байна" гэж хэлж болохгүй.
-      6. Барааны үнийг яг байгаагаар нь бич.
-
+    const chatResponse = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content: `Чи бол Монголын хамгийн ухаалаг, найрсаг онлайн дэлгүүрийн "Senior Shopping Assistant" юм. Чиний зорилго бол зүгээр л бараа зарах биш, хэрэглэгчийн амьдралын хэв маягт тохирсон хамгийн зөв сонголтыг хийхэд нь туслах "Shopping Consultant" байх юм.
+ 
       --- ХАРИЛЦААНЫ СТРАТЕГИ (ADVANCED PERSONA) ---
       1. Эмпати ба Мэдрэмж: Хэрэглэгчийн хэрэгцээг мэдэр. Жишээ нь: "Удахгүй орох баяр наадмаар өмсөх гоёлын гутал хайж байна уу?" эсвэл "Оройн гоёлд тань энэ цүнх маш сайн зохицно гэдэгт итгэлтэй байна" гэх мэтээр сэтгэл хөдлөл нэм.
       2. Эргэцүүлэн бодох (Reasoning): Хэрэглэгч "Nike гутал байна уу?" гэвэл шууд жагсаахын оронд "Мэдээж, Nike бол чанар. Танд гүйлтийн зориулалттай нь хэрэгтэй юу, эсвэл өдөр тутам өмсөх Street-style сонирхож байна уу?" гэж тодруулж асуу.
@@ -197,17 +223,17 @@ const chatResponse = await openai.chat.completions.create({
       presence_penalty: 0.6,
       frequency_penalty: 0.5,
     });
- 
+
     const aiReply =
       chatResponse.choices[0]?.message?.content?.trim() || "Хариу олдсонгүй.";
- 
+
     const effectiveUserId = clerkUserId || fallbackUserId;
     const isGuestSession = chatId?.startsWith("guest_");
- 
+
     if (effectiveUserId && chatId && !isGuestSession) {
       try {
         const stringChatId = String(chatId);
- 
+
         const dbUser = await prisma.user.upsert({
           where: { clerkUserId: effectiveUserId },
           update: {},
@@ -218,7 +244,7 @@ const chatResponse = await openai.chat.completions.create({
             name: "User",
           },
         });
- 
+
         const session = await prisma.chatSession.upsert({
           where: { id: stringChatId },
           update: {
@@ -231,7 +257,7 @@ const chatResponse = await openai.chat.completions.create({
             title: lastUserMessage.slice(0, 40),
           },
         });
- 
+
         await prisma.chatMessage.createMany({
           data: [
             {
@@ -250,11 +276,11 @@ const chatResponse = await openai.chat.completions.create({
         console.error("PRISMA_SAVE_ERROR:", dbError);
       }
     }
- 
+
     return NextResponse.json({ reply: aiReply });
   } catch (error: any) {
     console.error("API_GLOBAL_ERROR:", error);
- 
+
     return NextResponse.json(
       {
         error: "Internal Server Error",
