@@ -5,7 +5,7 @@ import { Loader2, PackageOpen, Trash2, Edit3, ImageOff } from "lucide-react";
 import ProductForm from "./ProductForm";
 
 
-export default function ProductTable({ search, storeName }: { search: string; storeName: string;}) {
+export default function ProductTable({ search="", storeName }: { search?: string; storeName: string;}) {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingProduct, setEditingProduct] = useState<any>(null);
@@ -13,14 +13,23 @@ export default function ProductTable({ search, storeName }: { search: string; st
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
+
   const fetchData = useCallback(async () => {
+    if (!storeName) return; 
+
     try {
       setLoading(true);
-      const res = await fetch("/admin/api/productAllGet", {
+      const res = await fetch(`/admin/api/productAllGet?storeName=${encodeURIComponent(storeName)}`, {
         cache: "no-store",
+        headers: {
+        "Content-Type": "application/json",
+      }
       });
 
-      if (!res.ok) throw new Error(`Server error: ${res.status}`);
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || `Server error: ${res.status}`);
+      }
 
       const data = await res.json();
       if (data.success) {
@@ -31,7 +40,7 @@ export default function ProductTable({ search, storeName }: { search: string; st
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [storeName]);
 
   useEffect(() => {
     fetchData();
@@ -41,8 +50,8 @@ export default function ProductTable({ search, storeName }: { search: string; st
     if (!deletingId) return;
     setIsDeleting(true);
     try {
-      const res = await fetch(`/admin/api/productDelete?id=${deletingId}`, {
-        method: "DELETE",
+      const res = await fetch(`/admin/api/productDelete?id=${deletingId}&storeName=${encodeURIComponent(storeName)}`, {
+      method: "DELETE",
       });
       const data = await res.json();
       if (data.success) {
@@ -81,14 +90,14 @@ export default function ProductTable({ search, storeName }: { search: string; st
     <div className="relative w-full bg-white dark:bg-gray-950 rounded-[2.5rem] border border-gray-100 dark:border-white/5 shadow-sm overflow-hidden">
       {editingProduct && (
         <ProductForm
-        storeName={storeName} 
-        initialData={editingProduct}
-        onSuccess={() => {
-          setEditingProduct(null);
-          fetchData();
-        }}
-        onClose={() => setEditingProduct(null)}
-      />
+          storeName={storeName}
+          initialData={editingProduct}
+          onSuccess={() => {
+            setEditingProduct(null);
+            fetchData();
+          }}
+          onClose={() => setEditingProduct(null)}
+        />
       )}
 
       {deletingId && (

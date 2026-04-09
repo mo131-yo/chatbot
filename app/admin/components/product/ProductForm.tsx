@@ -65,84 +65,118 @@ export default function ProductForm({ onSuccess, initialData, onClose, storeName
 
 
   const handleSubmit = async () => {
+    // 1. Debug: storeName ирж байгаа эсэхийг шалгах
+    console.log("Submit эхлэх үеийн storeName:", storeName);
+
+    if (!storeName || storeName === "undefined" || storeName === "null") {
+      return alert("Алдаа: Дэлгүүрийн нэр (storeName) олдсонгүй. Та эхлээд дэлгүүрээ бүртгүүлсэн эсэхээ шалгана уу.");
+    }
+
     if (!formData.name || !formData.price) {
       return alert("Барааны нэр болон үнэ заавал байх ёстой!");
     }
   
     setIsSubmitting(true);
     try {
-      let imageUrl = "";
+      let imageUrl = previews[0] || ""; // Хуучин зураг байвал авна
 
+      // Шинэ зураг сонгосон бол Cloudinary руу хуулна
       if (imageFiles.length > 0) {
         const cloudData = new FormData();
         cloudData.append("file", imageFiles[0]);
         cloudData.append("upload_preset", "my_store_preset");
+        
         const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/dzljgphud/image/upload`, {
           method: "POST",
           body: cloudData,
         });
+        
+        if (!uploadRes.ok) throw new Error("Зураг хуулахад алдаа гарлаа");
+        
         const cloudJson = await uploadRes.json();
         imageUrl = cloudJson.secure_url;
       }
 
+      // API руу илгээх дата
+      const payload = {
+        ...formData,
+        imageUrl,
+        storeName: storeName,
+        price: Number(formData.price),
+        stock: Number(formData.stock || "0"),
+      };
+
       const response = await fetch("/admin/api/productAdd", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          imageUrl,
-          storeName: storeName, 
-          price: parseFloat(formData.price),
-          stock: parseInt(formData.stock || "0"),
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();
+
       if (data.success) {
-        setToastMsg("Амжилттай бүртгэгдлээ!");
+        setToastMsg(initialData ? "Амжилттай шинэчлэгдлээ!" : "Амжилттай бүртгэгдлээ!");
         setShowToast(true);
-        setFormData({ name: "", price: "", description: "", brand: "", category: "", stock: "", color: "", size: "" });
-        setPreviews([]);
-        setImageFiles([]);
+        
+        // Form-ыг цэвэрлэх (хэрэв шинээр нэмж байгаа бол)
+        if (!initialData) {
+            setFormData({ name: "", price: "", description: "", brand: "", category: "", stock: "", color: "", size: "" });
+            setPreviews([]);
+            setImageFiles([]);
+        }
+
         setTimeout(() => {
           setOpen(false);
           if (onSuccess) onSuccess();
+          if (onClose) onClose();
         }, 1500);
       } else {
         alert(data.error || "Алдаа гарлаа");
       }
-    } catch (error) {
-      alert("Сервертэй холбогдоход алдаа гарлаа.");
+    } catch (error: any) {
+      console.error("Submit Error:", error);
+      alert(error.message || "Сервертэй холбогдоход алдаа гарлаа.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  return (
+ return (
     <>
       {showToast && <SuccessToast isVisible={showToast} message={toastMsg} onClose={() => setShowToast(false)} />}
 
-      <Button onClick={() => setOpen(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-5 rounded-xl shadow-lg active:scale-95 transition-all">
-        <PackagePlus className="w-5 h-5 mr-2" /> Бараа нэмэх
-      </Button>
+      {!initialData && (
+        <Button onClick={() => setOpen(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-5 rounded-xl shadow-lg active:scale-95 transition-all">
+          <PackagePlus className="w-5 h-5 mr-2" /> Бараа нэмэх
+        </Button>
+      )}
 
       {open && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-100 p-4">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
           <div className="relative w-full max-w-4xl max-h-[92vh] overflow-hidden rounded-[2.5rem] bg-gray-950 text-white border border-white/5 flex flex-col shadow-2xl">
             <header className="px-8 py-6 border-b border-white/5 flex items-center justify-between bg-white/2">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-indigo-500/10 rounded-2xl flex items-center justify-center border border-indigo-500/20">
                   <PackagePlus className="w-6 h-6 text-indigo-400" />
                 </div>
-                <h2 className="text-xl font-bold italic tracking-tight text-indigo-50">Шинэ бараа бүртгэх</h2>
+                <h2 className="text-xl font-bold italic tracking-tight text-indigo-50">
+                    {initialData ? "Бараа засах" : "Шинэ бараа бүртгэх"}
+                </h2>
               </div>
-              <button onClick={() => setOpen(false)} className="p-2 hover:bg-white/5 rounded-xl transition-colors"><X /></button>
+              <button 
+                onClick={() => {
+                    setOpen(false);
+                    if (onClose) onClose();
+                }} 
+                className="p-2 hover:bg-white/5 rounded-xl transition-colors"
+              >
+                <X />
+              </button>
             </header>
 
             <main className="flex-1 overflow-y-auto p-8 space-y-8">
               <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
                 <div className="lg:col-span-3 space-y-8">
-                  
                   <Section title="Үндсэн мэдээлэл" icon={<Info className="w-4 h-4" />}>
                     <div className="grid grid-cols-2 gap-5">
                       <FormInput label="Барааны нэр" value={formData.name} onChange={(v: string) => handleInputChange("name", v)} />
@@ -172,11 +206,11 @@ export default function ProductForm({ onSuccess, initialData, onClose, storeName
                   <Section title="Медиа" icon={<ImageIcon className="w-4 h-4" />}>
                     <div className="relative h-72 border-2 border-dashed border-white/10 rounded-[2rem] flex flex-col items-center justify-center overflow-hidden bg-white/2 hover:bg-white/5 transition-all group">
                       {previews.length > 0 ? (
-                        <img src={previews[0]} className="w-full h-full object-cover" />
+                        <img src={previews[0]} className="w-full h-full object-cover" alt="Preview" />
                       ) : (
                         <div className="text-center">
                           <Upload className="mx-auto mb-2 text-indigo-400 group-hover:scale-110 transition-transform" />
-                          <p className="text-[10px] text-gray-500 uppercase font-black tracking-tighter">Барааны зураг оруулах</p>
+                          <p className="text-[10px] text-gray-500 uppercase font-black tracking-tighter">Зураг оруулах</p>
                         </div>
                       )}
                       <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={handleFileChange} />
@@ -187,9 +221,22 @@ export default function ProductForm({ onSuccess, initialData, onClose, storeName
             </main>
 
             <footer className="px-8 py-6 border-t border-white/5 flex gap-4 bg-white/2">
-              <Button onClick={() => setOpen(false)} variant="ghost" className="flex-1 py-6 rounded-2xl text-gray-400">Болих</Button>
-              <Button onClick={handleSubmit} disabled={isSubmitting} className="flex-2 py-6 rounded-2xl bg-indigo-600 hover:bg-indigo-500 font-bold text-white shadow-lg shadow-indigo-600/20">
-                {isSubmitting ? <Loader2 className="animate-spin" /> : "Барааг системд бүртгэх"}
+              <Button 
+                onClick={() => {
+                    setOpen(false);
+                    if (onClose) onClose();
+                }} 
+                variant="ghost" 
+                className="flex-1 py-6 rounded-2xl text-gray-400"
+              >
+                Болих
+              </Button>
+              <Button 
+                onClick={handleSubmit} 
+                disabled={isSubmitting} 
+                className="flex-[2] py-6 rounded-2xl bg-indigo-600 hover:bg-indigo-500 font-bold text-white shadow-lg shadow-indigo-600/20"
+              >
+                {isSubmitting ? <Loader2 className="animate-spin" /> : (initialData ? "Өөрчлөлтийг хадгалах" : "Барааг системд бүртгэх")}
               </Button>
             </footer>
           </div>
@@ -199,6 +246,7 @@ export default function ProductForm({ onSuccess, initialData, onClose, storeName
   );
 }
 
+// Туслах компонентууд
 function Section({ title, icon, children }: any) {
   return (
     <div className="space-y-4">
