@@ -33,28 +33,38 @@ export async function PATCH(req: Request) {
 
     const updatedProduct = await prisma.product.update({
       where: { id: id },
-      data: {
-        name,
+      update: {
+        name: name,
         price: numericPrice,
         description: description || "",
         brand: brand || "",
         stock: numericStock,
         images: imageUrl ? [imageUrl] : undefined,
+
+        category: {
+          connect: { id: categoryRecord.id },
+        },
+      },
+      create: {
+        id: id,
+        name: name,
+        price: numericPrice,
+        description: description || "",
+        brand: brand || "",
+        stock: numericStock,
+        images: imageUrl ? [imageUrl] : [],
+        slug:
+          name?.toLowerCase().trim().replace(/\s+/g, "-") ||
+          `prod-${Date.now()}`,
+
+        category: {
+          connect: { id: categoryRecord.id },
+        },
       },
     });
 
-    const embeddings = new OpenAIEmbeddings({
-      openAIApiKey: process.env.OPENAI_KEY,
-      modelName: "text-embedding-3-small",
-    });
-    const vector = await embeddings.embedQuery(`Бүтээгдэхүүн: ${name}. Тайлбар: ${description}`);
-
-
-await index.namespace(storeName).upsert({
-  records: [
-    {
-      id: id, 
-      values: vector,
+    await index.namespace(userId).update({
+      id: id,
       metadata: {
         name: name,
         price: numericPrice,
