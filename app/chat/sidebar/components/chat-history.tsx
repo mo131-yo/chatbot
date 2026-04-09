@@ -1,15 +1,9 @@
 "use client";
 
 import { Ellipsis, Trash2, Edit2, Share2, Pin, PinOff } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
+
 import { GiPin } from "react-icons/gi";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface Chat {
   id: string;
@@ -39,7 +33,31 @@ export const ChatHistory = ({
   activeChatId,
 }: ChatHistoryProps) => {
   const [deleteTarget, setDeleteTarget] = useState<Chat | null>(null);
+  const [filteredChats, setFilteredChats] = useState(history);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [renameTarget, setRenameTarget] = useState<Chat | null>(null);
+  const [renameValue, setRenameValue] = useState("");
 
+  useEffect(() => {
+    setFilteredChats(history);
+  }, [history]);
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "ArrowDown") {
+        setSelectedIndex((prev) => prev + 1);
+      }
+      if (e.key === "ArrowUp") {
+        setSelectedIndex((prev) => Math.max(prev - 1, 0));
+      }
+      if (e.key === "Enter") {
+        const chat = filteredChats[selectedIndex];
+        if (chat) onSelectChat(chat.id);
+      }
+    };
+
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [filteredChats, selectedIndex]);
   if (!history || !Array.isArray(history)) {
     return (
       <div className="flex-1 px-4 py-6 text-xs text-slate-500 italic">
@@ -48,8 +66,8 @@ export const ChatHistory = ({
     );
   }
 
-  const pinnedChats = history.filter((chat) => chat?.isPinned);
-  const recentChats = history.filter((chat) => !chat?.isPinned);
+  const pinnedChats = filteredChats.filter((chat) => chat?.isPinned);
+  const recentChats = filteredChats.filter((chat) => !chat?.isPinned);
 
   const handleShareClick = async (e: React.MouseEvent, chat: Chat) => {
     e.stopPropagation();
@@ -77,86 +95,90 @@ export const ChatHistory = ({
   const renderChatItem = (chat: Chat) => (
     <div
       key={chat.id}
-      className={`group relative flex items-center rounded-lg transition-all mb-1
-      ${activeChatId === chat.id ? "bg-black/5 dark:bg-white/10" : "hover:bg-black/5"}`}
+      className={`group relative flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer
+    transition-all
+    ${
+      activeChatId === chat.id
+        ? "bg-black/10 dark:bg-white/10"
+        : "hover:bg-black/5 dark:hover:bg-white/5"
+    }`}
     >
-      <button
+      <div
         onClick={() => onSelectChat(chat.id)}
-        className="flex-1 text-left px-3 py-2.5 flex items-center gap-2 min-w-0"
+        className="flex items-center gap-2 min-w-0 flex-1"
       >
         {chat.isPinned && (
-          <GiPin size={16} className="text-[#C5A059] rotate-45 shrink-0" />
+          <GiPin size={14} className="text-[#C5A059] rotate-45 shrink-0" />
         )}
-        <span className="text-sm font-medium truncate pr-6 group-hover:text-[#C5A059]">
-          {chat.title || "New Chat"}
-        </span>
-      </button>
 
-      <div className="absolute right-1">
-        <DropdownMenu>
-          <DropdownMenuTrigger className="h-7 w-7 rounded-md hover:bg-black/10 dark:hover:bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center outline-none border-none bg-transparent cursor-pointer text-slate-400 hover:text-white">
-            <Ellipsis size={14} />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="end"
-            className="w-48 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"
-          >
-            <DropdownMenuItem
-              className="gap-2 cursor-pointer"
-              onClick={() => onPinChat(chat.id)}
-            >
-              {chat.isPinned ? <PinOff size={14} /> : <Pin size={14} />}
-              {chat.isPinned ? "Unpin" : "Pin"}
-            </DropdownMenuItem>
+        <span className="text-sm truncate">{chat.title || "New chat"}</span>
+      </div>
 
-            <DropdownMenuItem
-              className="gap-2 cursor-pointer"
-              onClick={() => {
-                const newTitle = prompt("Шинэ нэр:", chat.title);
-                if (newTitle) onRenameChat(chat.id, newTitle);
-              }}
-            >
-              <Edit2 size={14} /> Rename
-            </DropdownMenuItem>
+      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onPinChat(chat.id);
+          }}
+          className="p-1 rounded hover:bg-black/10 dark:hover:bg-white/10"
+        >
+          {chat.isPinned ? <PinOff size={14} /> : <Pin size={14} />}
+        </button>
 
-            <DropdownMenuItem
-              className="gap-2 cursor-pointer"
-              onClick={() => onShareChat(chat.id)}
-            >
-              <Share2 size={14} /> Share
-            </DropdownMenuItem>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setRenameTarget(chat);
+            setRenameValue(chat.title || "");
+          }}
+          className="p-1 rounded hover:bg-black/10 dark:hover:bg-white/10"
+        >
+          <Edit2 size={14} />
+        </button>
 
-            <DropdownMenuSeparator className="bg-slate-100 dark:bg-slate-800" />
-
-            <DropdownMenuItem
-              className="gap-2 text-red-500 focus:text-red-500 cursor-pointer"
-              onClick={() => setDeleteTarget(chat)}
-            >
-              <Trash2 size={14} /> Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setDeleteTarget(chat);
+          }}
+          className="p-1 rounded hover:bg-red-500/20 text-red-400"
+        >
+          <Trash2 size={14} />
+        </button>
       </div>
     </div>
   );
 
   return (
     <>
-      <div className="flex-1 overflow-y-auto px-3 py-4 space-y-6 custom-scrollbar">
+      <div className="px-3 mb-3">
+        <input
+          type="text"
+          placeholder="Search chats..."
+          className="w-full px-3 py-2 text-sm rounded-lg 
+    bg-black/5 dark:bg-white/5 
+    focus:outline-none focus:ring-1 focus:ring-gray-400"
+          onChange={(e) => {
+            const value = e.target.value.toLowerCase();
+
+            const filtered = history.filter((chat) =>
+              chat.title?.toLowerCase().includes(value),
+            );
+            setFilteredChats(filtered);
+          }}
+        />
+      </div>
+      <div className="flex-1 overflow-y-auto px-2 py-3 scrollbar-thin scrollbar-thumb-white/10 ">
         {pinnedChats.length > 0 && (
           <div className="space-y-1">
-            <p className="px-3 text-[10px] uppercase tracking-widest text-[#C5A059] font-bold mb-2 flex items-center gap-2">
-              Pinned
-            </p>
+            <p className="px-3 text-xs text-gray-500 mb-2">Pinned</p>
             {pinnedChats.map((chat) => renderChatItem(chat))}
             <div className="h-px bg-black/5 dark:bg-white/5 mx-3 my-4" />
           </div>
         )}
 
         <div className="space-y-1">
-          <p className="px-3 text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-2">
-            Your chat history
-          </p>
+          <p className="px-3 text-xs text-gray-500 mt-4 mb-2">Recent</p>
           {recentChats.length > 0
             ? recentChats.map((chat) => renderChatItem(chat))
             : pinnedChats.length === 0 && (
@@ -181,10 +203,15 @@ export const ChatHistory = ({
                 <Trash2 size={18} className="text-red-500" />
               </div>
               <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
-                Delete chat?
+                Чатыг устгах уу?
               </h2>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                Are you sure you want to delete this chat?
+              <p className="text-sm text-slate-500 dark:text-slate-400 text-center">
+                Та энэ
+                "
+                <span className="font-bold text-slate-800 dark:text-slate-200">
+                   {deleteTarget.title || "New chat"}
+                </span>
+                " чатыг устгахдаа итгэлтэй байна уу?
               </p>
             </div>
 
@@ -193,7 +220,7 @@ export const ChatHistory = ({
                 onClick={() => setDeleteTarget(null)}
                 className="flex-1 px-4 py-2 rounded-lg text-sm font-medium border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
               >
-                Cancel
+                Болих
               </button>
               <button
                 onClick={() => {
@@ -202,7 +229,51 @@ export const ChatHistory = ({
                 }}
                 className="flex-1 px-4 py-2 rounded-lg text-sm font-medium bg-red-500 hover:bg-red-600 text-white transition-colors"
               >
-                Delete
+                Устгах
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {renameTarget && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+          onClick={() => setRenameTarget(null)}
+        >
+          <div
+            className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-80 p-6 flex flex-col gap-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-lg font-semibold">Чатын нэр өөрчлөх</h2>
+
+            <input
+              value={renameValue}
+              onChange={(e) => setRenameValue(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg bg-black/5 dark:bg-white/5 outline-none"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  onRenameChat(renameTarget.id, renameValue);
+                  setRenameTarget(null);
+                }
+              }}
+            />
+
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => setRenameTarget(null)}
+                className="px-4 py-2 rounded-lg text-sm hover:bg-black/5"
+              >
+                Болих
+              </button>
+
+              <button
+                onClick={() => {
+                  onRenameChat(renameTarget.id, renameValue);
+                  setRenameTarget(null);
+                }}
+                className="px-4 py-2 rounded-lg text-sm bg-blue-500 text-white hover:bg-blue-600"
+              >
+                Хадгалах
               </button>
             </div>
           </div>

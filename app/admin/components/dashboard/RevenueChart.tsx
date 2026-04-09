@@ -26,29 +26,20 @@ export default function RevenueChart() {
     try {
       const res = await fetch("/admin/api/orders");
       const orders = await res.json();
-
       const grouped: Record<string, number> = {};
 
-     orders.forEach((o: any) => {
-    const rawDate = o.createdAt || o.date;
+      orders.forEach((o: any) => {
+        const rawDate = o.createdAt || o.date;
 
-    const total = Number(
-      o.total ??
-      o.totalPrice ??
-      o.price ??
-      0
-    );
+        const total = Number(o.total ?? o.totalPrice ?? o.price ?? 0);
 
-    if (!rawDate || isNaN(total)) return;
+        if (!rawDate || isNaN(total)) return;
 
-    const day = new Date(rawDate).toLocaleDateString("en-US", {
-      weekday: "short",
-    });
+        const day = new Date(rawDate).toLocaleDateString("en-US", {
+          weekday: "short",
+        });
 
-    if (!grouped[day]) grouped[day] = 0;
-
-    grouped[day] += total;
-  });
+        if (!grouped[day]) grouped[day] = 0;
 
       const chartData = Object.entries(grouped).map(([day, revenue]) => ({
         day,
@@ -56,7 +47,6 @@ export default function RevenueChart() {
       }));
 
       setData(chartData);
-
     } catch (err) {
       console.error("Revenue fetch error:", err);
     }
@@ -80,14 +70,9 @@ export default function RevenueChart() {
             stroke={dark ? "#444" : "#ddd"}
           />
 
-          <XAxis
-            dataKey="day"
-            stroke={dark ? "#aaa" : "#555"}
-          />
+          <XAxis dataKey="day" stroke={dark ? "#aaa" : "#555"} />
 
-          <YAxis
-            stroke={dark ? "#aaa" : "#555"}
-          />
+          <YAxis stroke={dark ? "#aaa" : "#555"} />
 
           <Tooltip
             contentStyle={{
