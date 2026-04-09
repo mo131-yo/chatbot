@@ -199,20 +199,28 @@ export const ChatHistory = ({
             className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-80 p-6 flex flex-col items-center gap-4"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex flex-col items-center gap-1 text-center">
+            <div className="flex flex-col items-center gap-2 text-center">
               <div className="w-10 h-10 rounded-full bg-red-50 dark:bg-red-500/10 flex items-center justify-center mb-1">
                 <Trash2 size={18} className="text-red-500" />
               </div>
+
               <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
                 Чатыг устгах уу?
               </h2>
-              <p className="text-sm text-slate-500 dark:text-slate-400 text-center">
-                Та энэ
-                "
-                <span className="font-bold truncate max-w-50 inline-block align-middle">
-                   {deleteTarget.title || "New chat"}
+
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                <span className="block">
+                  "
+                  <span className="font-semibold text-slate-800 dark:text-slate-200 truncate max-w-[220px] inline-block align-middle">
+                    {deleteTarget.title || "New chat"}
+                  </span>
+                  "
                 </span>
-                " чатыг устгахдаа итгэлтэй байна уу?
+                чатыг устгахдаа итгэлтэй байна уу?
+              </p>
+
+              <p className="text-xs text-slate-400">
+                Энэ үйлдлийг буцаах боломжгүй.
               </p>
             </div>
 
