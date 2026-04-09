@@ -79,7 +79,9 @@ export default function ProductForm({
   }, [initialData]);
 
   const handleSubmit = async () => {
-    console.log("Submit эхлэх үеийн storeName:", storeName);
+  if (!storeName || storeName === "undefined") {
+    return alert("Алдаа: Дэлгүүрийн нэр олдсонгүй.");
+  }
 
     if (!storeName || storeName === "undefined" || storeName === "null") {
       return alert(
@@ -133,11 +135,31 @@ export default function ProductForm({
 
       const response = await fetch("/admin/api/productAdd", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: cloudData,
       });
+      
+      if (!uploadRes.ok) throw new Error("Зураг хуулахад алдаа гарлаа");
+      const cloudJson = await uploadRes.json();
+      imageUrl = cloudJson.secure_url;
+    }
 
-      const data = await response.json();
+    const payload = {
+      ...formData,
+      id: initialData?.id, 
+      imageUrl,
+      storeName: storeName,
+      price: Number(formData.price),
+      stock: Number(formData.stock || "0"),
+    };
+
+    const endpoint = initialData ? "/admin/api/productUpdate" : "/admin/api/productAdd";
+    const method = initialData ? "PATCH" : "POST";
+
+    const response = await fetch(endpoint, {
+      method: method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
 
       if (data.success) {
         setToastMsg(
@@ -160,21 +182,31 @@ export default function ProductForm({
           setImageFiles([]);
         }
 
-        setTimeout(() => {
-          setOpen(false);
-          if (onSuccess) onSuccess();
-          if (onClose) onClose();
-        }, 1500);
-      } else {
-        alert(data.error || "Алдаа гарлаа");
+    if (data.success) {
+      setToastMsg(initialData ? "Амжилттай шинэчлэгдлээ!" : "Амжилттай бүртгэгдлээ!");
+      setShowToast(true);
+      
+      if (!initialData) {
+          setFormData({ name: "", price: "", description: "", brand: "", category: "", stock: "", color: "", size: "" });
+          setPreviews([]);
+          setImageFiles([]);
       }
-    } catch (error: any) {
-      console.error("Submit Error:", error);
-      alert(error.message || "Сервертэй холбогдоход алдаа гарлаа.");
-    } finally {
-      setIsSubmitting(false);
+
+      setTimeout(() => {
+        setOpen(false);
+        if (onSuccess) onSuccess();
+        if (onClose) onClose();
+      }, 1500);
+    } else {
+      alert(data.error || "Алдаа гарлаа");
     }
-  };
+  } catch (error: any) {
+    console.error("Submit Error:", error);
+    alert(error.message || "Сервертэй холбогдоход алдаа гарлаа.");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   return (
     <>

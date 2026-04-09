@@ -13,13 +13,31 @@ export default function Header({
   const { cartCount, setIsCartOpen } = useCart();
   const [favoriteCount, setFavoriteCount] = useState(0);
 
+  // Баазаас бодит тоог татах функц
+  const refreshCount = async () => {
+    try {
+      const res = await fetch("/chat/api/favorites");
+      if (res.ok) {
+        const data = await res.json();
+        setFavoriteCount(data.length);
+      }
+    } catch (err) {
+      console.error("Fetch favorites error:", err);
+    }
+  };
+
   useEffect(() => {
-    fetch("/chat/api/favorites")
-      .then((res) => res.json())
-      .then((data) => setFavoriteCount(data.length));
+    // Анх ачаалахад тоог татах
+    refreshCount();
 
     const handleInstantUpdate = (e: any) => {
-      setFavoriteCount(e.detail.count);
+      // Runtime error-оос сэргийлэх (Optional chaining ашиглав)
+      if (e?.detail && typeof e.detail.count === "number") {
+        setFavoriteCount(e.detail.count);
+      } else {
+        // Хэрэв count ирээгүй бол баазаас дахин асууна
+        refreshCount();
+      }
     };
 
     window.addEventListener("updateFavoriteCount", handleInstantUpdate);
@@ -40,7 +58,9 @@ export default function Header({
           className="relative p-3 hover:bg-white/10 rounded-full transition-all"
         >
           <FaHeart
-            className={`text-xl transition-colors duration-100 ${favoriteCount > 0 ? "text-red-500" : "text-[#C5A059]"}`}
+            className={`text-xl transition-colors duration-100 ${
+              favoriteCount > 0 ? "text-red-500" : "text-[#C5A059]"
+            }`}
           />
 
           {favoriteCount > 0 && (
