@@ -23,12 +23,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "chat-Store",
   icons: {
-    icon: [
-      {
-        url: "/favicon.png",
-        href: "/favicon.png",
-      },
-    ],
+    icon: "/favicon.ico",
   },
 };
 
