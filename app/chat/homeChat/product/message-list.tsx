@@ -16,6 +16,8 @@ interface Product {
   image: string;
   description: string;
   storeId?: string;
+  brand?: string;
+  storeName?: string;
 }
 
 interface MessageListProps {
@@ -25,6 +27,7 @@ interface MessageListProps {
   onBuy: (name: string, price: any) => void;
   messagesEndRef: React.RefObject<HTMLDivElement | null>;
 }
+
 
 const removeImageMarkdown = (content: string): string => {
   if (!content) return "";
@@ -51,7 +54,11 @@ const extractProducts = (content: string): Product[] => {
         price: parts[1] || "0",
         image: imageSrc,
         description: parts[2] || "",
-        storeId: parts[4] || "store-001",
+        brand: parts[4] || "",
+        storeId: parts[5] || "store-001",
+        // ✅ StoreName - Markdown-аас parts[6]
+        // Pinecone metadata дээр байгаа "Turuu's store" гээх store_name автоматаар ирнэ
+        storeName: parts[6] && parts[6].trim() ? parts[6].trim() : "Official Store",
       });
     }
   }

@@ -82,7 +82,7 @@ export async function POST(req: Request) {
         input: lastUserMessage,
       });
 
-      const namespaces = ["Orgil's shop"];
+      const namespaces = ["Turuu's store"];
 
       const queryPromises = namespaces.map((ns) =>
         index.namespace(ns).query({
@@ -100,21 +100,28 @@ export async function POST(req: Request) {
         .sort((a, b) => (b.score || 0) - (a.score || 0))
         .slice(0, 10);
 
-      context = topMatches
-        .map(
-          (m) =>
-            `БҮТЭЭГДЭХҮҮН: ${m.metadata?.name || "Нэргүй"}
-            ҮНЭ: ${m.metadata?.price || null}₮
-            ЗУРАГ: ${m.metadata?.product_image_url || m.metadata?.image_url || ""}
-            ТАЙЛБАР: ${m.metadata?.description || "Тайлбар байхгүй"}
-            ID: ${m.id}
-            STORE_ID: ${m.metadata?.store_id || "store-001"}`,
-        )
-        .join("\n---\n");
-
-      console.log("Олдсон барааны тоо:", topMatches.length);
+      if (topMatches.length > 0) {
+        context = topMatches
+          .map(
+            (m) =>
+              `БҮТЭЭГДЭХҮҮН: ${m.metadata?.name}
+              БрэнД: ${m.metadata?.brand || ""}
+              ҮНЭ: ${m.metadata?.price}₮
+              ЗУРАГ: ${m.metadata?.product_image_url || m.metadata?.image_url || ""}
+              ТАЙЛБАР: ${m.metadata?.description}
+              ID: ${m.id}
+              ДЭЛГҮҮР: ${m.metadata?.store_name || "Official Store"}
+              STORE_ID: ${m.metadata?.store_id}`,
+          )
+          .join("\n---\n");
+        console.log("Олдсон барааны тоо:", topMatches.length);
+      } else {
+        context = "СИСТЕМД ТОХИРОХ БАРАА ОЛДСОНГҮЙ. Гэхдээ хэрэглэгчийг хоосон орхиж болохгүй. Өөрийн мэдлэгт байгаа хамгийн ойр төрлийн барааг 'Орлуулах санал' болгон харуул. Зургийг нь https://loremflickr.com/800/800/{барааны_нэр} ашиглан харуул.";
+        console.log("Pinecone-оос илэрц олдсонгүй, Fallback горим идэвхжлээ.");
+      }
     } catch (err) {
       console.error("Vector Search Error:", err);
+      context = "Хайлтын системд алдаа гарлаа. Гэхдээ хэрэглэгчийн хүсэлтийг ерөнхий байдлаар шийдэж өгнө үү.";
     }
 
     const chatResponse = await openai.chat.completions.create({
