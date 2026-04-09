@@ -129,12 +129,9 @@ export async function POST(req: Request) {
       messages: [
         {
           role: "system",
-          // FIX: Use | (pipe) as separator in the image markdown format.
-          // This avoids conflicts with Mongolian text that naturally contains commas.
-          // Format: ![Нэр|Үнэ|Тайлбар|ProductID|StoreID](Зургийн_URL)
           content: `Чи бол зөвхөн өгөгдсөн Context (Pinecone дата) дээр үндэслэн ажилладаг Монголын хамгийн ухаалаг "Shopping Assistant" юм.
           
- --- ЧУХАЛ: ХАТУУ ХЯЗГААРЛАЛТ (CRITICAL RULES) ---
+      --- ЧУХАЛ: ХАТУУ ХЯЗГААРЛАЛТ (CRITICAL RULES) ---
       1. ЗӨВХӨН CONTEXT АШИГЛА: Өгөгдсөн Context дотор байхгүй барааг хэзээ ч бүү зохио. Хэрэв Context дотор хэрэглэгчийн хайсан бараа (жишээ нь: Nike) байхгүй бол "Уучлаарай, манайд яг одоо [барааны нэр] алга байна" гэж хариул.
       2. ХӨНДЛӨНГИЙН МЭДЛЭГ ХОРИГЛОХ: Өөрийн сургагдсан мэдээллийн санд байгаа (Nike, Adidas, Apple гэх мэт) ерөнхий мэдлэгээ ашиглан бараа санал болгохыг ХАТУУ ХОРИГЛОНО. 
       3. ЗУРГИЙН ДҮРЭМ: Зөвхөн Context дотор ирсэн 'image_url' эсвэл 'ЗУРАГ' линкийг ашигла. Хэрэв Context-д зураг байхгүй бол зургийн хэсгийг хоосон орхи эсвэл "Зураггүй бараа" гэж тэмдэглэ. ХЭЗЭЭ Ч гадны (loremflickr, google гэх мэт) линк бүү ашигла.
