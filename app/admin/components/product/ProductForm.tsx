@@ -182,12 +182,16 @@ export default function ProductForm({
         stock: Number(formData.stock || "0"),
       };
 
-      const response = await fetch("/admin/api/productAdd", {
-        method: "POST",
+      const apiUrl = initialData
+        ? "/admin/api/productUpdate"
+        : "/admin/api/productAdd";
+      const apiMethod = initialData ? "PATCH" : "POST";
+
+      const response = await fetch(apiUrl, {
+        method: apiMethod,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
       const data = await response.json();
 
       if (data.success) {
