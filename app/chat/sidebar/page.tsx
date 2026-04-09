@@ -2,6 +2,7 @@
 import { NewChatBtn, ChatHistory } from "./components";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
+import { MenuToggle } from "../header/components";
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -12,6 +13,7 @@ interface SidebarProps {
   isLoading?: boolean;
   activeChatId?: string | null;
 }
+
 
 export default function Sidebar({
   isCollapsed,
@@ -82,10 +84,13 @@ export default function Sidebar({
 
   return (
     <aside
-      className={`flex flex-col h-screen relative z-20 transition-all duration-300 ease-in-out bg-white dark:bg-[#0D0D0D] border-r border-black/10 dark:border-white/5 ${
-        isCollapsed ? "w-0 overflow-hidden border-r-0" : "w-72"
-      }`}
-    >
+  className={`flex flex-col h-screen relative z-20 transition-all duration-300
+  bg-white/70 dark:bg-[#0D0D0D]/70 backdrop-blur-xl
+  ${
+    isCollapsed ? "w-0 overflow-hidden" : "w-72"
+  }`}
+>
+
       <div className="p-3">
         <NewChatBtn onClick={onNewChat} />
       </div>
