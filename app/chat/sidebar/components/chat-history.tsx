@@ -1,6 +1,6 @@
 "use client";
 
-import { Ellipsis, Trash2, Edit2, Share2, Pin, PinOff } from "lucide-react";
+import { Trash2, Edit2, Pin, PinOff } from "lucide-react";
 
 import { GiPin } from "react-icons/gi";
 import { useEffect, useState } from "react";
@@ -38,6 +38,8 @@ export const ChatHistory = ({
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [renameTarget, setRenameTarget] = useState<Chat | null>(null);
   const [renameValue, setRenameValue] = useState("");
+  const [pendingDelete, setPendingDelete] = useState<any>([]);
+
 
   useEffect(() => {
     setFilteredChats(history);
@@ -67,8 +69,24 @@ export const ChatHistory = ({
     );
   }
 
-  const pinnedChats = filteredChats.filter((chat) => chat?.isPinned);
-  const recentChats = filteredChats.filter((chat) => !chat?.isPinned);
+  const visibleChats = history.filter((chat) => chat.id !== pendingDelete?.id);
+  const pinnedChats = visibleChats.filter((chat) => chat?.isPinned);
+  const recentChats = visibleChats.filter((chat) => !chat?.isPinned);
+  const highlightText = (text: string, query: string) => {
+  if (!query) return text;
+
+  const parts = text.split(new RegExp(`(${query})`, "gi"));
+
+  return parts.map((part, i) =>
+    part.toLowerCase() === query.toLowerCase() ? (
+      <span key={i} className="bg-yellow-200 dark:bg-yellow-500/40 rounded px-1">
+        {part}
+      </span>
+    ) : (
+      part
+    )
+  );
+};
 
   const handleShareClick = async (e: React.MouseEvent, chat: Chat) => {
     e.stopPropagation();
@@ -112,7 +130,9 @@ export const ChatHistory = ({
           <GiPin size={14} className="text-[#C5A059] rotate-45 shrink-0" />
         )}
 
-        <span className="text-sm truncate">{chat.title || "New chat"}</span>
+        <span className="text-sm truncate">
+  {highlightText(chat.title || "New chat", "search")}
+</span>
       </div>
 
       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
@@ -211,7 +231,7 @@ export const ChatHistory = ({
               <p className="text-sm text-slate-500 dark:text-slate-400">
                 <span className="block">
                   "
-                  <span className="font-semibold text-slate-800 dark:text-slate-200 truncate max-w-[220px] inline-block align-middle">
+                  <span className="font-semibold text-slate-800 dark:text-slate-200 truncate max-w-55 inline-block align-middle">
                     {deleteTarget.title || "New chat"}
                   </span>
                   "
@@ -233,8 +253,28 @@ export const ChatHistory = ({
               </button>
               <button
                 onClick={() => {
-                  onDeleteChat(deleteTarget.id);
+                  const chatToDelete = deleteTarget;
+
+                  setPendingDelete(chatToDelete);
                   setDeleteTarget(null);
+
+                  const timeout = setTimeout(() => {
+                    onDeleteChat(chatToDelete.id);
+                    setPendingDelete(null);
+                  }, 5000);
+
+                  toast.error(
+                    `"${chatToDelete.title || "New chat"}" устгах гэж байна`,
+                    {
+                      action: {
+                        label: "Undo",
+                        onClick: () => {
+                          clearTimeout(timeout);
+                          setPendingDelete(null);
+                        },
+                      },
+                    },
+                  );
                 }}
                 className="flex-1 px-4 py-2 rounded-lg text-sm font-medium bg-red-500 hover:bg-red-600 text-white transition-colors"
               >
@@ -278,7 +318,8 @@ export const ChatHistory = ({
               <button
                 onClick={() => {
                   onRenameChat(renameTarget.id, renameValue);
-                  setRenameTarget(null);
+                  (toast.success(`Чатын нэр "${renameValue}" боллоо!`),
+                    setRenameTarget(null));
                 }}
                 className="px-4 py-2 rounded-lg text-sm bg-blue-500 text-white hover:bg-blue-600"
               >
