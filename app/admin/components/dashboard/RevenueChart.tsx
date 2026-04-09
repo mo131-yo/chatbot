@@ -41,12 +41,13 @@ export default function RevenueChart() {
 
         if (!grouped[day]) grouped[day] = 0;
 
-      const chartData = Object.entries(grouped).map(([day, revenue]) => ({
-        day,
-        revenue,
-      }));
+        const chartData = Object.entries(grouped).map(([day, revenue]) => ({
+          day,
+          revenue,
+        }));
 
-      setData(chartData);
+        setData(chartData);
+      });
     } catch (err) {
       console.error("Revenue fetch error:", err);
     }
