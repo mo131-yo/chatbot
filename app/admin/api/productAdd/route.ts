@@ -6,13 +6,27 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(req: NextRequest) {
   try {
     const { userId } = await auth();
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!userId)
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await req.json();
-    const { name, description, price, imageUrl, category, brand, stock, storeName } = body;
+    const {
+      name,
+      description,
+      price,
+      imageUrl,
+      category,
+      brand,
+      stock,
+      size,
+      storeName,
+    } = body;
 
     if (!storeName) {
-      return NextResponse.json({ error: "Дэлгүүрийн нэр (storeName) байхгүй байна." }, { status: 400 });
+      return NextResponse.json(
+        { error: "Дэлгүүрийн нэр (storeName) байхгүй байна." },
+        { status: 400 },
+      );
     }
 
     const embeddings = new OpenAIEmbeddings({
@@ -20,11 +34,13 @@ export async function POST(req: NextRequest) {
       modelName: "text-embedding-3-small",
     });
 
-    const vector = await embeddings.embedQuery(`Бүтээгдэхүүн: ${name}. Тайлбар: ${description}`);
+    const vector = await embeddings.embedQuery(
+      `Бүтээгдэхүүн: ${name}. Тайлбар: ${description}`,
+    );
     const generatedId = `prod_${Date.now()}`;
 
     await index.namespace(storeName).upsert({
-      records: [  
+      records: [
         {
           id: generatedId,
           values: vector,
@@ -32,11 +48,12 @@ export async function POST(req: NextRequest) {
             name,
             price: Number(price),
             product_image_url: imageUrl,
-            description,
-            category,
-            brand,
+            description: description || "",
+            category: category || "",
+            brand: brand || "",
             stock: Number(stock),
-            store_name: storeName 
+            store_name: storeName,
+            size: size || 0,
           },
         },
       ],
