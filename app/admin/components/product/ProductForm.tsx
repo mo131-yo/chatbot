@@ -52,27 +52,25 @@ export default function ProductForm({
 
   const CATEGORY_DATA: Record<string, { brands: string[]; sizes: string[] }> = {
     Гутал: {
-      brands: ["Timberland"],
-      sizes: ["38", "39", "40", "41", "42", "43", "44", "45"],
-    },
-    Пүүз: {
       brands: [
+        // "Timberland",
         "Nike",
         "Adidas",
-        "Puma",
-        "Jordan",
-        "New Balance",
-        "Vans",
-        "Reebok",
-        "Yeezy",
-        "Nike Sportswear",
-        "Converse",
-        "ASICS",
-        "Under Armour",
-        "Balenciaga",
+        // "Puma",
+        // "Jordan",
+        // "New Balance",
+        // "Vans",
+        // "Reebok",
+        // "Yeezy",
+        // "Nike Sportswear",
+        // "Converse",
+        // "ASICS",
+        // "Under Armour",
+        // "Balenciaga",
       ],
-      sizes: ["36", "37", "38", "39", "40", "41", "42", "43"],
+      sizes: ["38", "39", "40", "41", "42", "43", "44", "45"],
     },
+
     Хувцас: {
       brands: [
         "Zara",

@@ -26,6 +26,7 @@ interface MessageListProps {
   onProductClick: (product: Product) => void;
   onBuy: (name: string, price: any) => void;
   messagesEndRef: React.RefObject<HTMLDivElement | null>;
+  storeName?: string;
 }
 
 /**
@@ -101,6 +102,7 @@ export const MessageList: React.FC<MessageListProps> = ({
   onProductClick,
   onBuy,
   messagesEndRef,
+  storeName,
 }) => {
   const [addressFormProduct, setAddressFormProduct] = useState<any>(null);
   const [activePayment, setActivePayment] = useState<any>(null);
@@ -123,6 +125,7 @@ export const MessageList: React.FC<MessageListProps> = ({
         orderId: product.id || `ORD-${Date.now()}`,
         productName: product.name,
         image: product.image,
+        storeName: storeName || product.storeName || "Манай дэлгүүр",
       });
     }, 300);
   };
@@ -146,22 +149,32 @@ export const MessageList: React.FC<MessageListProps> = ({
       <div className="max-w-3xl mx-auto pb-20 flex flex-col space-y-8">
         {messages.map((message: any, index: number) => {
           const isUser = message.role?.toLowerCase() === "user";
-          
+
           // Мессеж бүрээс бараа болон төлбөрийн мэдээллийг салгах
-          const products = !isUser ? extractProducts(message.content || "") : [];
-          const paymentTrigger = !isUser ? extractPaymentTrigger(message.content || "") : null;
-          
+          const products = !isUser
+            ? extractProducts(message.content || "")
+            : [];
+          const paymentTrigger = !isUser
+            ? extractPaymentTrigger(message.content || "")
+            : null;
+
           const cleanedContent = paymentTrigger
             ? cleanPaymentTrigger(message.content || "")
             : message.content || "";
-            
+
           const rawText = removeImageMarkdown(cleanedContent);
           const hasText = rawText.length > 0;
-          
-          const isVisual = !isUser && isVisualSearchReply(messages, index) && products.length > 0;
+
+          const isVisual =
+            !isUser &&
+            isVisualSearchReply(messages, index) &&
+            products.length > 0;
 
           const displayImage = message.imagePreview || message.image;
-          const isActualImage = displayImage && (displayImage.startsWith("data:image") || displayImage.startsWith("http"));
+          const isActualImage =
+            displayImage &&
+            (displayImage.startsWith("data:image") ||
+              displayImage.startsWith("http"));
 
           return (
             <motion.div
@@ -182,7 +195,14 @@ export const MessageList: React.FC<MessageListProps> = ({
                   )}
                   {hasText && (
                     <div className="px-5 py-3 rounded-[1.5rem] rounded-tr-sm bg-[#007AFF] text-white font-medium">
-                      <ReactMarkdown components={{ img: () => null, p: ({ children }) => <p className="mb-0">{children}</p> }}>
+                      <ReactMarkdown
+                        components={{
+                          img: () => null,
+                          p: ({ children }) => (
+                            <p className="mb-0">{children}</p>
+                          ),
+                        }}
+                      >
                         {rawText}
                       </ReactMarkdown>
                     </div>
@@ -194,7 +214,14 @@ export const MessageList: React.FC<MessageListProps> = ({
                   {hasText && (
                     <div className="max-w-[85%] px-5 py-3 rounded-[1.8rem] rounded-tl-sm bg-white dark:bg-[#1A1A1A] border border-slate-100 dark:border-white/5 shadow-sm">
                       <div className="prose dark:prose-invert max-w-none text-sm md:text-base leading-relaxed">
-                        <ReactMarkdown components={{ img: () => null, p: ({ children }) => <p className="mb-0">{children}</p> }}>
+                        <ReactMarkdown
+                          components={{
+                            img: () => null,
+                            p: ({ children }) => (
+                              <p className="mb-0">{children}</p>
+                            ),
+                          }}
+                        >
                           {rawText}
                         </ReactMarkdown>
                       </div>
@@ -202,11 +229,14 @@ export const MessageList: React.FC<MessageListProps> = ({
                       {paymentTrigger && (
                         <button
                           onClick={() => {
-                            const match = products.find((p) => p.name === paymentTrigger.name) || products[0];
+                            const match =
+                              products.find(
+                                (p) => p.name === paymentTrigger.name,
+                              ) || products[0];
                             setAddressFormProduct({
                               ...paymentTrigger,
                               image: match?.image || "",
-                              id: match?.id || `trig-${Date.now()}`
+                              id: match?.id || `trig-${Date.now()}`,
                             });
                           }}
                           className="mt-4 px-6 py-2.5 bg-[#C5A059] hover:bg-[#d4b476] text-black font-bold rounded-xl transition-all text-sm flex items-center gap-2"
