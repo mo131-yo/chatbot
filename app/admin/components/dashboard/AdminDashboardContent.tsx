@@ -13,45 +13,34 @@ export default function AdminDashboardContent({
   userId: string 
 }) {
   const router = useRouter();
-
-  const storeName = useAppStore((state) => state.storeName);
-  const setStoreName = useAppStore((state) => state.setStoreName);
+  const { storeName, setStoreName, isLoading, setIsLoading } = useAppStore();
 
   const [tempName, setTempName] = useState("");
   const [isSettingUp, setIsSettingUp] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
 
   useEffect(() => {
-    if (initialStoreName && !storeName) {
-      setStoreName(initialStoreName);
-    }
-  }, [initialStoreName, setStoreName, storeName]);
-
-  const fetchProducts = async () => {
-    if (!storeName) return;
-    try {
-      const res = await fetch(`/admin/api/productAllGet?storeName=${encodeURIComponent(storeName)}`);
-      
-      if (!res.ok) {
-        const errorText = await res.text();
-        console.error("Серверээс алдаа ирлээ:", errorText);
-        return;
+    const checkStore = async () => {
+      if (initialStoreName) {
+        setStoreName(initialStoreName);
+        setIsLoading(false);
+      } else {
+        try {
+          const res = await fetch("/admin/api/get-store");
+          const data = await res.json();
+          if (data.success && data.storeName) {
+            setStoreName(data.storeName);
+          }
+        } catch (e) {
+          console.error("Store ачаалахад алдаа гарлаа:", e);
+        } finally {
+          setIsLoading(false);
+        }
       }
-
-      const data = await res.json();
-      if (data.success) {
-        setProducts(data.products);
-      }
-    } catch (error) {
-      console.error("Error fetching products:", error);
-    }
-  };
-
-  useEffect(() => {
-    if (storeName) {
-      fetchProducts();
-    }
-  }, [storeName]);
+    };
+    
+    checkStore();
+  }, [initialStoreName, setStoreName, setIsLoading]);
 
   const handleSetupStore = async () => {
     if (!tempName.trim()) return;
@@ -77,6 +66,33 @@ export default function AdminDashboardContent({
       setIsSettingUp(false);
     }
   };
+
+  const fetchProducts = async () => {
+    if (!storeName) return;
+    try {
+      const res = await fetch(`/admin/api/productAllGet?storeName=${encodeURIComponent(storeName)}`);
+      const data = await res.json();
+      if (data.success) {
+        setProducts(data.products);
+      }
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (storeName) {
+      fetchProducts();
+    }
+  }, [storeName]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   if (!storeName) {
     return (

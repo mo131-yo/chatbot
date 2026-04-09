@@ -7,9 +7,10 @@ interface StoreState {
   setIsLoading: (status: boolean) => void;
 }
 
+
 export const useAppStore = create<StoreState>((set) => ({
   storeName: null,
-  isLoading: false,
-  setStoreName: (name) => set({ storeName: name }),
+  isLoading: true,
+  setStoreName: (name) => set({ storeName: name, isLoading: false }),
   setIsLoading: (status) => set({ isLoading: status }),
 }));
