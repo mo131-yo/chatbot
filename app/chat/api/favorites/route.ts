@@ -30,33 +30,33 @@ export async function POST(req: Request) {
     const safeName = name || "Product";
     const productSlug = `${safeName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${Date.now()}`;
 
-const product = await prisma.product.upsert({
-  where: { id: productId },
-  update: {},
-  create: {
-    id: productId,
-    name: safeName,
-    slug: productSlug,
-    price: parseFloat(price) || 0,
-    images: image ? [image] : [],
-    description: `AI-аас санал болгосон: ${safeName}`,
-    status: "AVAILABLE",
-    brand: "AI",
-    storeId: storeId || null,
-    subcategory: "AI_Suggested", 
+    await prisma.category.upsert({
+      where: { id: "ai-suggested-category" },
+      update: {},
+      create: {
+        id: "ai-suggested-category",
+        name: "AI_Suggested",
+        slug: "ai-suggested",
+      },
+    });
 
-    category: {
-      connectOrCreate: {
-        where: { id: "ai-suggested-category" },
-        create: { 
-          id: "ai-suggested-category",
-          name: "AI_Suggested",
-          slug: "ai-suggested",
-        }
-      }
-    }
-  },
-});
+    const product = await prisma.product.upsert({
+      where: { id: productId },
+      update: {},
+      create: {
+        id: productId,
+        name: safeName,
+        slug: productSlug,
+        price: parseFloat(String(price)) || 0,
+        images: image ? [image] : [],
+        description: `AI-аас санал болгосон: ${safeName}`,
+        status: "AVAILABLE",
+        brand: "AI",
+        subcategory: "AI_Suggested",
+        categoryId: "ai-suggested-category",
+      },
+    });
+
     const existingFavorite = await prisma.favorite.findUnique({
       where: {
         userId_productId: {

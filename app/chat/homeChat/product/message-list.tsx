@@ -1,12 +1,12 @@
 "use client";
- 
+
 import React, { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { motion, AnimatePresence } from "framer-motion";
 import PulsatingDots from "@/lib/utils/loading/pulsating-loader";
 import { ProductCarousel } from "@/app/chat/products/scrollEffect/ProductCarousel";
 import OrderAddress from "../../payment/components/form";
- 
+
 interface Product {
   id: string;
   name: string;
@@ -15,7 +15,7 @@ interface Product {
   description: string;
   storeId?: string;
 }
- 
+
 interface MessageListProps {
   messages: any[];
   isTyping: boolean;
@@ -23,7 +23,7 @@ interface MessageListProps {
   onBuy: (name: string, price: any) => void;
   messagesEndRef: React.RefObject<HTMLDivElement | null>;
 }
- 
+
 const removeImageMarkdown = (content: string): string => {
   if (!content) return "";
   return content
@@ -31,17 +31,17 @@ const removeImageMarkdown = (content: string): string => {
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 };
- 
+
 const extractProducts = (content: string): Product[] => {
   const imgRegex = /!\[([^\]]+)\]\(([^)]+)\)/g;
   const products: Product[] = [];
   let match: RegExpExecArray | null;
- 
+
   while ((match = imgRegex.exec(content)) !== null) {
     const altText = match[1];
     const imageSrc = match[2];
-    const parts = altText.split(",").map((p) => p.trim());
- 
+    const parts = altText.split("|").map((p) => p.trim());
+
     if (parts.length >= 2) {
       products.push({
         id: parts[3] || `temp-${Math.random().toString(36).slice(2, 9)}`,
@@ -55,7 +55,7 @@ const extractProducts = (content: string): Product[] => {
   }
   return products;
 };
- 
+
 const extractPaymentTrigger = (content: string) => {
   const match = content.match(/PAYMENT_TRIGGER:(\{[^}]+\})/);
   if (!match) return null;
@@ -65,11 +65,11 @@ const extractPaymentTrigger = (content: string) => {
     return null;
   }
 };
- 
+
 const cleanPaymentTrigger = (content: string): string => {
   return content.replace(/PAYMENT_TRIGGER:\{[^}]+\}/g, "").trim();
 };
- 
+
 function isVisualSearchReply(messages: any[], index: number): boolean {
   if (index === 0) return false;
   const prev = messages[index - 1];
@@ -78,7 +78,7 @@ function isVisualSearchReply(messages: any[], index: number): boolean {
     (!!prev?.imagePreview || !!prev?.image)
   );
 }
- 
+
 export const MessageList: React.FC<MessageListProps> = ({
   messages,
   isTyping,
@@ -87,7 +87,7 @@ export const MessageList: React.FC<MessageListProps> = ({
   messagesEndRef,
 }) => {
   const [orderProduct, setOrderProduct] = useState<any>(null);
- 
+
   return (
     <>
       <div className="max-w-3xl mx-auto pb-20 flex flex-col space-y-8">
@@ -96,29 +96,29 @@ export const MessageList: React.FC<MessageListProps> = ({
           const products = !isUser
             ? extractProducts(message.content || "")
             : [];
- 
+
           const displayImage = message.imagePreview || message.image;
           const isActualImage =
             displayImage &&
             (displayImage.startsWith("data:image") ||
               displayImage.startsWith("http") ||
               displayImage.startsWith("/"));
- 
+
           const paymentTrigger = !isUser
             ? extractPaymentTrigger(message.content || "")
             : null;
- 
+
           const cleanedContent = paymentTrigger
             ? cleanPaymentTrigger(message.content || "")
             : message.content || "";
- 
+
           const rawText = removeImageMarkdown(cleanedContent);
           const hasText = rawText.length > 0;
           const isVisual =
             !isUser &&
             isVisualSearchReply(messages, index) &&
             products.length > 0;
- 
+
           return (
             <motion.div
               key={`msg-${index}`}
@@ -141,7 +141,7 @@ export const MessageList: React.FC<MessageListProps> = ({
                       <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent pointer-events-none" />
                     </div>
                   )}
- 
+
                   {hasText && (
                     <div className="px-5 py-3 rounded-[1.5rem] rounded-tr-sm bg-[#007AFF] text-white shadow-sm font-medium">
                       <ReactMarkdown
@@ -173,7 +173,7 @@ export const MessageList: React.FC<MessageListProps> = ({
                           {rawText}
                         </ReactMarkdown>
                       </div>
- 
+
                       {paymentTrigger && (
                         <button
                           onClick={() => setOrderProduct(paymentTrigger)}
@@ -184,7 +184,7 @@ export const MessageList: React.FC<MessageListProps> = ({
                       )}
                     </div>
                   )}
- 
+
                   {products.length > 0 && (
                     <div className="w-full mt-2">
                       {isVisual && (
@@ -195,7 +195,7 @@ export const MessageList: React.FC<MessageListProps> = ({
                           </span>
                         </div>
                       )}
- 
+
                       <div className="w-full overflow-visible">
                         <ProductCarousel
                           products={products}
@@ -211,7 +211,7 @@ export const MessageList: React.FC<MessageListProps> = ({
             </motion.div>
           );
         })}
- 
+
         <AnimatePresence mode="wait">
           {isTyping && (
             <motion.div
@@ -231,7 +231,7 @@ export const MessageList: React.FC<MessageListProps> = ({
         </AnimatePresence>
         <div ref={messagesEndRef} className="h-2 w-full" />
       </div>
- 
+
       <AnimatePresence>
         {orderProduct && (
           <OrderAddress
