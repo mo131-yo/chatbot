@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { FaShoppingCart, FaHeart } from "react-icons/fa";
-import { LogoTemp, MenuToggle, NavActions } from "./components";
+import { NavActions } from "./components";
 import { useCart } from "@/app/context/CartContext";
+import { MenuToggle } from "./components";
 
 export default function Header({
   toggleSidebar,
@@ -13,7 +14,6 @@ export default function Header({
   const { cartCount, setIsCartOpen } = useCart();
   const [favoriteCount, setFavoriteCount] = useState(0);
 
-  // Баазаас бодит тоог татах функц
   const refreshCount = async () => {
     try {
       const res = await fetch("/chat/api/favorites");
@@ -27,15 +27,12 @@ export default function Header({
   };
 
   useEffect(() => {
-    // Анх ачаалахад тоог татах
     refreshCount();
 
     const handleInstantUpdate = (e: any) => {
-      // Runtime error-оос сэргийлэх (Optional chaining ашиглав)
       if (e?.detail && typeof e.detail.count === "number") {
         setFavoriteCount(e.detail.count);
       } else {
-        // Хэрэв count ирээгүй бол баазаас дахин асууна
         refreshCount();
       }
     };
@@ -49,7 +46,6 @@ export default function Header({
     <header className="sticky top-0 z-50 flex items-center justify-between px-6 py-4 border-b border-white/6 bg-[#0D0D0D] backdrop-blur-md">
       <div className="flex items-center gap-4">
         <MenuToggle onClick={toggleSidebar} />
-        <LogoTemp />
       </div>
 
       <div className="flex items-center gap-3">
