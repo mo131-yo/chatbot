@@ -3,17 +3,17 @@ import OpenAI from "openai";
 import { auth } from "@clerk/nextjs/server";
 import { index } from "@/lib/api/pinecone";
 import { prisma } from "@/lib/prisma";
- 
+
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_KEY,
   timeout: 30000,
 });
- 
+
 type IncomingMessage = {
   role: "USER" | "ASSISTANT" | "SYSTEM" | "user" | "assistant" | "system";
   content: string;
 };
- 
+
 function normalizeOpenAIRole(
   role: IncomingMessage["role"],
 ): "user" | "assistant" | "system" {
@@ -21,40 +21,40 @@ function normalizeOpenAIRole(
   if (r === "user" || r === "assistant" || r === "system") return r as any;
   return "user";
 }
- 
+
 function extractMaxPrice(text: string): number | null {
   const priceRegex =
     /(\d+(?:\.\d+)?)\s*(k|к|мянган|мян|төгрөг|төг|t|₮|tg|tugrug|say|сая|zuu|зуу)/gi;
   const matches = [...text.matchAll(priceRegex)];
   if (matches.length === 0) return null;
- 
+
   const lastMatch = matches[matches.length - 1];
   let value = parseFloat(lastMatch[1]);
   const unit = (lastMatch[2] || "").toLowerCase();
- 
+
   if (["k", "к", "мянган", "мян"].includes(unit)) value *= 1000;
   else if (["say", "сая"].includes(unit)) value *= 1000000;
   else if (value < 1000) value *= 1000;
- 
+
   return Number.isFinite(value) ? value : null;
 }
- 
+
 export async function POST(req: Request) {
   try {
     const { userId: clerkUserId } = await auth();
     const body = await req.json();
- 
+
     const messages = body?.messages as IncomingMessage[] | undefined;
     const chatId = body?.chatId as string | undefined;
     const fallbackUserId = body?.userId as string | undefined;
- 
+
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return NextResponse.json(
         { error: "Messages array is required" },
         { status: 400 },
       );
     }
- 
+
     const lastUserMessage = messages[messages.length - 1]?.content?.trim();
     if (!lastUserMessage) {
       return NextResponse.json(
@@ -62,7 +62,7 @@ export async function POST(req: Request) {
         { status: 400 },
       );
     }
- 
+
     const priceRegex = /(\d+(?:\.\d+)?)\s*(k|к|мянган|мян|төг|₮)/gi;
     const match = priceRegex.exec(lastUserMessage);
     let maxPrice: number | undefined;
@@ -74,58 +74,110 @@ export async function POST(req: Request) {
       )
         maxPrice *= 1000;
     }
- 
+
+    // let context = "";
+    // try {
+    //   const embedding = await openai.embeddings.create({
+    //     model: "text-embedding-3-small",
+    //     input: lastUserMessage,
+    //   });
+
+    //   const namespaces = [
+    //     "",
+    //     "most_used_beauty_cosmetics-namespace",
+    //     "beauty-namespace",
+    //     "fashion-namespace",
+    //     "shoes-namespace",
+    //     "electronics-namespace",
+    //     "books-namespace",
+    //     "user_3BSwyjfHAMPysPTaXqJ5CkAIGfM",
+    //   ];
+
+    //   const queryPromises = namespaces.map((ns) =>
+    //     index.namespace(ns).query({
+    //       vector: embedding.data[0].embedding,
+    //       topK: 8,
+    //       includeMetadata: true,
+    //       filter: maxPrice
+    //         ? { price: { $lte: maxPrice } }
+    //         : undefined,
+    //     }),
+    //   );
+
+    //   const queryResults = await Promise.all(queryPromises);
+    //   const allMatches = queryResults.flatMap((res) => res.matches || []);
+
+    //   const topMatches = allMatches
+    //     .sort((a, b) => (b.score || 0) - (a.score || 0))
+    //     .slice(0, 10);
+
+    //   context = topMatches
+    //     .map(
+    //       (m) =>
+    //         `БҮТЭЭГДЭХҮҮН: ${m.metadata?.name || "Нэргүй"}
+    //         ҮНЭ: ${m.metadata?.price}₮
+    //         ЗУРАГ: ${m.metadata?.product_image_url || m.metadata?.image_url || m.metadata?.image || ""}
+    //         ТАЙЛБАР: ${m.metadata?.description || "Тайлбар байхгүй"}
+    //         ID: ${m.id}
+    //         STORE_ID: ${m.metadata?.store_id || "store-001"}`,
+    //     )
+    //     .join("\n---\n");
+    // } catch (err) {
+    //   console.error("Vector Search Error:", err);
+    // }
     let context = "";
     try {
       const embedding = await openai.embeddings.create({
         model: "text-embedding-3-small",
         input: lastUserMessage,
       });
- 
+
       const namespaces = [
         "",
         "most_used_beauty_cosmetics-namespace",
         "beauty-namespace",
         "fashion-namespace",
         "shoes-namespace",
+        "shoes-namespace",
         "electronics-namespace",
-        "books-namespace",
+        clerkUserId,
         "user_3BSwyjfHAMPysPTaXqJ5CkAIGfM",
-      ];
- 
+      ].filter(Boolean) as string[];
+
       const queryPromises = namespaces.map((ns) =>
         index.namespace(ns).query({
           vector: embedding.data[0].embedding,
-          topK: 8,
+          topK: 10,
           includeMetadata: true,
-          filter: maxPrice
-            ? { formatted_price: { $lte: maxPrice } }
-            : undefined,
+
+          filter: maxPrice ? { price: { $lte: maxPrice } } : undefined,
         }),
       );
- 
+
       const queryResults = await Promise.all(queryPromises);
       const allMatches = queryResults.flatMap((res) => res.matches || []);
- 
+
       const topMatches = allMatches
         .sort((a, b) => (b.score || 0) - (a.score || 0))
-        .slice(0, 10);
- 
+        .slice(0, 15);
+
       context = topMatches
         .map(
           (m) =>
-            `БҮТЭЭГДЭХҮҮН: ${m.metadata?.product_name || m.metadata?.name || "Нэргүй"}
-            ҮНЭ: ${m.metadata?.formatted_price || m.metadata?.price}₮
-            ЗУРАГ: ${m.metadata?.product_image_url || m.metadata?.image_url || m.metadata?.image || ""}
+            `БҮТЭЭГДЭХҮҮН: ${m.metadata?.name || "Нэргүй"}
+            ҮНЭ: ${m.metadata?.price || null}₮
+            ЗУРАГ: ${m.metadata?.product_image_url || m.metadata?.image_url || ""}
             ТАЙЛБАР: ${m.metadata?.description || "Тайлбар байхгүй"}
             ID: ${m.id}
             STORE_ID: ${m.metadata?.store_id || "store-001"}`,
         )
         .join("\n---\n");
+
+      console.log("Олдсон барааны тоо:", topMatches.length);
     } catch (err) {
       console.error("Vector Search Error:", err);
     }
- 
+
     const chatResponse = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
@@ -166,17 +218,17 @@ export async function POST(req: Request) {
       presence_penalty: 0.6,
       frequency_penalty: 0.5,
     });
- 
+
     const aiReply =
       chatResponse.choices[0]?.message?.content?.trim() || "Хариу олдсонгүй.";
- 
+
     const effectiveUserId = clerkUserId || fallbackUserId;
     const isGuestSession = chatId?.startsWith("guest_");
- 
+
     if (effectiveUserId && chatId && !isGuestSession) {
       try {
         const stringChatId = String(chatId);
- 
+
         const dbUser = await prisma.user.upsert({
           where: { clerkUserId: effectiveUserId },
           update: {},
@@ -187,7 +239,7 @@ export async function POST(req: Request) {
             name: "User",
           },
         });
- 
+
         const session = await prisma.chatSession.upsert({
           where: { id: stringChatId },
           update: {
@@ -200,7 +252,7 @@ export async function POST(req: Request) {
             title: lastUserMessage.slice(0, 40),
           },
         });
- 
+
         await prisma.chatMessage.createMany({
           data: [
             {
@@ -219,11 +271,11 @@ export async function POST(req: Request) {
         console.error("PRISMA_SAVE_ERROR:", dbError);
       }
     }
- 
+
     return NextResponse.json({ reply: aiReply });
   } catch (error: any) {
     console.error("API_GLOBAL_ERROR:", error);
- 
+
     return NextResponse.json(
       {
         error: "Internal Server Error",
