@@ -9,7 +9,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { GiPin } from "react-icons/gi";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { toast } from "sonner";
 
 interface Chat {
@@ -33,102 +33,48 @@ interface ChatHistoryProps {
 export const ChatHistory = ({
   history = [],
   onSelectChat,
-  isLoading,
   onDeleteChat,
   onRenameChat,
   onPinChat,
-  onShareChat,
   activeChatId,
   collapsed = false,
 }: ChatHistoryProps) => {
   const [deleteTarget, setDeleteTarget] = useState<Chat | null>(null);
-  const [filteredChats, setFilteredChats] = useState<any[]>([]);
-  const [selectedIndex, setSelectedIndex] = useState(0);
   const [renameTarget, setRenameTarget] = useState<Chat | null>(null);
   const [renameValue, setRenameValue] = useState("");
-  const [pendingDelete, setPendingDelete] = useState<any>([]);
   const [search, setSearch] = useState("");
-  const [pendingDelete, setPendingDelete] = useState<any>(null);
-
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [isRecentOpen, setIsRecentOpen] = useState(true);
 
-  useEffect(() => {
-    setFilteredChats(history);
-  }, [history]);
+  // Filter out chats that are in the "Undo" deletion state
+  const visibleHistory = useMemo(() => 
+    history.filter((chat) => chat.id !== pendingDeleteId), 
+  [history, pendingDeleteId]);
 
-  useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "ArrowDown") {
-        setSelectedIndex((prev) =>
-          Math.min(prev + 1, filteredChats.length - 1),
-        );
-      }
-      if (e.key === "ArrowUp") {
-        setSelectedIndex((prev) => Math.max(prev - 1, 0));
-      }
-      if (e.key === "Enter") {
-        const chat = filteredChats[selectedIndex];
-        if (chat) onSelectChat(chat.id);
-      }
-    };
+  // Derived state for pinned/recent
+  const pinnedChats = visibleHistory.filter((chat) => chat?.isPinned);
+  const recentChats = visibleHistory.filter((chat) => !chat?.isPinned);
 
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, [filteredChats, selectedIndex]);
-
-  if (!history || !Array.isArray(history)) {
-    return (
-      <div className="flex-1 px-4 py-6 text-xs text-slate-500 italic">
-        Түүх байхгүй
-      </div>
+  // Search logic
+  const searchResults = useMemo(() => {
+    if (!search.trim()) return [];
+    return history.filter((chat) =>
+      chat.title?.toLowerCase().includes(search.toLowerCase())
     );
-  }
+  }, [search, history]);
 
-  const visibleChats = filteredChats.filter(
-    (chat) => chat.id !== pendingDelete?.id,
-  );
-  const pinnedChats = visibleChats.filter((chat) => chat?.isPinned);
-  const recentChats = visibleChats.filter((chat) => !chat?.isPinned);
   const highlightText = (text: string, query: string) => {
     if (!query) return text;
-
     const parts = text.split(new RegExp(`(${query})`, "gi"));
-
     return parts.map((part, i) =>
       part.toLowerCase() === query.toLowerCase() ? (
-        <span
-          key={i}
-          className="bg-yellow-200 dark:bg-yellow-500/40 rounded px-1"
-        >
+        <span key={i} className="bg-yellow-200 dark:bg-yellow-500/40 rounded px-0.5">
           {part}
         </span>
       ) : (
         part
-      ),
+      )
     );
-  };
-
-  const handleShareClick = async (e: React.MouseEvent, chat: Chat) => {
-    e.stopPropagation();
-
-    const shareData = {
-      title: "AI Chat Хуваалцах",
-      text: `"${chat.title || "Шинэ чат"}" яриаг үзээрэй.`,
-      url: `${window.location.origin}/chat/${chat.id}`,
-    };
-
-    try {
-      if (navigator.share) {
-        await navigator.share(shareData);
-      } else {
-        await navigator.clipboard.writeText(shareData.url);
-        alert("Холбоосыг санамжинд (clipboard) хууллаа!");
-      }
-      onShareChat(chat.id);
-    } catch (error: any) {
-      if (error.name === "AbortError") return;
-      console.error("Хуваалцахад алдаа гарлаа:", error);
-    }
   };
 
   const renderChatItem = (chat: Chat) => (
@@ -137,39 +83,20 @@ export const ChatHistory = ({
       className={`
       group relative flex items-center
       ${collapsed ? "justify-center px-2" : "justify-between px-3"}
-      py-2 rounded-xl cursor-pointer
-      transition-all duration-200 ease-out
-      active:scale-[0.97]
-
-      ${
-        activeChatId === chat.id
-          ? "bg-black/10 dark:bg-white/10"
-          : "hover:bg-black/5 dark:hover:bg-white/5"
-      }
+      py-2 rounded-xl cursor-pointer transition-all duration-200
+      ${activeChatId === chat.id ? "bg-black/10 dark:bg-white/10" : "hover:bg-black/5 dark:hover:bg-white/5"}
     `}
     >
-      {/* 🔥 CLICKABLE AREA */}
       <div
         onClick={() => onSelectChat(chat.id)}
-        className={`flex items-center min-w-0 flex-1
-        ${collapsed ? "justify-center" : "gap-2"}
-      `}
+        className={`flex items-center min-w-0 flex-1 ${collapsed ? "justify-center" : "gap-2"}`}
       >
-        {collapsed ? (
-          chat.isPinned ? (
-            <GiPin size={16} className="text-[#C5A059] rotate-45" />
-          ) : (
-            <span className="text-base">💬</span>
-          )
+        {chat.isPinned ? (
+          <GiPin size={16} className="text-[#C5A059] rotate-45 shrink-0" />
         ) : (
-          <>
-            {chat.isPinned && (
-              <GiPin size={14} className="text-[#C5A059] rotate-45 shrink-0" />
-            )}
-          </>
+          collapsed && <span className="text-base">💬</span>
         )}
 
-        {/* 📝 TEXT (expanded үед л харагдана) */}
         {!collapsed && (
           <span className="text-sm truncate">
             {highlightText(chat.title || "New chat", search)}
@@ -177,19 +104,14 @@ export const ChatHistory = ({
         )}
       </div>
 
-      {/* 🔥 ACTION BUTTONS (expanded үед л) */}
       {!collapsed && (
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onPinChat(chat.id);
-            }}
+            onClick={(e) => { e.stopPropagation(); onPinChat(chat.id); }}
             className="p-1 rounded hover:bg-black/10 dark:hover:bg-white/10"
           >
             {chat.isPinned ? <PinOff size={14} /> : <Pin size={14} />}
           </button>
-
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -200,12 +122,8 @@ export const ChatHistory = ({
           >
             <Edit2 size={14} />
           </button>
-
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setDeleteTarget(chat);
-            }}
+            onClick={(e) => { e.stopPropagation(); setDeleteTarget(chat); }}
             className="p-1 rounded hover:bg-red-500/20 text-red-400"
           >
             <Trash2 size={14} />
@@ -213,22 +131,8 @@ export const ChatHistory = ({
         </div>
       )}
 
-      {/* 🔥 TOOLTIP (collapsed үед) */}
       {collapsed && (
-        <div
-          className="
-      pointer-events-none
-      absolute left-full ml-3 top-1/2 -translate-y-1/2
-      bg-black/90 text-white
-      dark:bg-white dark:text-black
-      px-3 py-2 rounded-lg
-      opacity-0 translate-x-[-6px]
-      group-hover:opacity-100 group-hover:translate-x-0
-      transition-all duration-200
-      z-[9999]
-      w-max max-w-[220px]
-    "
-        >
+        <div className="pointer-events-none absolute left-full ml-3 top-1/2 -translate-y-1/2 bg-black text-white dark:bg-white dark:text-black px-3 py-2 rounded-lg opacity-0 translate-x-[-6px] group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200 z-[9999] w-max max-w-[220px]">
           {chat.title || "New chat"}
         </div>
       )}
@@ -238,42 +142,24 @@ export const ChatHistory = ({
   return (
     <>
       {!collapsed && (
-        <div className="px-3 mb-3">
+        <div className="px-3 mb-3 relative">
           <input
             type="text"
             placeholder="Чат хайх..."
             value={search}
-            onChange={(e) => {
-              const value = e.target.value;
-              setSearch(value);
-
-              if (!value.trim()) {
-                setFilteredChats([]);
-                return;
-              }
-
-              const filtered = history.filter((chat) =>
-                chat.title?.toLowerCase().includes(value.toLowerCase()),
-              );
-
-              setFilteredChats(filtered);
-            }}
-            className="w-full px-3 py-2 text-sm rounded-lg 
-  bg-black/5 dark:bg-white/5 
-  focus:outline-none"
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full px-3 py-2 text-sm rounded-lg bg-black/5 dark:bg-white/5 focus:outline-none"
           />
-          {search && filteredChats.length > 0 && (
-            <div className="mt-2 bg-white dark:bg-slate-900 rounded-lg shadow-lg border border-black/10 dark:border-white/10 max-h-60 overflow-y-auto">
-              {filteredChats.map((chat) => (
+          {search && searchResults.length > 0 && (
+            <div className="absolute left-3 right-3 mt-1 z-50 bg-white dark:bg-slate-900 rounded-lg shadow-xl border border-black/10 dark:border-white/10 max-h-60 overflow-y-auto">
+              {searchResults.map((chat) => (
                 <div
                   key={chat.id}
                   onClick={() => {
                     onSelectChat(chat.id);
                     setSearch("");
-                    setFilteredChats([]);
                   }}
-                  className="px-3 py-2 text-sm cursor-pointer
-    hover:bg-black/5 dark:hover:bg-white/10 transition"
+                  className="px-3 py-2 text-sm cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 transition"
                 >
                   {chat.title}
                 </div>
@@ -282,117 +168,89 @@ export const ChatHistory = ({
           )}
         </div>
       )}
-      <div className="flex-1 overflow-y-auto px-2 py-3 scrollbar-thin scrollbar-thumb-white/10 ">
+
+      <div className="flex-1 overflow-y-auto px-2 py-3 scrollbar-none">
+        {/* PINNED SECTION */}
         {pinnedChats.length > 0 && (
-          <div className="space-y-1">
-            {!collapsed && (
-              <p className="px-3 text-xs text-gray-500 mb-2">Pinned</p>
-            )}
-            {pinnedChats.map((chat) => renderChatItem(chat))}
-            <div className="h-px bg-black/5 dark:bg-white/5 mx-3 my-4" />
+          <div className="mb-4">
+            {!collapsed && <p className="px-3 text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider">Pinned</p>}
+            {pinnedChats.map(renderChatItem)}
+            {!collapsed && <div className="h-px bg-black/5 dark:bg-white/5 mx-3 mt-4" />}
           </div>
         )}
 
-        <div className="space-y-1">
+        {/* RECENT SECTION */}
+        <div>
           {!collapsed && (
-            <p className="px-3 text-xs text-gray-500 mt-4 mb-2">Recent</p>
+            <button 
+              onClick={() => setIsRecentOpen(!isRecentOpen)}
+              className="w-full flex items-center justify-between px-3 text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-300"
+            >
+              <span>Recent</span>
+              {isRecentOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+            </button>
           )}
-          {recentChats.length > 0
-            ? recentChats.map((chat) => renderChatItem(chat))
-            : pinnedChats.length === 0 && (
-                <p className="px-3 py-2 text-xs text-slate-500 italic">
-                  No history yet
-                </p>
-              )}
-            </span>
-            <span>Recent</span>
-          </button>
 
-          <div
-            className={`overflow-hidden transition-all duration-300 ease-in-out ${
-              isRecentOpen ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0"
-            }`}
-          >
-            {recentChats.length > 0
-              ? recentChats.map((chat) => renderChatItem(chat))
-              : pinnedChats.length === 0 && (
-                  <p className="px-3 py-2 text-xs text-slate-500 italic text-center">
-                    No history yet
-                  </p>
-                )}
+          <div className={`space-y-1 transition-all duration-300 ${isRecentOpen ? "opacity-100" : "hidden"}`}>
+            {recentChats.length > 0 ? (
+              recentChats.map(renderChatItem)
+            ) : (
+              pinnedChats.length === 0 && (
+                <p className="px-3 py-2 text-xs text-slate-500 italic text-center">No history yet</p>
+              )
+            )}
           </div>
         </div>
       </div>
 
+      {/* DELETE MODAL */}
       {deleteTarget && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
-          onClick={() => setDeleteTarget(null)}
-        >
-          <div
-            className="bg-white dark:bg-[#121212] rounded-2xl border border-white/10 shadow-2xl w-full max-w-xs p-6 flex flex-col items-center gap-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center">
-              <Trash2 size={24} className="text-red-500" />
-            </div>
-            <div className="text-center">
-              <h2 className="text-lg font-bold">Устгах уу?</h2>
-              <p className="text-sm text-slate-400 mt-1">
-                "{deleteTarget.title}" чатыг устгахдаа итгэлтэй байна уу?
-              </p>
-            </div>
-            <div className="flex gap-3 w-full mt-2">
-              <button
-                onClick={() => setDeleteTarget(null)}
-                className="flex-1 py-2.5 rounded-xl border border-white/10 text-sm font-medium hover:bg-white/5 transition-colors"
-              >
-                Болих
-              </button>
-              <button
-                onClick={() => {
-                  const chatToDelete = deleteTarget;
-                  setPendingDelete(chatToDelete);
-                  setDeleteTarget(null);
-                  const timeout = setTimeout(() => {
-                    onDeleteChat(chatToDelete.id);
-                    setPendingDelete(null);
-                  }, 2000);
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setDeleteTarget(null)}>
+          <div className="bg-white dark:bg-[#121212] rounded-2xl border border-white/10 shadow-2xl w-full max-w-xs p-6" onClick={(e) => e.stopPropagation()}>
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center">
+                <Trash2 size={24} className="text-red-500" />
+              </div>
+              <div className="text-center">
+                <h2 className="text-lg font-bold">Устгах уу?</h2>
+                <p className="text-sm text-slate-400 mt-1">"{deleteTarget.title}" чатыг устгахдаа итгэлтэй байна уу?</p>
+              </div>
+              <div className="flex gap-3 w-full mt-2">
+                <button onClick={() => setDeleteTarget(null)} className="flex-1 py-2.5 rounded-xl border border-black/10 dark:border-white/10 text-sm">Болих</button>
+                <button
+                  onClick={() => {
+                    const id = deleteTarget.id;
+                    setPendingDeleteId(id);
+                    setDeleteTarget(null);
+                    const timeout = setTimeout(() => {
+                      onDeleteChat(id);
+                      setPendingDeleteId(null);
+                    }, 3000);
 
-                  toast.error(`Чатыг устгалаа`, {
-                    action: {
-                      label: "Undo",
-                      onClick: () => {
-                        clearTimeout(timeout);
-                        setPendingDelete(null);
-                      },
-                    },
-                  });
-                }}
-                className="flex-1 py-2.5 rounded-xl bg-red-500 text-white text-sm font-bold hover:bg-red-600 transition-colors"
-              >
-                Устгах
-              </button>
+                    toast.error("Чатыг устгалаа", {
+                      action: { label: "Буцаах", onClick: () => { clearTimeout(timeout); setPendingDeleteId(null); } },
+                    });
+                  }}
+                  className="flex-1 py-2.5 rounded-xl bg-red-500 text-white text-sm font-bold"
+                >
+                  Устгах
+                </button>
+              </div>
             </div>
           </div>
         </div>
       )}
 
+      {/* RENAME MODAL */}
       {renameTarget && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
-          onClick={() => setRenameTarget(null)}
-        >
-          <div
-            className="bg-white dark:bg-[#121212] rounded-2xl border border-white/10 shadow-2xl w-full max-w-xs p-6"
-            onClick={(e) => e.stopPropagation()}
-          >
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setRenameTarget(null)}>
+          <div className="bg-white dark:bg-[#121212] rounded-2xl border border-white/10 shadow-2xl w-full max-w-xs p-6" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-lg font-bold mb-4">Нэр өөрчлөх</h2>
             <input
               autoFocus
               value={renameValue}
               onChange={(e) => setRenameValue(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl bg-black/5 dark:bg-white/5 border border-white/5 outline-none focus:border-[#C5A059]/50 transition-all mb-4"
+              className="w-full px-4 py-3 rounded-xl bg-black/5 dark:bg-white/5 border border-white/5 outline-none mb-4"
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   onRenameChat(renameTarget.id, renameValue);
@@ -401,19 +259,14 @@ export const ChatHistory = ({
               }}
             />
             <div className="flex gap-2">
-              <button
-                onClick={() => setRenameTarget(null)}
-                className="flex-1 py-2 rounded-lg text-sm hover:bg-white/5"
-              >
-                Болих
-              </button>
+              <button onClick={() => setRenameTarget(null)} className="flex-1 py-2 rounded-lg text-sm">Болих</button>
               <button
                 onClick={() => {
                   onRenameChat(renameTarget.id, renameValue);
-                  toast.success(`Нэр шинэчлэгдлээ`);
+                  toast.success("Нэр шинэчлэгдлээ");
                   setRenameTarget(null);
                 }}
-                className="flex-1 py-2 rounded-lg text-sm bg-[#C5A059] text-black font-bold hover:brightness-110"
+                className="flex-1 py-2 rounded-lg text-sm bg-[#C5A059] text-black font-bold"
               >
                 Хадгалах
               </button>

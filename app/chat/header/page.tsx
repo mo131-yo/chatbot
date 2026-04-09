@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { FaShoppingCart, FaHeart } from "react-icons/fa";
-import { LogoTemp, MenuToggle } from "./components";
 import { useCart } from "@/app/context/CartContext";
 import { MenuToggle } from "./components";
 

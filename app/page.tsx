@@ -66,6 +66,8 @@ export default function Home() {
       />
 
       <Sidebar
+        toggleSidebar={toggleSidebar}
+        collapsed={isCollapsed}
         isCollapsed={isCollapsed}
         history={sidebarHistory || []}
         onNewChat={() => setActiveChatId(null)}
