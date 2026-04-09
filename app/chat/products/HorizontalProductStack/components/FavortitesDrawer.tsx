@@ -26,7 +26,7 @@ export const FavoritesDrawer = ({
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed right-0 top-0 h-full w-full max-w-[400px] bg-[#121212] border-l border-white/10 z-[101] flex flex-col shadow-2xl"
+            className="fixed right-0 top-35 h-220 w-full max-w-[400px] bg-[#121212] border-l border-white/10 z-[101] flex flex-col shadow-2xl"
           >
             <div className="p-6 flex items-center justify-between border-b border-white/5">
               <div className="flex items-center gap-2">

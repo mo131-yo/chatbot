@@ -39,7 +39,6 @@ export const ChatHistory = ({
   const [renameValue, setRenameValue] = useState("");
   const [pendingDelete, setPendingDelete] = useState<any>([]);
 
-
   useEffect(() => {
     setFilteredChats(history);
   }, [history]);
@@ -72,20 +71,23 @@ export const ChatHistory = ({
   const pinnedChats = visibleChats.filter((chat) => chat?.isPinned);
   const recentChats = visibleChats.filter((chat) => !chat?.isPinned);
   const highlightText = (text: string, query: string) => {
-  if (!query) return text;
+    if (!query) return text;
 
-  const parts = text.split(new RegExp(`(${query})`, "gi"));
+    const parts = text.split(new RegExp(`(${query})`, "gi"));
 
-  return parts.map((part, i) =>
-    part.toLowerCase() === query.toLowerCase() ? (
-      <span key={i} className="bg-yellow-200 dark:bg-yellow-500/40 rounded px-1">
-        {part}
-      </span>
-    ) : (
-      part
-    )
-  );
-};
+    return parts.map((part, i) =>
+      part.toLowerCase() === query.toLowerCase() ? (
+        <span
+          key={i}
+          className="bg-yellow-200 dark:bg-yellow-500/40 rounded px-1"
+        >
+          {part}
+        </span>
+      ) : (
+        part
+      ),
+    );
+  };
 
   const handleShareClick = async (e: React.MouseEvent, chat: Chat) => {
     e.stopPropagation();
@@ -130,8 +132,8 @@ export const ChatHistory = ({
         )}
 
         <span className="text-sm truncate">
-  {highlightText(chat.title || "New chat", "search")}
-</span>
+          {highlightText(chat.title || "New chat", "search")}
+        </span>
       </div>
 
       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
