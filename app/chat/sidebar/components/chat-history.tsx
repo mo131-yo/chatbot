@@ -228,7 +228,7 @@ export const ChatHistory = ({
                     }, 3000);
 
                     toast.error("Чатыг устгалаа", {
-                      action: { label: "Буцаах", onClick: () => { clearTimeout(timeout); setPendingDeleteId(null); } },
+                      action: { label: "Undo", onClick: () => { clearTimeout(timeout); setPendingDeleteId(null); } },
                     });
                   }}
                   className="flex-1 py-2.5 rounded-xl bg-red-500 text-white text-sm font-bold"

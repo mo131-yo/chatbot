@@ -42,7 +42,20 @@ export default function Header({
   }, []);
 
   return (
-    <header className="sticky top-0 z-9999 flex items-center justify-between px-6 py-4 border-b border-white/6 bg-[#0D0D0D] backdrop-blur-md">
+    <header
+      className="
+  sticky top-0 z-30
+  flex items-center justify-between
+  px-4 py-3
+
+  bg-white/70 dark:bg-[#0D0D0D]/70
+  backdrop-blur-xl
+
+  border-b border-black/5 dark:border-white/10
+
+  transition-all duration-300
+"
+    >
       <div className="flex items-center gap-4">
         {/* <MenuToggle onClick={toggleSidebar} /> */}
       </div>
