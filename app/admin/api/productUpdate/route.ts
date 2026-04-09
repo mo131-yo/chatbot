@@ -52,7 +52,7 @@ export async function PATCH(req: Request) {
     const updatedProduct = await prisma.product.upsert({
       where: { id: id },
       update: {
-        name,
+        name: name,
         price: numericPrice,
         description: description || "",
         brand: brand || "",
@@ -65,7 +65,7 @@ export async function PATCH(req: Request) {
       },
       create: {
         id: id,
-        name,
+        name: name,
         price: numericPrice,
         description: description || "",
         brand: brand || "",
@@ -74,13 +74,12 @@ export async function PATCH(req: Request) {
         slug:
           name?.toLowerCase().trim().replace(/\s+/g, "-") ||
           `prod-${Date.now()}`,
-   
+
         category: {
           connect: { id: categoryRecord.id },
         },
       },
     });
-
 
     await index.namespace(userId).update({
       id: id,
