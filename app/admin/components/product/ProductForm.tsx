@@ -46,7 +46,7 @@ export default function ProductForm({ onSuccess, initialData, onClose, storeName
 
   useEffect(() => {
     if (initialData) {
-      const meta = initialData.metadata || {};
+      const meta = initialData.metadata || initialData;
       setFormData({
         name: meta.name || "",
         price: meta.price?.toString() || "",
@@ -57,8 +57,10 @@ export default function ProductForm({ onSuccess, initialData, onClose, storeName
         color: meta.color || "",
         size: meta.size || "",
       });
-      if (meta.product_image_url) {
-        setPreviews([meta.product_image_url]);
+      
+      const currentImg = meta.imageUrl || meta.product_image_url;
+      if (currentImg) {
+        setPreviews([currentImg]);
       }
     }
   }, [initialData]);

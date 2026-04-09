@@ -1,6 +1,5 @@
 import { create } from "zustand";
 
-// Store-ийн төрлийг тодорхойлно
 interface StoreState {
   storeName: string | null;
   isLoading: boolean;
@@ -8,7 +7,6 @@ interface StoreState {
   setIsLoading: (status: boolean) => void;
 }
 
-// Жинхэнэ Store-оо үүсгэх
 export const useAppStore = create<StoreState>((set) => ({
   storeName: null,
   isLoading: false,

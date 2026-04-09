@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import ProductForm from "../components/product/ProductForm";
-import ProductTable from "../components/product/ProductTable"; // Хүснэгтээ import хийх
+import ProductTable from "../components/product/ProductTable";
 import { useAppStore } from "../store/useStore";
 
 export default function ProductsPage() {

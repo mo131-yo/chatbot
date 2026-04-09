@@ -1,21 +1,28 @@
-// middleware.ts
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 const isAdminRoute = createRouteMatcher(['/admin(.*)']);
 
 export default clerkMiddleware(async (auth, req) => {
+  const { userId } = await auth();
+
   if (isAdminRoute(req)) {
-    const session = await auth();
-    
-    // Хэрэв API хүсэлт бөгөөд нэвтрээгүй бол HTML биш JSON буцаах
-    if (!session.userId && req.nextUrl.pathname.includes('/api/')) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    
-    // Бусад тохиолдолд (хуудас руу хандах үед) нэвтрэхийг шаардах
-    if (!session.userId) {
+    if (!userId) {
+      if (req.nextUrl.pathname.includes('/api/')) {
+        return NextResponse.json({ error: "Нэвтрэх шаардлагатай" }, { status: 401 });
+      }
+      
       return (await auth()).redirectToSignIn();
     }
   }
+
+  return NextResponse.next();
 });
+
+export const config = {
+  matcher: [
+    '/admin/:path*',
+    '/api/:path*',
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+  ],
+};
