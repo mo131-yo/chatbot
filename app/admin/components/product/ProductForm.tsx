@@ -1,5 +1,5 @@
 "use client";
- 
+
 import React, { useEffect, useState } from "react";
 import {
   X,
@@ -13,14 +13,14 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SuccessToast } from "../ui/SuccessToast";
- 
+
 interface ProductFormProps {
   onSuccess?: () => void;
   initialData?: any;
   onClose?: () => void;
   storeName: string;
 }
- 
+
 export default function ProductForm({
   onSuccess,
   initialData,
@@ -31,7 +31,7 @@ export default function ProductForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
- 
+
   const [formData, setFormData] = useState({
     name: "",
     price: "",
@@ -42,21 +42,72 @@ export default function ProductForm({
     color: "",
     size: "",
   });
- 
+
   const [previews, setPreviews] = useState<string[]>([]);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
- 
+
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
- 
+
+  const CATEGORY_DATA: Record<string, { brands: string[]; sizes: string[] }> = {
+    Гутал: {
+      brands: ["Timberland"],
+      sizes: ["38", "39", "40", "41", "42", "43", "44", "45"],
+    },
+    Пүүз: {
+      brands: [
+        "Nike",
+        "Adidas",
+        "Puma",
+        "Jordan",
+        "New Balance",
+        "Vans",
+        "Reebok",
+        "Yeezy",
+        "Nike Sportswear",
+        "Converse",
+        "ASICS",
+        "Under Armour",
+        "Balenciaga",
+      ],
+      sizes: ["36", "37", "38", "39", "40", "41", "42", "43"],
+    },
+    Хувцас: {
+      brands: [
+        "Zara",
+        "H&M",
+        "Uniqlo",
+        "Gucci",
+        "North Face",
+        "Nike Apparel",
+        "Off-White",
+      ],
+      sizes: ["XS", "S", "M", "L", "XL", "2XL", "3XL"],
+    },
+    Цүнх: {
+      brands: [
+        "Louis Vuitton",
+        "Chanel",
+        "Hermes",
+        "Coach",
+        "Michael Kors",
+        "Gucci",
+        "Prada",
+      ],
+      sizes: ["Small", "Medium", "Large", "One Size"],
+    },
+  };
+
+  const CATEGORIES = Object.keys(CATEGORY_DATA);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
     setImageFiles(files);
     setPreviews(files.map((file) => URL.createObjectURL(file)));
   };
- 
+
   useEffect(() => {
     if (initialData) {
       const meta = initialData.metadata || initialData;
@@ -70,36 +121,36 @@ export default function ProductForm({
         color: meta.color || "",
         size: meta.size || "",
       });
- 
+
       const currentImg = meta.imageUrl || meta.product_image_url;
       if (currentImg) {
         setPreviews([currentImg]);
       }
     }
   }, [initialData]);
- 
+
   const handleSubmit = async () => {
     console.log("Submit эхлэх үеийн storeName:", storeName);
- 
+
     if (!storeName || storeName === "undefined" || storeName === "null") {
       return alert(
         "Алдаа: Дэлгүүрийн нэр (storeName) олдсонгүй. Та эхлээд дэлгүүрээ бүртгүүлсэн эсэхээ шалгана уу.",
       );
     }
- 
+
     if (!formData.name || !formData.price) {
       return alert("Барааны нэр болон үнэ заавал байх ёстой!");
     }
- 
+
     setIsSubmitting(true);
     try {
       let imageUrl = previews[0] || "";
- 
+
       if (imageFiles.length > 0) {
         const cloudData = new FormData();
         cloudData.append("file", imageFiles[0]);
         cloudData.append("upload_preset", "my_store_preset");
- 
+
         const uploadRes = await fetch(
           `https://api.cloudinary.com/v1_1/dzljgphud/image/upload`,
           {
@@ -107,13 +158,13 @@ export default function ProductForm({
             body: cloudData,
           },
         );
- 
+
         if (!uploadRes.ok) throw new Error("Зураг хуулахад алдаа гарлаа");
- 
+
         const cloudJson = await uploadRes.json();
         imageUrl = cloudJson.secure_url;
       }
- 
+
       // const payload = {
       //   ...formData,
       //   imageUrl,
@@ -121,7 +172,7 @@ export default function ProductForm({
       //   price: Number(formData.price),
       //   stock: Number(formData.stock || "0"),
       // };
- 
+
       const payload = {
         ...formData,
         id: initialData?.id,
@@ -130,21 +181,21 @@ export default function ProductForm({
         price: Number(formData.price),
         stock: Number(formData.stock || "0"),
       };
- 
+
       const response = await fetch("/admin/api/productAdd", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
- 
+
       const data = await response.json();
- 
+
       if (data.success) {
         setToastMsg(
           initialData ? "Амжилттай шинэчлэгдлээ!" : "Амжилттай бүртгэгдлээ!",
         );
         setShowToast(true);
- 
+
         if (!initialData) {
           setFormData({
             name: "",
@@ -159,7 +210,7 @@ export default function ProductForm({
           setPreviews([]);
           setImageFiles([]);
         }
- 
+
         setTimeout(() => {
           setOpen(false);
           if (onSuccess) onSuccess();
@@ -175,7 +226,7 @@ export default function ProductForm({
       setIsSubmitting(false);
     }
   };
- 
+
   return (
     <>
       {showToast && (
@@ -185,7 +236,7 @@ export default function ProductForm({
           onClose={() => setShowToast(false)}
         />
       )}
- 
+
       {!initialData && (
         <Button
           onClick={() => setOpen(true)}
@@ -194,7 +245,7 @@ export default function ProductForm({
           <PackagePlus className="w-5 h-5 mr-2" /> Бараа нэмэх
         </Button>
       )}
- 
+
       {open && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
           <div className="relative w-full max-w-4xl max-h-[92vh] overflow-hidden rounded-[2.5rem] bg-gray-950 text-white border border-white/5 flex flex-col shadow-2xl">
@@ -217,7 +268,7 @@ export default function ProductForm({
                 <X />
               </button>
             </header>
- 
+
             <main className="flex-1 overflow-y-auto p-8 space-y-8">
               <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
                 <div className="lg:col-span-3 space-y-8">
@@ -252,34 +303,163 @@ export default function ProductForm({
                       />
                     </div>
                   </Section>
- 
-                  <Section
-                    title="Нэмэлт үзүүлэлт"
-                    icon={<LayoutGrid className="w-4 h-4" />}
-                  >
-                    <div className="grid grid-cols-3 gap-4">
-                      <FormInput
-                        label="Брэнд"
-                        value={formData.brand}
-                        onChange={(v: string) => handleInputChange("brand", v)}
-                      />
-                      <FormInput
-                        label="Категори"
-                        value={formData.category}
-                        onChange={(v: string) =>
-                          handleInputChange("category", v)
-                        }
-                      />
-                      <FormInput
-                        label="Үлдэгдэл"
-                        type="number"
-                        value={formData.stock}
-                        onChange={(v: string) => handleInputChange("stock", v)}
-                      />
+
+                  <div className="space-y-6 bg-gray-900/50 p-6 rounded-[2rem] border border-white/5">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.6)]" />
+                      <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-indigo-400/80">
+                        Нэмэлт үзүүлэлт
+                      </h3>
                     </div>
-                  </Section>
+
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                      {/* КАТЕГОРИ */}
+                      <div className="space-y-2">
+                        <label className="text-[10px] text-gray-500 font-bold ml-2 uppercase tracking-widest">
+                          Категори
+                        </label>
+                        <div className="relative group">
+                          <select
+                            className="w-full bg-gray-800/80 border border-white/10 p-4 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all text-white appearance-none cursor-pointer hover:bg-gray-800"
+                            value={formData.category}
+                            onChange={(e) => {
+                              handleInputChange("category", e.target.value);
+                              handleInputChange("brand", ""); // Категори солигдоход брэндийг цэвэрлэнэ
+                              handleInputChange("size", ""); // Размерийг бас цэвэрлэнэ
+                            }}
+                          >
+                            <option value="">Сонгох</option>
+                            {CATEGORIES.map((cat) => (
+                              <option key={cat} value={cat}>
+                                {cat}
+                              </option>
+                            ))}
+                          </select>
+                          <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 group-hover:text-indigo-400 transition-colors">
+                            <svg
+                              className="w-4 h-4"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M19 9l-7 7-7-7"
+                              />
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* БРЭНД */}
+                      <div className="space-y-2">
+                        <label className="text-[10px] text-gray-500 font-bold ml-2 uppercase tracking-widest">
+                          Брэнд
+                        </label>
+                        <div className="relative group">
+                          <select
+                            disabled={!formData.category}
+                            className="w-full bg-gray-800/80 border border-white/10 p-4 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all text-white appearance-none cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-800"
+                            value={formData.brand}
+                            onChange={(e) =>
+                              handleInputChange("brand", e.target.value)
+                            }
+                          >
+                            <option value="">
+                              {formData.category ? "Брэнд сонгох" : "---"}
+                            </option>
+                            {formData.category &&
+                              CATEGORY_DATA[formData.category]?.brands.map(
+                                (brand) => (
+                                  <option key={brand} value={brand}>
+                                    {brand}
+                                  </option>
+                                ),
+                              )}
+                          </select>
+                          <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
+                            <svg
+                              className="w-4 h-4"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M19 9l-7 7-7-7"
+                              />
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* РАЗМЕР */}
+                      <div className="space-y-2">
+                        <label className="text-[10px] text-gray-500 font-bold ml-2 uppercase tracking-widest">
+                          Размер
+                        </label>
+                        <div className="relative group">
+                          <select
+                            disabled={!formData.category}
+                            className="w-full bg-gray-800/80 border border-white/10 p-4 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all text-white appearance-none cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-800"
+                            value={formData.size}
+                            onChange={(e) =>
+                              handleInputChange("size", e.target.value)
+                            }
+                          >
+                            <option value="">
+                              {formData.category ? "Размер" : "---"}
+                            </option>
+                            {formData.category &&
+                              CATEGORY_DATA[formData.category]?.sizes.map(
+                                (size) => (
+                                  <option key={size} value={size}>
+                                    {size}
+                                  </option>
+                                ),
+                              )}
+                          </select>
+                          <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
+                            <svg
+                              className="w-4 h-4"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M19 9l-7 7-7-7"
+                              />
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* ҮЛДЭГДЭЛ */}
+                      <div className="space-y-2">
+                        <label className="text-[10px] text-gray-500 font-bold ml-2 uppercase tracking-widest">
+                          Үлдэгдэл
+                        </label>
+                        <input
+                          type="number"
+                          className="w-full bg-gray-800/80 border border-white/10 p-4 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all text-white placeholder:text-gray-600"
+                          placeholder="0"
+                          value={formData.stock}
+                          onChange={(e) =>
+                            handleInputChange("stock", e.target.value)
+                          }
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
- 
+
                 <div className="lg:col-span-2">
                   <Section
                     title="Медиа"
@@ -310,7 +490,7 @@ export default function ProductForm({
                 </div>
               </div>
             </main>
- 
+
             <footer className="px-8 py-6 border-t border-white/5 flex gap-4 bg-white/2">
               <Button
                 onClick={() => {
@@ -342,7 +522,7 @@ export default function ProductForm({
     </>
   );
 }
- 
+
 function Section({ title, icon, children }: any) {
   return (
     <div className="space-y-4">
@@ -356,7 +536,7 @@ function Section({ title, icon, children }: any) {
     </div>
   );
 }
- 
+
 function FormInput({ label, value, onChange, type = "text", ...props }: any) {
   return (
     <div className="flex-1 space-y-1">
@@ -373,5 +553,3 @@ function FormInput({ label, value, onChange, type = "text", ...props }: any) {
     </div>
   );
 }
- 
- 
