@@ -22,9 +22,13 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "chat-Store",
-  description: "Дэлгүүрийн тайлбар",
   icons: {
-    icon: "/favicon.png",
+    icon: [
+      {
+        url: "/favicon.png",
+        href: "/favicon.png",
+      },
+    ],
   },
 };
 
