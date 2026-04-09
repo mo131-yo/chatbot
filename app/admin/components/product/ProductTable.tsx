@@ -14,33 +14,28 @@ export default function ProductTable({ search="", storeName }: { search?: string
   const [isDeleting, setIsDeleting] = useState(false);
 
 
-  const fetchData = useCallback(async () => {
-    if (!storeName) return; 
+const fetchData = useCallback(async () => {
+  if (!storeName) return; 
 
-    try {
-      setLoading(true);
-      const res = await fetch(`/admin/api/productAllGet?storeName=${encodeURIComponent(storeName)}`, {
-        cache: "no-store",
-        headers: {
-        "Content-Type": "application/json",
-      }
-      });
+  try {
+    setLoading(true);
+    const res = await fetch(`/admin/api/productAllGet?storeName=${encodeURIComponent(storeName)}`);
 
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.error || `Server error: ${res.status}`);
-      }
-
-      const data = await res.json();
-      if (data.success) {
-        setProducts(data.products || []);
-      }
-    } catch (error) {
-      console.error("Fetch error:", error);
-    } finally {
-      setLoading(false);
+    if (!res.ok) {
+      console.error(`Серверийн алдаа: ${res.status}`);
+      return;
     }
-  }, [storeName]);
+
+    const data = await res.json();
+    if (data.success) {
+      setProducts(data.products || []);
+    }
+  } catch (error) {
+    console.error("JSON уншихад алдаа гарлаа. Серверээс HTML ирсэн байх магадлалтай.");
+  } finally {
+    setLoading(false);
+  }
+}, [storeName]);
 
   useEffect(() => {
     fetchData();

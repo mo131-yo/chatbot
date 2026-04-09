@@ -10,13 +10,17 @@ export async function DELETE(req: NextRequest) {
     const { userId } = await auth();
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
+    const storeName = searchParams.get("storeName");
 
-    if (!userId || !id) return NextResponse.json({ error: "Missing info" }, { status: 400 });
+    if (!userId || !id || !storeName) {
+      return NextResponse.json({ error: "Missing info" }, { status: 400 });
+    }
 
-    await index.namespace(userId).deleteOne({id: id});
+    await index.namespace(storeName).deleteOne({id: id}); 
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
+    console.error("Delete error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
