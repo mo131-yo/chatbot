@@ -82,15 +82,16 @@ export async function POST(req: Request) {
         input: lastUserMessage,
       });
 
+      const userNamespace = clerkUserId || "guest-namespace";
+
       const namespaces = [
         "",
         "most_used_beauty_cosmetics-namespace",
         "beauty-namespace",
         "fashion-namespace",
         "shoes-namespace",
-        "shoes-namespace",
         "electronics-namespace",
-        clerkUserId,
+        userNamespace, 
         "user_3BSwyjfHAMPysPTaXqJ5CkAIGfM",
       ];
 
