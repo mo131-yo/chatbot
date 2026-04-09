@@ -6,7 +6,6 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { CartProvider } from "./context/CartContext";
 import CartSidebar from "./chat/cart/frontend/components/CartSidebar";
 import { FavoriteDrawer } from "./store/components/FavoriteDrawer";
-import { Toaster } from "sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -44,7 +43,7 @@ export default function RootLayout({
               disableTransitionOnChange
             >
               {children}
-              <Toaster richColors position="top-right" />
+              {/* <Toaster richColors position="top-right" /> */}
               <CartSidebar />
             </ThemeProvider>
           </CartProvider>

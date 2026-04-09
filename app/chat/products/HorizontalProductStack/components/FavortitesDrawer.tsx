@@ -51,7 +51,7 @@ export const FavoritesDrawer = ({
                 </div>
               ) : (
                 favorites.map((f: any) => {
-                  const item = f.product || f; // Баазаас ирсэн эсвэл түр зуурын датаг аль алиныг нь унших
+                  const item = f.product || f;
                   const displayImg =
                     item.images?.[0] || item.image || "/default-product.png";
                   return (
