@@ -4,12 +4,16 @@ import { useState } from "react";
 import { ProductDetailSidebar } from "../detail/ProductDetailSidebar";
 import HorizontalProductStack from "../HorizontalProductStack/page";
 
+
 interface Product {
   id: string;
   name: string;
   price: string;
   image: string;
   description: string;
+  storeId?: string;
+  brand?: string;
+  storeName?: string;
 }
 
 interface ProductCarouselProps {
@@ -28,11 +32,11 @@ export const ProductCarousel = ({ products, onBuy, onSelect, history }: ProductC
     <div className="w-full">
       <HorizontalProductStack
         products={products}
-        onSelect={(product) => {
+        onSelect={(product: Product) => {
           setSelectedProduct(product);
           onSelect(product);
         }}
-        onSave={(id) => console.log("Saved ID:", id)}
+        onSave={(id: string) => console.log("Saved ID:", id)}
         onBuy={onBuy}
       />
 
