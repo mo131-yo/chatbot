@@ -44,12 +44,12 @@ const extractProducts = (content: string): Product[] => {
 
     if (parts.length >= 2) {
       products.push({
-        id: parts[3] || `temp-${Math.random().toString(36).slice(2, 9)}`,
-        name: parts[0] || "Нэргүй",
+        id: parts[3] || `id-${Math.random()}`,
+        name: parts[0] || "Нэргүй бараа",
         price: parts[1] || "0",
-        image: imageSrc.startsWith("http") ? imageSrc : "/placeholder.png",
+        image: imageSrc,
         description: parts[2] || "",
-        storeId: parts[4] || "store-1",
+        storeId: parts[4] || "store-001",
       });
     }
   }

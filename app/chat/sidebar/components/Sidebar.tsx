@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { ChatHistory } from "./chat-history";
 import { useRouter } from "next/dist/client/components/navigation";
+import { NewChatBtn } from "./new-chat-btn";
 
 export default function Sidebar() {
   const [history, setHistory] = useState<any[]>([]);
@@ -108,7 +109,12 @@ export default function Sidebar() {
   if (loading)
     return <div className="p-4 text-sm text-slate-500">Уншиж байна...</div>;
 
-  return (
+ return (
+  <aside className="flex flex-col h-screen w-72 
+  bg-white/70 dark:bg-[#0D0D0D]/70 backdrop-blur-xl">
+
+    <NewChatBtn onClick={() => console.log("new")} />
+
     <ChatHistory
       history={history}
       onSelectChat={(id) => console.log("Selected:", id)}
@@ -117,5 +123,6 @@ export default function Sidebar() {
       onDeleteChat={handleDeleteChat}
       onShareChat={handleShare}
     />
-  );
+  </aside>
+);
 }

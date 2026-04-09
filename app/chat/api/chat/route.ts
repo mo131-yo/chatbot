@@ -88,19 +88,19 @@ export async function POST(req: Request) {
         "beauty-namespace",
         "fashion-namespace",
         "shoes-namespace",
+        "shoes-namespace",
         "electronics-namespace",
-        "books-namespace",
+        clerkUserId,
         "user_3BSwyjfHAMPysPTaXqJ5CkAIGfM",
       ];
 
       const queryPromises = namespaces.map((ns) =>
         index.namespace(ns).query({
           vector: embedding.data[0].embedding,
-          topK: 8,
+          topK: 10,
           includeMetadata: true,
-          filter: maxPrice
-            ? { formatted_price: { $lte: maxPrice } }
-            : undefined,
+
+          filter: maxPrice ? { price: { $lte: maxPrice } } : undefined,
         }),
       );
 
@@ -114,14 +114,16 @@ export async function POST(req: Request) {
       context = topMatches
         .map(
           (m) =>
-            `БҮТЭЭГДЭХҮҮН: ${m.metadata?.product_name || m.metadata?.name || "Нэргүй"}
-            ҮНЭ: ${m.metadata?.formatted_price || m.metadata?.price}₮
-            ЗУРАГ: ${m.metadata?.product_image_url || m.metadata?.image_url || m.metadata?.image || ""}
+            `БҮТЭЭГДЭХҮҮН: ${m.metadata?.name || "Нэргүй"}
+            ҮНЭ: ${m.metadata?.price || null}₮
+            ЗУРАГ: ${m.metadata?.product_image_url || m.metadata?.image_url || ""}
             ТАЙЛБАР: ${m.metadata?.description || "Тайлбар байхгүй"}
             ID: ${m.id}
             STORE_ID: ${m.metadata?.store_id || "store-001"}`,
         )
         .join("\n---\n");
+
+      console.log("Олдсон барааны тоо:", topMatches.length);
     } catch (err) {
       console.error("Vector Search Error:", err);
     }
@@ -148,7 +150,12 @@ export async function POST(req: Request) {
       --- ЗУРГИЙН УТГА (CONTEXTUAL IMAGES) ---
       - Context доторх 'ЗУРАГ' линкийг ашигла.
       - Хэрэв зураг байхгүй бол: https://loremflickr.com/800/800/{item_name_english,shopping} ашиглана.
- 
+
+      --- ХАТУУ ШҮҮЛТҮҮР ---
+      - Хэрэв хэрэглэгч "Nike" гэж асуусан бол КОНТЕКСТ доторх барааны нэр (product_name) эсвэл тайлбарт "Nike" гэсэн үг заавал байх ёстой. 
+      - Хэрэв байхгүй бол тухайн барааг БҮҮ ХАРУУЛ.
+      - Хэрэглэгчийн асуултад 100% тохирохгүй барааг "орлуулаад" харуулж болохгүй.
+
       --- TRANSACTIONAL LOGIC ---
       1. Захиалга өгөх үед: "Маш зөв сонголт! Энэ бараа танд таалагдана гэдэгт 100% итгэлтэй байна. Одоо захиалгыг тань үүсгэе." гээд PAYMENT_TRIGGER-ээ хавсарга.
       2. PAYMENT_TRIGGER Формат: PAYMENT_TRIGGER:{"id":"id","name":"name","price":price}

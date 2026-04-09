@@ -26,39 +26,28 @@ export default function RevenueChart() {
     try {
       const res = await fetch("/admin/api/orders");
       const orders = await res.json();
-
-      // 👉 өдөрөөр group хийх
       const grouped: Record<string, number> = {};
 
-     orders.forEach((o: any) => {
-    const rawDate = o.createdAt || o.date;
+      orders.forEach((o: any) => {
+        const rawDate = o.createdAt || o.date;
 
-    const total = Number(
-      o.total ??
-      o.totalPrice ??
-      o.price ??
-      0
-    );
+        const total = Number(o.total ?? o.totalPrice ?? o.price ?? 0);
 
-    if (!rawDate || isNaN(total)) return;
+        if (!rawDate || isNaN(total)) return;
 
-    const day = new Date(rawDate).toLocaleDateString("en-US", {
-      weekday: "short",
-    });
+        const day = new Date(rawDate).toLocaleDateString("en-US", {
+          weekday: "short",
+        });
 
-    if (!grouped[day]) grouped[day] = 0;
+        if (!grouped[day]) grouped[day] = 0;
 
-    grouped[day] += total;
-  });
+        const chartData = Object.entries(grouped).map(([day, revenue]) => ({
+          day,
+          revenue,
+        }));
 
-      // 👉 chart format болгох
-      const chartData = Object.entries(grouped).map(([day, revenue]) => ({
-        day,
-        revenue,
-      }));
-
-      setData(chartData);
-
+        setData(chartData);
+      });
     } catch (err) {
       console.error("Revenue fetch error:", err);
     }
@@ -70,13 +59,11 @@ export default function RevenueChart() {
       bg-white/5 border-white/10 text-white
       dark:bg-white dark:border-gray-200 dark:text-black"
     >
-      {/* HEADER */}
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold">Revenue</h2>
         <span className="text-green-400 text-sm">Live</span>
       </div>
 
-      {/* CHART */}
       <ResponsiveContainer width="100%" height={250}>
         <LineChart data={data}>
           <CartesianGrid
@@ -84,14 +71,9 @@ export default function RevenueChart() {
             stroke={dark ? "#444" : "#ddd"}
           />
 
-          <XAxis
-            dataKey="day"
-            stroke={dark ? "#aaa" : "#555"}
-          />
+          <XAxis dataKey="day" stroke={dark ? "#aaa" : "#555"} />
 
-          <YAxis
-            stroke={dark ? "#aaa" : "#555"}
-          />
+          <YAxis stroke={dark ? "#aaa" : "#555"} />
 
           <Tooltip
             contentStyle={{

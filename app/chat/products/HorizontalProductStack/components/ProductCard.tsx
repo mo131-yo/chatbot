@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, Share2, ShoppingBag, ImageIcon } from "lucide-react";
+import { Heart, Share2, ShoppingBag, ImageIcon, Store } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useCart } from "@/app/chat/hooks/useCart";
 
@@ -21,6 +21,10 @@ export const ProductCard = ({
   const productId = product.id ?? product.product_id ?? product.name;
   const productWithImage = { ...product, image: imageUrl || product.image };
 
+  const name = product.product_name || product.name || "Нэргүй бараа";
+  const storeName = product.metadata?.store_name || product.store_name || "Official Store";
+  const price = product.price ?? product.metadata?.price ?? 0;
+
   useEffect(() => {
     const getProductImage = async () => {
       setLoading(true);
@@ -31,6 +35,7 @@ export const ProductCard = ({
         setLoading(false);
         return;
       }
+      
       try {
         const query = product.product_name || product.name || "product";
         const response = await fetch(
@@ -55,13 +60,13 @@ export const ProductCard = ({
 
   return (
     <div
-      className={`relative mx-auto flex flex-col h-[480px] w-72 md:w-[320px] overflow-hidden rounded-[2.5rem] bg-[#121212] border transition-all duration-700 ${
+      className={`relative mx-auto flex flex-col h-125 w-72 md:w-[320px] overflow-hidden rounded-[2.5rem] bg-[#121212] border transition-all duration-700 ${
         isCurrent
           ? "border-[#C5A059] shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
           : "border-white/5"
       }`}
     >
-      <div className="relative h-[280px] w-full overflow-hidden shrink-0">
+      <div className="relative h-65 w-full overflow-hidden shrink-0">
         {loading ? (
           <div className="h-full w-full flex items-center justify-center bg-white/5 animate-pulse">
             <ImageIcon className="text-white/20" size={40} />
@@ -105,6 +110,7 @@ export const ProductCard = ({
           <h3 className="text-white text-lg font-bold leading-snug line-clamp-2 mb-2">
             {product.product_name || product.name}
           </h3>
+          
           <p className="text-[#C5A059] text-xl font-black">
             {(() => {
               const rawPrice = product.price ?? product.formatted_price ?? 0;
