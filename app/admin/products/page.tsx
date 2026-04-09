@@ -1,34 +1,45 @@
 "use client";
 
 import { useState } from "react";
-import ProductTable from "@/app/admin/components/product/ProductTable";
-import ProductForm from "@/app/admin/components/product/ProductForm";
+import ProductForm from "../components/product/ProductForm";
+import ProductTable from "../components/product/ProductTable"; // Хүснэгтээ import хийх
+import { useAppStore } from "../store/useStore";
 
 export default function ProductsPage() {
-  const [search, setSearch] = useState("");
+  const storeName = useAppStore((state) => state.storeName);
+  const isLoading = useAppStore((state) => state.isLoading);
+  const [search, setSearch] = useState("")
+  
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  if (isLoading) return <div className="text-white p-10">Ачаалж байна...</div>;
+  
+  if (!storeName) return (
+    <div className="text-white p-10 italic">
+      Дэлгүүр бүртгэлгүй байна. Та Dashboard дээр бүртгүүлнэ үү.
+    </div>
+  );
+
+  const handleSuccess = () => {
+    setRefreshKey(prev => prev + 1);
+  };
 
   return (
-    <div>
-  
-      <div className="flex justify-between items-center mb-4 gap-4">
-        <h1 className="text-xl font-semibold">Products</h1>
-
-        <ProductForm onSuccess={() => location.reload()} />
+    <div className="space-y-6 p-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold text-white italic">{storeName}</h1>
+        <ProductForm storeName={storeName} onSuccess={handleSuccess} />
       </div>
 
-    
-      <div className="mb-4">
-        <input
-          placeholder="🔍 Бараа хайх..."
-          className="w-full p-3 rounded-xl bg-gray-100 dark:bg-gray-800
-          focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+      <div className="bg-white/5 rounded-[2.5rem] border border-white/10 p-6">
+        <h2 className="text-xl font-bold text-white mb-4 italic">Барааны жагсаалт</h2>
+        
+        <ProductTable 
+          key={refreshKey} 
+          storeName={storeName} 
+          search={search}
         />
       </div>
-
-     
-      <ProductTable search={search} />
     </div>
   );
 }

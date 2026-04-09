@@ -2,6 +2,7 @@ import Sidebar from "@/app/admin/components/layout/Sidebar";
 import Header from "@/app/admin/components/layout/Header";
 import { Toaster } from "react-hot-toast";
 import { ClerkProvider } from "@clerk/nextjs";
+import { StoreProvider } from "./context/StoreContext";
 
 export default function AdminLayout({
   children,
@@ -10,6 +11,7 @@ export default function AdminLayout({
 }) {
   return (
     <ClerkProvider>
+      <StoreProvider>
       <div
         className="flex min-h-screen transition-colors duration-300
         bg-[#0B132B] text-white
@@ -29,6 +31,7 @@ export default function AdminLayout({
           <div className="mt-4">{children}</div>
         </main>
       </div>
+      </StoreProvider>
     </ClerkProvider>
   );
 }
