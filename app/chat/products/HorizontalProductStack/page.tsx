@@ -78,15 +78,12 @@ export default function HorizontalProductStack({
 
   return (
     <div className="relative flex h-[550px] w-full items-center justify-center overflow-visible select-none">
-
-      <div className="absolute left-0 md:left-4 z-[60]">
-        <button 
-          onClick={() => navigate(-1)} 
-          className="p-3 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 transition-all active:scale-90"
-        >
-          <ChevronLeft className="w-6 h-6" />
-        </button>
-      </div>
+      <button
+        onClick={() => navigate(-1)}
+        className="absolute left-4 z-[60] p-3 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white"
+      >
+        <ChevronLeft />
+      </button>
 
       <div className="relative flex h-full w-full items-center justify-center" style={{ perspective: "1000px" }}>
         {products.map((product, index) => {

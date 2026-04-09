@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useRef, useLayoutEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useChatLogic } from "./chat/hooks/useChatLogic";
 import { SparklesCore } from "@/lib/utils/chat-animation/sparkles";
 import { useScrollEffect } from "./chat/hooks/useScrollEffect";
@@ -7,6 +7,7 @@ import { MessageList } from "./chat/homeChat/product/message-list";
 import { WelcomeSection } from "./chat/homeChat/robot-text/welcome-section";
 
 import { ProductDetailSidebar } from "./chat/products/detail/ProductDetailSidebar";
+import { FavoritesDrawer } from "./chat/products/HorizontalProductStack/components/FavortitesDrawer";
 import Sidebar from "./chat/sidebar/page";
 import Header from "./chat/header/page";
 import ChatInput from "./chat/chatInput/page";
@@ -18,7 +19,6 @@ export default function Home() {
     allChats,
     sidebarHistory,
     isTyping,
-
     sendMessage,
     isLoading,
     addVisualResult,
@@ -29,16 +29,25 @@ export default function Home() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);
 
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const currentChatMessages = activeChatId ? allChats[activeChatId] || [] : [];
 
   useScrollEffect(messagesEndRef, [currentChatMessages, isTyping]);
 
+  useEffect(() => {
+    const handleOpenFavorites = () => {
+      setIsFavoritesOpen(true);
+    };
+    window.addEventListener("openFavorites", handleOpenFavorites);
+    return () =>
+      window.removeEventListener("openFavorites", handleOpenFavorites);
+  }, []);
+
   const buyProduct = async (productName: string, productPrice?: any) => {
     const exactPrice = Number(productPrice).toLocaleString();
     const userMsg = `Bi яг ${exactPrice}₮ үнэтэй "${productName}"-г авмаар байна. Төлбөрөө яаж төлөх вэ?`;
-
     await sendMessage(userMsg);
   };
 
@@ -53,8 +62,13 @@ export default function Home() {
         onClose={() => setSelectedProduct(null)}
         onBuy={(name: string) => buyProduct(name, selectedProduct?.price)}
       />
-      <Sidebar 
-      
+
+      <FavoritesDrawer
+        isOpen={isFavoritesOpen}
+        onClose={() => setIsFavoritesOpen(false)}
+      />
+
+      <Sidebar
         isCollapsed={isCollapsed}
         history={sidebarHistory || []}
         onNewChat={() => setActiveChatId(null)}
@@ -66,6 +80,7 @@ export default function Home() {
 
       <div className="flex-1 flex flex-col min-w-0 h-screen relative">
         <Header toggleSidebar={toggleSidebar} />
+
         <div className="absolute inset-0 z-0 pointer-events-none">
           <SparklesCore
             id="tsparticlesfullpage"
@@ -77,6 +92,7 @@ export default function Home() {
             particleColor="#0A84FF"
           />
         </div>
+
         <main className="flex-1 overflow-y-auto bg-transparent p-4 custom-scrollbar relative z-10">
           {currentChatMessages.length === 0 ? (
             <WelcomeSection onSelect={(q) => sendMessage(q)} />

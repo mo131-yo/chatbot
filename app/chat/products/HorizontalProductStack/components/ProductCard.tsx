@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, ShoppingBag, ImageIcon, Store, Tag, Box } from "lucide-react";
+import { Heart, Share2, ShoppingBag, ImageIcon, Check } from "lucide-react";
 import { useState, useEffect } from "react";
 
 export const ProductCard = ({
@@ -15,6 +15,9 @@ export const ProductCard = ({
 }: any) => {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [imgError, setImgError] = useState(false);
+  const [isShared, setIsShared] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
+  const { addToCart } = useCart();
 
   // Өгөгдлийн бүтцийг нэгтгэж унших - Markdown-аас ирсэн
   const productId = product.id ?? product.product_id ?? product.name;
@@ -59,13 +62,47 @@ export const ProductCard = ({
     brand,
   };
 
+  const handleShare = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    if (isSharing) return;
+
+    const shareUrl = `${window.location.origin}/product/${productId}`;
+    const shareData = {
+      title: name,
+      text: `${name} - Хамгийн ухаалаг AI дэлгүүрээс сонирхоорой!`,
+      url: shareUrl,
+    };
+
+    try {
+      setIsSharing(true);
+
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(shareUrl);
+        setIsShared(true);
+        setTimeout(() => setIsShared(false), 2000);
+      }
+    } catch (err: any) {
+      if (err.name === "AbortError") {
+        console.log("Share үйлдлийг хэрэглэгч цуцаллаа.");
+      } else {
+        console.error("Share error:", err);
+      }
+    } finally {
+      setIsSharing(false);
+    }
+  };
+
   return (
     <div
       className={`relative mx-auto flex flex-col h-125 w-72 md:w-[320px] overflow-hidden rounded-[2.5rem] bg-[#121212] border transition-all duration-700 ${
         isCurrent ? "border-[#C5A059] shadow-[0_20px_50px_rgba(0,0,0,0.5)]" : "border-white/5"
       }`}
     >
-      <div className="relative h-60 w-full overflow-hidden shrink-0">
+      <div className="relative h-65 w-full overflow-hidden shrink-0">
         {imageUrl && !imgError ? (
           <img
             onPointerDown={(e) => e.stopPropagation()}
@@ -136,9 +173,8 @@ export const ProductCard = ({
           </p>
         </div>
 
-        {/* Action buttons */}
-        <div className="h-13 mt-4">
-          <AnimatePresence>
+        <div className="h-13">
+          <AnimatePresence mode="wait">
             {isCurrent && (
               <motion.div 
                 initial={{ opacity: 0, y: 10 }} 
@@ -166,7 +202,19 @@ export const ProductCard = ({
                   }}
                   className="bg-white/5 text-white h-12 w-12 rounded-2xl flex items-center justify-center border border-white/10 active:scale-95 transition-all"
                 >
-                  <ShoppingBag size={18} /> 
+                  <ShoppingBag size={18} />
+                </button>
+
+                <button
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={handleShare}
+                  className={`h-12 w-12 rounded-2xl flex items-center justify-center border transition-all active:scale-95 ${
+                    isShared
+                      ? "bg-green-500/20 border-green-500 text-green-500"
+                      : "bg-white/5 border-white/10 text-white hover:bg-white/10"
+                  }`}
+                >
+                  {isShared ? <Check size={18} /> : <Share2 size={18} />}
                 </button>
               </motion.div>
             )}
