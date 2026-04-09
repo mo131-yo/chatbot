@@ -53,8 +53,9 @@ export default function Home() {
         onClose={() => setSelectedProduct(null)}
         onBuy={(name: string) => buyProduct(name, selectedProduct?.price)}
       />
-      <Sidebar 
-      
+      <Sidebar
+        collapsed={isCollapsed}
+        toggleSidebar={toggleSidebar}
         isCollapsed={isCollapsed}
         history={sidebarHistory || []}
         onNewChat={() => setActiveChatId(null)}

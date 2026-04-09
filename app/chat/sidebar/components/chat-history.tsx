@@ -20,6 +20,7 @@ interface ChatHistoryProps {
   onShareChat: (id: string) => void;
   activeChatId?: string | null;
   isLoading?: boolean;
+  collapsed?: boolean;
 }
 
 export const ChatHistory = ({
@@ -31,14 +32,15 @@ export const ChatHistory = ({
   onPinChat,
   onShareChat,
   activeChatId,
+  collapsed = false,
 }: ChatHistoryProps) => {
   const [deleteTarget, setDeleteTarget] = useState<Chat | null>(null);
-  const [filteredChats, setFilteredChats] = useState(history);
+  const [filteredChats, setFilteredChats] = useState<any[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [renameTarget, setRenameTarget] = useState<Chat | null>(null);
   const [renameValue, setRenameValue] = useState("");
   const [pendingDelete, setPendingDelete] = useState<any>([]);
-
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     setFilteredChats(history);
@@ -72,20 +74,23 @@ export const ChatHistory = ({
   const pinnedChats = visibleChats.filter((chat) => chat?.isPinned);
   const recentChats = visibleChats.filter((chat) => !chat?.isPinned);
   const highlightText = (text: string, query: string) => {
-  if (!query) return text;
+    if (!query) return text;
 
-  const parts = text.split(new RegExp(`(${query})`, "gi"));
+    const parts = text.split(new RegExp(`(${query})`, "gi"));
 
-  return parts.map((part, i) =>
-    part.toLowerCase() === query.toLowerCase() ? (
-      <span key={i} className="bg-yellow-200 dark:bg-yellow-500/40 rounded px-1">
-        {part}
-      </span>
-    ) : (
-      part
-    )
-  );
-};
+    return parts.map((part, i) =>
+      part.toLowerCase() === query.toLowerCase() ? (
+        <span
+          key={i}
+          className="bg-yellow-200 dark:bg-yellow-500/40 rounded px-1"
+        >
+          {part}
+        </span>
+      ) : (
+        part
+      ),
+    );
+  };
 
   const handleShareClick = async (e: React.MouseEvent, chat: Chat) => {
     e.stopPropagation();
@@ -113,92 +118,169 @@ export const ChatHistory = ({
   const renderChatItem = (chat: Chat) => (
     <div
       key={chat.id}
-      className={`group relative flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer
-    transition-all
-    ${
-      activeChatId === chat.id
-        ? "bg-black/10 dark:bg-white/10"
-        : "hover:bg-black/5 dark:hover:bg-white/5"
-    }`}
+      className={`
+      group relative flex items-center
+      ${collapsed ? "justify-center px-2" : "justify-between px-3"}
+      py-2 rounded-xl cursor-pointer
+      transition-all duration-200 ease-out
+      active:scale-[0.97]
+
+      ${
+        activeChatId === chat.id
+          ? "bg-black/10 dark:bg-white/10"
+          : "hover:bg-black/5 dark:hover:bg-white/5"
+      }
+    `}
     >
+      {/* 🔥 CLICKABLE AREA */}
       <div
         onClick={() => onSelectChat(chat.id)}
-        className="flex items-center gap-2 min-w-0 flex-1"
+        className={`flex items-center min-w-0 flex-1
+        ${collapsed ? "justify-center" : "gap-2"}
+      `}
       >
-        {chat.isPinned && (
-          <GiPin size={14} className="text-[#C5A059] rotate-45 shrink-0" />
+        {collapsed ? (
+          chat.isPinned ? (
+            <GiPin size={16} className="text-[#C5A059] rotate-45" />
+          ) : (
+            <span className="text-base">💬</span>
+          )
+        ) : (
+          <>
+            {chat.isPinned && (
+              <GiPin size={14} className="text-[#C5A059] rotate-45 shrink-0" />
+            )}
+          </>
         )}
 
-        <span className="text-sm truncate">
-  {highlightText(chat.title || "New chat", "search")}
-</span>
+        {/* 📝 TEXT (expanded үед л харагдана) */}
+        {!collapsed && (
+          <span className="text-sm truncate">
+            {highlightText(chat.title || "New chat", search)}
+          </span>
+        )}
       </div>
 
-      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onPinChat(chat.id);
-          }}
-          className="p-1 rounded hover:bg-black/10 dark:hover:bg-white/10"
-        >
-          {chat.isPinned ? <PinOff size={14} /> : <Pin size={14} />}
-        </button>
+      {/* 🔥 ACTION BUTTONS (expanded үед л) */}
+      {!collapsed && (
+        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onPinChat(chat.id);
+            }}
+            className="p-1 rounded hover:bg-black/10 dark:hover:bg-white/10"
+          >
+            {chat.isPinned ? <PinOff size={14} /> : <Pin size={14} />}
+          </button>
 
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setRenameTarget(chat);
-            setRenameValue(chat.title || "");
-          }}
-          className="p-1 rounded hover:bg-black/10 dark:hover:bg-white/10"
-        >
-          <Edit2 size={14} />
-        </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setRenameTarget(chat);
+              setRenameValue(chat.title || "");
+            }}
+            className="p-1 rounded hover:bg-black/10 dark:hover:bg-white/10"
+          >
+            <Edit2 size={14} />
+          </button>
 
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setDeleteTarget(chat);
-          }}
-          className="p-1 rounded hover:bg-red-500/20 text-red-400"
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setDeleteTarget(chat);
+            }}
+            className="p-1 rounded hover:bg-red-500/20 text-red-400"
+          >
+            <Trash2 size={14} />
+          </button>
+        </div>
+      )}
+
+      {/* 🔥 TOOLTIP (collapsed үед) */}
+      {collapsed && (
+        <div
+          className="
+      pointer-events-none
+      absolute left-full ml-3 top-1/2 -translate-y-1/2
+      bg-black/90 text-white
+      dark:bg-white dark:text-black
+      px-3 py-2 rounded-lg
+      opacity-0 translate-x-[-6px]
+      group-hover:opacity-100 group-hover:translate-x-0
+      transition-all duration-200
+      z-[9999]
+      w-max max-w-[220px]
+    "
         >
-          <Trash2 size={14} />
-        </button>
-      </div>
+          {chat.title || "New chat"}
+        </div>
+      )}
     </div>
   );
 
   return (
     <>
-      <div className="px-3 mb-3">
-        <input
-          type="text"
-          placeholder="Search chats..."
-          className="w-full px-3 py-2 text-sm rounded-lg 
-    bg-black/5 dark:bg-white/5 
-    focus:outline-none focus:ring-1 focus:ring-gray-400"
-          onChange={(e) => {
-            const value = e.target.value.toLowerCase();
+      {!collapsed && (
+        <div className="px-3 mb-3">
+          <input
+            type="text"
+            placeholder="Чат хайх..."
+            value={search}
+            onChange={(e) => {
+              const value = e.target.value;
+              setSearch(value);
 
-            const filtered = history.filter((chat) =>
-              chat.title?.toLowerCase().includes(value),
-            );
-            setFilteredChats(filtered);
-          }}
-        />
-      </div>
+              if (!value.trim()) {
+                setFilteredChats([]);
+                return;
+              }
+
+              const filtered = history.filter((chat) =>
+                chat.title?.toLowerCase().includes(value.toLowerCase()),
+              );
+
+              setFilteredChats(filtered);
+            }}
+            className="w-full px-3 py-2 text-sm rounded-lg 
+  bg-black/5 dark:bg-white/5 
+  focus:outline-none"
+          />
+          {search && filteredChats.length > 0 && (
+            <div className="mt-2 bg-white dark:bg-slate-900 rounded-lg shadow-lg border border-black/10 dark:border-white/10 max-h-60 overflow-y-auto">
+              {filteredChats.map((chat) => (
+                <div
+                  key={chat.id}
+                  onClick={() => {
+                    onSelectChat(chat.id);
+                    setSearch("");
+                    setFilteredChats([]);
+                  }}
+                  className="px-3 py-2 text-sm cursor-pointer
+    hover:bg-black/5 dark:hover:bg-white/10 transition"
+                >
+                  {chat.title}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
       <div className="flex-1 overflow-y-auto px-2 py-3 scrollbar-thin scrollbar-thumb-white/10 ">
         {pinnedChats.length > 0 && (
           <div className="space-y-1">
-            <p className="px-3 text-xs text-gray-500 mb-2">Pinned</p>
+            {!collapsed && (
+              <p className="px-3 text-xs text-gray-500 mb-2">Pinned</p>
+            )}
             {pinnedChats.map((chat) => renderChatItem(chat))}
             <div className="h-px bg-black/5 dark:bg-white/5 mx-3 my-4" />
           </div>
         )}
 
         <div className="space-y-1">
-          <p className="px-3 text-xs text-gray-500 mt-4 mb-2">Recent</p>
+          {!collapsed && (
+            <p className="px-3 text-xs text-gray-500 mt-4 mb-2">Recent</p>
+          )}
           {recentChats.length > 0
             ? recentChats.map((chat) => renderChatItem(chat))
             : pinnedChats.length === 0 && (
@@ -260,7 +342,7 @@ export const ChatHistory = ({
                   const timeout = setTimeout(() => {
                     onDeleteChat(chatToDelete.id);
                     setPendingDelete(null);
-                  }, 5000);
+                  }, 2000);
 
                   toast.error(
                     `"${chatToDelete.title || "New chat"}" устгах гэж байна`,
