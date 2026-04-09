@@ -57,6 +57,7 @@ model User {
   name        String?
   imageUrl    String?
   role        UserRole @default(USER)
+  storeName   String?
 
   cart   Cart?
   orders Order[]
