@@ -1,7 +1,6 @@
 import React from "react";
 import { ClerkAuth } from "./Clerk";
 import { DarkMode } from "./DarkMode";
-import { LogoTemp } from "./LogoTemp";
 
 export const ComHeader = ({ toggleSidebar }: { toggleSidebar: () => void }) => {
   return (
