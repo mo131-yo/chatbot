@@ -4,6 +4,7 @@ import { Trash2, Edit2, Pin, PinOff } from "lucide-react";
 
 import { GiPin } from "react-icons/gi";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 interface Chat {
   id: string;
   title: string;
