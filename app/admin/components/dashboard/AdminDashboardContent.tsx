@@ -14,7 +14,6 @@ export default function AdminDashboardContent({
 }) {
   const router = useRouter();
 
-  // Zustand-аас утга болон функцийг авах
   const storeName = useAppStore((state) => state.storeName);
   const setStoreName = useAppStore((state) => state.setStoreName);
 
@@ -22,14 +21,12 @@ export default function AdminDashboardContent({
   const [isSettingUp, setIsSettingUp] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
 
-  // 1. Хуудас ачаалагдах үед props-оор ирсэн нэрийг Zustand-д нэг удаа хадгалах
   useEffect(() => {
     if (initialStoreName && !storeName) {
       setStoreName(initialStoreName);
     }
   }, [initialStoreName, setStoreName, storeName]);
 
-  // 2. Бараа татах функц
   const fetchProducts = async () => {
     if (!storeName) return;
     try {
@@ -50,14 +47,12 @@ export default function AdminDashboardContent({
     }
   };
 
-  // storeName өөрчлөгдөх бүрт барааг шинэчилж татах
   useEffect(() => {
     if (storeName) {
       fetchProducts();
     }
   }, [storeName]);
 
-  // 3. Дэлгүүр үүсгэх функц
   const handleSetupStore = async () => {
     if (!tempName.trim()) return;
     setIsSettingUp(true);
@@ -70,7 +65,6 @@ export default function AdminDashboardContent({
       });
 
       if (res.ok) {
-        // Zustand-д нэрийг хадгалснаар систем даяар "санана"
         setStoreName(tempName.trim());
         router.refresh(); 
       } else {
@@ -84,7 +78,6 @@ export default function AdminDashboardContent({
     }
   };
 
-  // Дэлгүүр бүртгэлгүй үеийн UI
   if (!storeName) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-white transition-colors duration-300 px-4">
@@ -126,7 +119,6 @@ export default function AdminDashboardContent({
     );
   }
 
-  // Үндсэн Dashboard
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center">
@@ -135,7 +127,7 @@ export default function AdminDashboardContent({
            <h1 className="text-4xl font-black italic text-white">{storeName}</h1>
         </div>
         <ProductForm 
-            key={storeName} // storeName солигдоход формыг reset хийнэ
+            key={storeName} 
             storeName={storeName} 
             onSuccess={fetchProducts} 
         />
