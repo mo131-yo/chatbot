@@ -1,14 +1,15 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
-  serverExternalPackages: ["pg", "prisma", "@prisma/client"],
+/** @type {import('next').NextConfig} */
+const nextConfig: any = {
+  serverExternalPackages: ["@prisma/client", "prisma"],
 
   images: {
     remotePatterns: [
       {
         protocol: 'https',
         hostname: 'res.cloudinary.com',
-        pathname: '/**',
+        pathname: '/**', 
       },
     ],
   },
@@ -17,7 +18,6 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   
-  // @ts-ignore
   eslint: {
     ignoreDuringBuilds: true,
   },
