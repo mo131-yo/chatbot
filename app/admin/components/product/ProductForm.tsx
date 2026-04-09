@@ -65,7 +65,6 @@ export default function ProductForm({ onSuccess, initialData, onClose, storeName
 
 
   const handleSubmit = async () => {
-    // 1. Debug: storeName ирж байгаа эсэхийг шалгах
     console.log("Submit эхлэх үеийн storeName:", storeName);
 
     if (!storeName || storeName === "undefined" || storeName === "null") {
@@ -78,9 +77,8 @@ export default function ProductForm({ onSuccess, initialData, onClose, storeName
   
     setIsSubmitting(true);
     try {
-      let imageUrl = previews[0] || ""; // Хуучин зураг байвал авна
+      let imageUrl = previews[0] || ""; 
 
-      // Шинэ зураг сонгосон бол Cloudinary руу хуулна
       if (imageFiles.length > 0) {
         const cloudData = new FormData();
         cloudData.append("file", imageFiles[0]);
@@ -97,7 +95,6 @@ export default function ProductForm({ onSuccess, initialData, onClose, storeName
         imageUrl = cloudJson.secure_url;
       }
 
-      // API руу илгээх дата
       const payload = {
         ...formData,
         imageUrl,
@@ -118,7 +115,6 @@ export default function ProductForm({ onSuccess, initialData, onClose, storeName
         setToastMsg(initialData ? "Амжилттай шинэчлэгдлээ!" : "Амжилттай бүртгэгдлээ!");
         setShowToast(true);
         
-        // Form-ыг цэвэрлэх (хэрэв шинээр нэмж байгаа бол)
         if (!initialData) {
             setFormData({ name: "", price: "", description: "", brand: "", category: "", stock: "", color: "", size: "" });
             setPreviews([]);
@@ -246,7 +242,6 @@ export default function ProductForm({ onSuccess, initialData, onClose, storeName
   );
 }
 
-// Туслах компонентууд
 function Section({ title, icon, children }: any) {
   return (
     <div className="space-y-4">
