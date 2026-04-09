@@ -1,12 +1,12 @@
 "use client";
-
+ 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { motion, type PanInfo } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { ProductCard } from "./components/ProductCard";
 import { FavoritesDrawer } from "./components/FavortitesDrawer";
 import { useCart } from "@/app/context/CartContext";
-
+ 
 export default function HorizontalProductStack({
   products = [],
   onSelect = () => {},
@@ -18,7 +18,7 @@ export default function HorizontalProductStack({
   const [favoriteProducts, setFavoriteProducts] = useState<any[]>([]);
   const lastNavigationTime = useRef(0);
   const { addToCart } = useCart();
-
+ 
   const refreshFavorites = async () => {
     const res = await fetch("/chat/api/favorites");
     if (res.ok) {
@@ -27,19 +27,19 @@ export default function HorizontalProductStack({
       setSavedIds(data.map((f: any) => f.productId));
     }
   };
-
+ 
   useEffect(() => {
     refreshFavorites();
     const handleOpen = () => setIsFavoritesOpen(true);
     window.addEventListener("openFavorites", handleOpen);
     return () => window.removeEventListener("openFavorites", handleOpen);
   }, []);
-
+ 
   const handleSave = useCallback(
     async (product: any) => {
       const id = product.id;
       const isSaving = !savedIds.includes(id);
-
+ 
       const nextCount = isSaving
         ? savedIds.length + 1
         : Math.max(0, savedIds.length - 1);
@@ -48,7 +48,7 @@ export default function HorizontalProductStack({
           detail: { count: nextCount },
         }),
       );
-
+ 
       if (isSaving) {
         setSavedIds((prev) => [...prev, id]);
         setFavoriteProducts((prev) => [
@@ -60,7 +60,7 @@ export default function HorizontalProductStack({
         setSavedIds((prev) => prev.filter((s) => s !== id));
         setFavoriteProducts((prev) => prev.filter((p) => p.productId !== id));
       }
-
+ 
       fetch("/chat/api/favorites", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -73,9 +73,9 @@ export default function HorizontalProductStack({
         }),
       }).catch((e) => {
         console.error("Save failed", e);
-
+ 
         refreshFavorites();
-
+ 
         window.dispatchEvent(
           new CustomEvent("updateFavoriteCount", { detail: {} }),
         );
@@ -83,7 +83,7 @@ export default function HorizontalProductStack({
     },
     [savedIds, favoriteProducts],
   );
-
+ 
   const navigate = useCallback(
     (newDir: number) => {
       const now = Date.now();
@@ -101,7 +101,7 @@ export default function HorizontalProductStack({
     },
     [products.length],
   );
-
+ 
   const getCardStyle = (index: number) => {
     let diff = index - currentIndex;
     const total = products.length;
@@ -123,24 +123,16 @@ export default function HorizontalProductStack({
       };
     return { x: diff > 0 ? 500 : -500, scale: 0.5, opacity: 0, zIndex: 0 };
   };
-
+ 
   return (
     <div className="relative flex h-[550px] w-full items-center justify-center overflow-visible select-none">
-      <FavoritesDrawer
-        isOpen={isFavoritesOpen}
-        onClose={() => setIsFavoritesOpen(false)}
-        favorites={favoriteProducts}
-        onRemove={(p: any) => handleSave(p)}
-        onAddToCart={(p: any) => addToCart(p)}
-      />
-
       <button
         onClick={() => navigate(-1)}
         className="absolute left-4 z-[60] p-3 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white"
       >
         <ChevronLeft />
       </button>
-
+ 
       <div
         className="relative flex h-full w-full items-center justify-center"
         style={{ perspective: "1000px" }}
@@ -176,7 +168,7 @@ export default function HorizontalProductStack({
           );
         })}
       </div>
-
+ 
       <button
         onClick={() => navigate(1)}
         className="absolute right-4 z-[60] p-3 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white"

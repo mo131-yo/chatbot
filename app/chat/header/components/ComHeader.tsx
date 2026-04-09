@@ -13,7 +13,6 @@ export const ComHeader = ({ toggleSidebar }: { toggleSidebar: () => void }) => {
         <span>Menu</span>
       </button>
 
-      <LogoTemp />
       <div className="flex items-center gap-4">
         <ClerkAuth collapsed />
         <DarkMode collapsed />

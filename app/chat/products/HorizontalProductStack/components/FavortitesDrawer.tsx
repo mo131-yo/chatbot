@@ -1,15 +1,61 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Trash2, Heart, ShoppingBag } from "lucide-react";
+import { useCart } from "@/app/context/CartContext";
 
-export const FavoritesDrawer = ({
-  isOpen,
-  onClose,
-  favorites,
-  onRemove,
-  onAddToCart,
-}: any) => {
+interface FavoritesDrawerProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export const FavoritesDrawer = ({ isOpen, onClose }: FavoritesDrawerProps) => {
+  const [favorites, setFavorites] = useState<any[]>([]);
+  const { addToCart } = useCart();
+
+  const fetchFavorites = async () => {
+    try {
+      const res = await fetch("/chat/api/favorites");
+      if (res.ok) {
+        const data = await res.json();
+        setFavorites(data);
+      }
+    } catch (error) {
+      console.error("Error fetching favorites:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchFavorites();
+    }
+  }, [isOpen]);
+
+  const handleRemove = async (productId: string) => {
+    try {
+      const updatedFavorites = favorites.filter(
+        (f) => (f.productId || f.id) !== productId,
+      );
+      setFavorites(updatedFavorites);
+
+      window.dispatchEvent(
+        new CustomEvent("updateFavoriteCount", {
+          detail: { count: updatedFavorites.length },
+        }),
+      );
+
+      await fetch("/chat/api/favorites", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productId }),
+      });
+    } catch (e) {
+      console.error("Remove error:", e);
+      fetchFavorites();
+    }
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -43,7 +89,7 @@ export const FavoritesDrawer = ({
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
               {favorites.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-white/20 italic">
                   <Heart size={48} className="mb-4 opacity-5" />
@@ -51,13 +97,15 @@ export const FavoritesDrawer = ({
                 </div>
               ) : (
                 favorites.map((f: any) => {
-                  const item = f.product || f; // Баазаас ирсэн эсвэл түр зуурын датаг аль алиныг нь унших
+                  const item = f.product || f;
                   const displayImg =
                     item.images?.[0] || item.image || "/default-product.png";
+                  const pId = f.productId || f.id;
+
                   return (
                     <motion.div
                       layout
-                      key={f.productId || f.id}
+                      key={pId}
                       className="group flex gap-4 p-3 rounded-2xl bg-white/5 border border-white/5 hover:border-[#C5A059]/30 transition-all"
                     >
                       <div className="h-20 w-20 rounded-xl overflow-hidden bg-white/5 shrink-0">
@@ -69,21 +117,24 @@ export const FavoritesDrawer = ({
                       </div>
                       <div className="flex flex-col justify-between py-1 flex-1">
                         <h3 className="text-white font-medium line-clamp-1 text-sm">
-                          {item.name || item.product_name}
+                          {item.name || "Нэргүй бараа"}
                         </h3>
                         <p className="text-[#C5A059] font-bold">
                           {item.price?.toLocaleString()}₮
                         </p>
                         <button
-                          onClick={() => onAddToCart(item)}
+                          onClick={() => {
+                            addToCart(item);
+                            onClose();
+                          }}
                           className="text-[10px] text-white/50 flex items-center gap-1 hover:text-[#C5A059] transition-colors"
                         >
                           <ShoppingBag size={12} /> Сагслах
                         </button>
                       </div>
                       <button
-                        onClick={() => onRemove(item)}
-                        className="p-2 text-white/20 hover:text-red-500 self-center"
+                        onClick={() => handleRemove(pId)}
+                        className="p-2 text-white/20 hover:text-red-500 self-center transition-colors"
                       >
                         <Trash2 size={18} />
                       </button>
@@ -92,10 +143,11 @@ export const FavoritesDrawer = ({
                 })
               )}
             </div>
-            <div className="p-6 border-t border-white/5">
+
+            <div className="p-6 border-t border-white/5 bg-[#121212]">
               <button
                 onClick={onClose}
-                className="w-full py-4 bg-[#C5A059] text-black rounded-2xl font-bold hover:brightness-110 transition-all"
+                className="w-full py-4 bg-[#C5A059] text-black rounded-2xl font-bold hover:brightness-110 active:scale-[0.98] transition-all"
               >
                 Үргэлжлүүлэн үзэх
               </button>

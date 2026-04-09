@@ -1,5 +1,6 @@
 "use client";
-import React, { useState, useRef, useLayoutEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { useUser } from "@clerk/nextjs";
 import { useChatLogic } from "./chat/hooks/useChatLogic";
 import { SparklesCore } from "@/lib/utils/chat-animation/sparkles";
 import { useScrollEffect } from "./chat/hooks/useScrollEffect";
@@ -7,18 +8,19 @@ import { MessageList } from "./chat/homeChat/product/message-list";
 import { WelcomeSection } from "./chat/homeChat/robot-text/welcome-section";
 
 import { ProductDetailSidebar } from "./chat/products/detail/ProductDetailSidebar";
+import { FavoritesDrawer } from "./chat/products/HorizontalProductStack/components/FavortitesDrawer";
 import Sidebar from "./chat/sidebar/page";
 import Header from "./chat/header/page";
 import ChatInput from "./chat/chatInput/page";
 
 export default function Home() {
+  const { user, isLoaded } = useUser();
   const {
     activeChatId,
     setActiveChatId,
     allChats,
     sidebarHistory,
     isTyping,
-
     sendMessage,
     isLoading,
     addVisualResult,
@@ -28,34 +30,42 @@ export default function Home() {
 
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
   const currentChatMessages = activeChatId ? allChats[activeChatId] || [] : [];
 
   useScrollEffect(messagesEndRef, [currentChatMessages, isTyping]);
 
+  useEffect(() => {
+    const handleOpenFavorites = () => setIsFavoritesOpen(true);
+    window.addEventListener("openFavorites", handleOpenFavorites);
+    return () =>
+      window.removeEventListener("openFavorites", handleOpenFavorites);
+  }, []);
+
   const buyProduct = async (productName: string, productPrice?: any) => {
     const exactPrice = Number(productPrice).toLocaleString();
     const userMsg = `Bi яг ${exactPrice}₮ үнэтэй "${productName}"-г авмаар байна. Төлбөрөө яаж төлөх вэ?`;
-
     await sendMessage(userMsg);
   };
 
-  const toggleSidebar = () => {
-    setIsCollapsed(!isCollapsed);
-  };
+  const toggleSidebar = () => setIsCollapsed(!isCollapsed);
 
   return (
-    <div className="flex min-h-screen bg-slate-50 dark:bg-[#0D0D0D] transition-colors duration-300 overflow-hidden text-slate-900 dark:text-white">
+    <div className="flex min-h-screen bg-slate-50 dark:bg-[#0D0D0D] transition-colors duration-300 overflow-hidden text-slate-900 dark:text-white relative">
       <ProductDetailSidebar
         product={selectedProduct}
         onClose={() => setSelectedProduct(null)}
         onBuy={(name: string) => buyProduct(name, selectedProduct?.price)}
       />
+
+      <FavoritesDrawer
+        isOpen={isFavoritesOpen}
+        onClose={() => setIsFavoritesOpen(false)}
+      />
+
       <Sidebar
-        collapsed={isCollapsed}
-        toggleSidebar={toggleSidebar}
         isCollapsed={isCollapsed}
         history={sidebarHistory || []}
         onNewChat={() => setActiveChatId(null)}
@@ -67,6 +77,7 @@ export default function Home() {
 
       <div className="flex-1 flex flex-col min-w-0 h-screen relative">
         <Header toggleSidebar={toggleSidebar} />
+
         <div className="absolute inset-0 z-0 pointer-events-none">
           <SparklesCore
             id="tsparticlesfullpage"
@@ -75,12 +86,16 @@ export default function Home() {
             maxSize={1.4}
             particleDensity={30}
             className="w-full h-full"
-            particleColor="#0A84FF"
+            particleColor="#C5A059"
           />
         </div>
+
         <main className="flex-1 overflow-y-auto bg-transparent p-4 custom-scrollbar relative z-10">
           {currentChatMessages.length === 0 ? (
-            <WelcomeSection onSelect={(q) => sendMessage(q)} />
+            <WelcomeSection
+              onSelect={(q) => sendMessage(q)}
+              userName={isLoaded ? user?.firstName : null}
+            />
           ) : (
             <MessageList
               messages={currentChatMessages}

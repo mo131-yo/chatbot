@@ -1,7 +1,7 @@
 import { Menu } from "lucide-react";
 
 export const MenuToggle = ({ onClick }: { onClick: () => void }) => (
-  <button 
+  <button
     onClick={onClick}
     className="p-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-colors"
   >

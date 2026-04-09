@@ -2,10 +2,10 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { Pinecone } from "@pinecone-database/pinecone";
-
+ 
 const pc = new Pinecone({ apiKey: process.env.PINECONE_API_KEY! });
 const index = pc.index(process.env.PINECONE_NAME!);
-
+ 
 export async function PATCH(req: Request) {
   try {
     const { userId } = await auth();
@@ -14,7 +14,7 @@ export async function PATCH(req: Request) {
         { success: false, error: "Unauthorized" },
         { status: 401 },
       );
-
+ 
     const body = await req.json();
     const {
       id,
@@ -28,18 +28,18 @@ export async function PATCH(req: Request) {
       color,
       size,
     } = body;
-
+ 
     if (!id)
       return NextResponse.json(
         { success: false, error: "ID шаардлагатай" },
         { status: 400 },
       );
-
+ 
     const numericPrice = parseFloat(price) || 0;
     const numericStock = parseInt(stock?.toString() || "0", 10);
-
+ 
     const categoryName = category || "General";
-
+ 
     const categoryRecord = await prisma.category.upsert({
       where: { name: categoryName },
       update: {},
@@ -48,24 +48,24 @@ export async function PATCH(req: Request) {
         slug: categoryName.toLowerCase().trim().replace(/\s+/g, "-"),
       },
     });
-
+ 
     const updatedProduct = await prisma.product.upsert({
       where: { id: id },
       update: {
-        name,
+        name: name,
         price: numericPrice,
         description: description || "",
         brand: brand || "",
         stock: numericStock,
         images: imageUrl ? [imageUrl] : undefined,
-
+ 
         category: {
           connect: { id: categoryRecord.id },
         },
       },
       create: {
         id: id,
-        name,
+        name: name,
         price: numericPrice,
         description: description || "",
         brand: brand || "",
@@ -74,14 +74,13 @@ export async function PATCH(req: Request) {
         slug:
           name?.toLowerCase().trim().replace(/\s+/g, "-") ||
           `prod-${Date.now()}`,
-   
+ 
         category: {
           connect: { id: categoryRecord.id },
         },
       },
     });
-
-
+ 
     await index.namespace(userId).update({
       id: id,
       metadata: {
@@ -94,7 +93,7 @@ export async function PATCH(req: Request) {
         stock: numericStock,
       },
     });
-
+ 
     return NextResponse.json({ success: true, product: updatedProduct });
   } catch (error: any) {
     console.error("UPDATE_ERROR:", error);

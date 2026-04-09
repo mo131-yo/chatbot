@@ -1,5 +1,5 @@
 "use client";
-
+import React from "react";
 import { motion } from "framer-motion";
 
 const suggestions = [
@@ -16,7 +16,12 @@ const floatingOrbs = [
   { size: 100, x: "20%", y: "70%", color: "#0A84FF", delay: 3, duration: 9 },
 ];
 
-export function WelcomeSection({ onSelect }: { onSelect: (q: string) => void }) {
+interface WelcomeSectionProps {
+  onSelect: (q: string) => void;
+  userName?: string | null;
+}
+
+export function WelcomeSection({ onSelect, userName }: WelcomeSectionProps) {
   return (
     <div className="relative flex flex-col items-center justify-center min-h-[70vh] overflow-hidden select-none">
       {floatingOrbs.map((orb, i) => (
@@ -51,11 +56,20 @@ export function WelcomeSection({ onSelect }: { onSelect: (q: string) => void }) 
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="relative mb-8"
       >
-        <div className="w-20 h-20 rounded-3xl bg-linear-to-br from-[#C5A059] to-[#8B6F35] flex items-center justify-center shadow-2xl shadow-[#C5A059]/30">
+        <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-[#C5A059] to-[#8B6F35] flex items-center justify-center shadow-2xl shadow-[#C5A059]/30">
           <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-            <path d="M8 20C8 13.373 13.373 8 20 8s12 5.373 12 12-5.373 12-12 12S8 26.627 8 20z" fill="white" fillOpacity="0.2"/>
-            <path d="M14 20h12M20 14v12" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
-            <circle cx="20" cy="20" r="3" fill="white"/>
+            <path
+              d="M8 20C8 13.373 13.373 8 20 8s12 5.373 12 12-5.373 12-12 12S8 26.627 8 20z"
+              fill="white"
+              fillOpacity="0.2"
+            />
+            <path
+              d="M14 20h12M20 14v12"
+              stroke="white"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            />
+            <circle cx="20" cy="20" r="3" fill="white" />
           </svg>
         </div>
         <motion.div
@@ -71,8 +85,8 @@ export function WelcomeSection({ onSelect }: { onSelect: (q: string) => void }) 
         transition={{ duration: 0.5, delay: 0.2 }}
         className="text-center mb-3"
       >
-        <h1 className="text-3xl md:text-4xl font-black text-white mb-2 tracking-tight">
-          Сайн байна уу! 👋
+        <h1 className="text-3xl md:text-5xl font-black text-white mb-2 tracking-tight">
+          Сайн байна уу{userName ? `, ${userName}` : ""}! 👋
         </h1>
         <p className="text-white/50 text-base md:text-lg">
           Юу хайж байна вэ? Би танд тусална.
@@ -88,9 +102,6 @@ export function WelcomeSection({ onSelect }: { onSelect: (q: string) => void }) 
         {suggestions.map((item, i) => (
           <motion.button
             key={i}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.5 + i * 0.08 }}
             whileHover={{ scale: 1.04, y: -2 }}
             whileTap={{ scale: 0.97 }}
             onClick={() => onSelect(item.query)}

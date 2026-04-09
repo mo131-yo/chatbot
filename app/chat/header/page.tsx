@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { FaShoppingCart, FaHeart } from "react-icons/fa";
 import { LogoTemp, MenuToggle } from "./components";
 import { useCart } from "@/app/context/CartContext";
+import { MenuToggle } from "./components";
 
 export default function Header({
   toggleSidebar,
@@ -13,13 +14,27 @@ export default function Header({
   const { cartCount, setIsCartOpen } = useCart();
   const [favoriteCount, setFavoriteCount] = useState(0);
 
+  const refreshCount = async () => {
+    try {
+      const res = await fetch("/chat/api/favorites");
+      if (res.ok) {
+        const data = await res.json();
+        setFavoriteCount(data.length);
+      }
+    } catch (err) {
+      console.error("Fetch favorites error:", err);
+    }
+  };
+
   useEffect(() => {
-    fetch("/chat/api/favorites")
-      .then((res) => res.json())
-      .then((data) => setFavoriteCount(data.length));
+    refreshCount();
 
     const handleInstantUpdate = (e: any) => {
-      setFavoriteCount(e.detail.count);
+      if (e?.detail && typeof e.detail.count === "number") {
+        setFavoriteCount(e.detail.count);
+      } else {
+        refreshCount();
+      }
     };
 
     window.addEventListener("updateFavoriteCount", handleInstantUpdate);
@@ -39,7 +54,9 @@ export default function Header({
           className="relative p-3 hover:bg-white/10 rounded-full transition-all"
         >
           <FaHeart
-            className={`text-xl transition-colors duration-100 ${favoriteCount > 0 ? "text-red-500" : "text-[#C5A059]"}`}
+            className={`text-xl transition-colors duration-100 ${
+              favoriteCount > 0 ? "text-red-500" : "text-[#C5A059]"
+            }`}
           />
 
           {favoriteCount > 0 && (
