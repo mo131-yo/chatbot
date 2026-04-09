@@ -41,8 +41,6 @@ export default function RevenueChart() {
 
         if (!grouped[day]) grouped[day] = 0;
 
-        grouped[day] += total;
-      });
       const chartData = Object.entries(grouped).map(([day, revenue]) => ({
         day,
         revenue,

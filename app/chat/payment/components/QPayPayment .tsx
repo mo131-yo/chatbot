@@ -22,13 +22,9 @@ const QPayPayment = ({ amount, orderId, onSuccess, onCancel }: QPayPaymentProps)
 
   const handleVerify = async () => {
     setStatus('PROCESSING');
+    
     setTimeout(() => {
       setStatus('SUCCESS');
-      onSuccess({
-        transactionId: `QPY-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
-        amount,
-        date: new Date().toLocaleString(),
-      });
     }, 2000);
   };
 
@@ -39,7 +35,7 @@ const QPayPayment = ({ amount, orderId, onSuccess, onCancel }: QPayPaymentProps)
   };
 
   return (
-    <div className="fixed inset-0 z-200 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
       <motion.div 
         initial={{ opacity: 0 }} 
         animate={{ opacity: 0.7 }} 
@@ -142,10 +138,16 @@ const QPayPayment = ({ amount, orderId, onSuccess, onCancel }: QPayPaymentProps)
                 </div>
 
                 <button
-                  onClick={onCancel}
-                  className="w-full py-4 bg-white/5 hover:bg-white/10 text-white rounded-2xl text-sm font-bold border border-white/10 transition-all"
+                  onClick={() => {
+                    onSuccess({
+                      transactionId: `QPY-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
+                      amount,
+                      date: new Date().toLocaleString(),
+                    });
+                  }}
+                  className="w-full py-4 bg-[#C5A059] hover:bg-[#d4b476] text-black rounded-2xl text-sm font-bold shadow-lg transition-all"
                 >
-                  ХААХ
+                  ЗАХИАЛГА ХАРАХ
                 </button>
               </motion.div>
             )}
