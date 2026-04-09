@@ -42,7 +42,7 @@ export default function RootLayout({
               disableTransitionOnChange
             >
               {children}
-
+           
               <CartSidebar />
             </ThemeProvider>
           </CartProvider>

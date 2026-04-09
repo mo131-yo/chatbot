@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
+import { useUser } from "@clerk/nextjs";
 import { useChatLogic } from "./chat/hooks/useChatLogic";
 import { SparklesCore } from "@/lib/utils/chat-animation/sparkles";
 import { useScrollEffect } from "./chat/hooks/useScrollEffect";
@@ -13,6 +14,7 @@ import Header from "./chat/header/page";
 import ChatInput from "./chat/chatInput/page";
 
 export default function Home() {
+  const { user, isLoaded } = useUser();
   const {
     activeChatId,
     setActiveChatId,
@@ -28,7 +30,6 @@ export default function Home() {
 
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
-
   const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -37,9 +38,7 @@ export default function Home() {
   useScrollEffect(messagesEndRef, [currentChatMessages, isTyping]);
 
   useEffect(() => {
-    const handleOpenFavorites = () => {
-      setIsFavoritesOpen(true);
-    };
+    const handleOpenFavorites = () => setIsFavoritesOpen(true);
     window.addEventListener("openFavorites", handleOpenFavorites);
     return () =>
       window.removeEventListener("openFavorites", handleOpenFavorites);
@@ -51,12 +50,10 @@ export default function Home() {
     await sendMessage(userMsg);
   };
 
-  const toggleSidebar = () => {
-    setIsCollapsed(!isCollapsed);
-  };
+  const toggleSidebar = () => setIsCollapsed(!isCollapsed);
 
   return (
-    <div className="flex min-h-screen bg-slate-50 dark:bg-[#0D0D0D] transition-colors duration-300 overflow-hidden text-slate-900 dark:text-white">
+    <div className="flex min-h-screen bg-slate-50 dark:bg-[#0D0D0D] transition-colors duration-300 overflow-hidden text-slate-900 dark:text-white relative">
       <ProductDetailSidebar
         product={selectedProduct}
         onClose={() => setSelectedProduct(null)}
@@ -89,13 +86,16 @@ export default function Home() {
             maxSize={1.4}
             particleDensity={30}
             className="w-full h-full"
-            particleColor="#0A84FF"
+            particleColor="#C5A059"
           />
         </div>
 
         <main className="flex-1 overflow-y-auto bg-transparent p-4 custom-scrollbar relative z-10">
           {currentChatMessages.length === 0 ? (
-            <WelcomeSection onSelect={(q) => sendMessage(q)} />
+            <WelcomeSection
+              onSelect={(q) => sendMessage(q)}
+              userName={isLoaded ? user?.firstName : null}
+            />
           ) : (
             <MessageList
               messages={currentChatMessages}
