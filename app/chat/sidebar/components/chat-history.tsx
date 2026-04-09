@@ -4,6 +4,7 @@ import { Ellipsis, Trash2, Edit2, Share2, Pin, PinOff } from "lucide-react";
 
 import { GiPin } from "react-icons/gi";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface Chat {
   id: string;
@@ -208,7 +209,7 @@ export const ChatHistory = ({
               <p className="text-sm text-slate-500 dark:text-slate-400 text-center">
                 Та энэ
                 "
-                <span className="font-bold text-slate-800 dark:text-slate-200">
+                <span className="font-bold truncate max-w-50 inline-block align-middle">
                    {deleteTarget.title || "New chat"}
                 </span>
                 " чатыг устгахдаа итгэлтэй байна уу?
