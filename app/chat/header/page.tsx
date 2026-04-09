@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { FaShoppingCart, FaHeart } from "react-icons/fa";
-import { NavActions } from "./components";
+import { LogoTemp, MenuToggle } from "./components";
 import { useCart } from "@/app/context/CartContext";
 import { MenuToggle } from "./components";
 
@@ -43,9 +43,9 @@ export default function Header({
   }, []);
 
   return (
-    <header className="sticky top-0 z-50 flex items-center justify-between px-6 py-4 border-b border-white/6 bg-[#0D0D0D] backdrop-blur-md">
+    <header className="sticky top-0 z-9999 flex items-center justify-between px-6 py-4 border-b border-white/6 bg-[#0D0D0D] backdrop-blur-md">
       <div className="flex items-center gap-4">
-        <MenuToggle onClick={toggleSidebar} />
+        {/* <MenuToggle onClick={toggleSidebar} /> */}
       </div>
 
       <div className="flex items-center gap-3">
@@ -78,7 +78,7 @@ export default function Header({
           )}
         </button>
       </div>
-      <NavActions />
+      {/* <NavActions /> */}
     </header>
   );
 }

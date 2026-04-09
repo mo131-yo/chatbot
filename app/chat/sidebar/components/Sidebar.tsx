@@ -4,11 +4,21 @@ import { useCallback, useEffect, useState } from "react";
 import { ChatHistory } from "./chat-history";
 import { useRouter } from "next/dist/client/components/navigation";
 import { NewChatBtn } from "./new-chat-btn";
+import { Menu } from "lucide-react";
 
-export default function Sidebar() {
+
+export default function Sidebar({
+  collapsed,
+  setCollapsed,
+}: {
+  collapsed: boolean;
+  setCollapsed: (v: boolean) => void;
+}) {
   const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  // const [collapsed, setCollapsed] = useState(false);
+  // console.log("collapsed", collapsed);
 
   const fetchHistory = useCallback(async () => {
     try {
@@ -23,6 +33,8 @@ export default function Sidebar() {
       setHistory(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Fetch error:", error);
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -109,20 +121,37 @@ export default function Sidebar() {
   if (loading)
     return <div className="p-4 text-sm text-slate-500">Уншиж байна...</div>;
 
- return (
-  <aside className="flex flex-col h-screen w-72 
-  bg-white/70 dark:bg-[#0D0D0D]/70 backdrop-blur-xl">
+  return (
+    <aside
+      className={`flex flex-col h-screen relative z-20
+  transition-all duration-300
+  bg-white/70 dark:bg-[#0D0D0D]/70 backdrop-blur-xl
+  ${collapsed ? "w-16" : "w-72"}
+  overflow-visible
+`}
+    >
+      <div className="flex items-center justify-between p-2">
+        <button
+          onClick={() => setCollapsed(!collapsed)}
+          className="p-2 rounded-lg hover:bg-white/10 transition text-white"
+        >
+          <Menu size={20} className="text-white" />
+        </button>
+      </div>
+      <NewChatBtn onClick={() => console.log("new")} collapsed={collapsed} />
 
-    <NewChatBtn onClick={() => console.log("new")} />
-
-    <ChatHistory
-      history={history}
-      onSelectChat={(id) => console.log("Selected:", id)}
-      onPinChat={handlePin}
-      onRenameChat={handleRename}
-      onDeleteChat={handleDeleteChat}
-      onShareChat={handleShare}
-    />
-  </aside>
-);
+      <ChatHistory
+        collapsed={collapsed}
+        history={history}
+        onSelectChat={(id) => router.push(`/chat/${id}`)}
+        onPinChat={handlePin}
+        onRenameChat={handleRename}
+        onDeleteChat={handleDeleteChat}
+        onShareChat={handleShare}
+      />
+      <div>
+ 
+      </div>
+    </aside>
+  );
 }

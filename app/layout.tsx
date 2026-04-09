@@ -5,6 +5,9 @@ import { ThemeProvider } from "next-themes";
 import { ClerkProvider } from "@clerk/nextjs";
 import { CartProvider } from "./context/CartContext";
 import CartSidebar from "./chat/cart/frontend/components/CartSidebar";
+import { FavoriteDrawer } from "./store/components/FavoriteDrawer";
+import { Toaster } from "sonner";
+import Sidebar from "./chat/sidebar/page";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

@@ -1,6 +1,6 @@
 "use client";
 
-import { Moon, Sun, Monitor, Palette, Crown, Sparkles, Flower2, Trees, Zap } from "lucide-react";
+import { Palette } from "lucide-react";
 import { useTheme } from "next-themes";
 import {
   DropdownMenu,
@@ -9,46 +9,62 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export const DarkMode = () => {
+export const DarkMode = ({ collapsed }: { collapsed: boolean }) => {
   const { setTheme } = useTheme();
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="flex items-center justify-center rounded-full w-10 h-10 border border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/5 transition-all outline-none relative shrink-0">
-        <Palette className="h-5 w-5 text-slate-500 dark:text-slate-400" />
-        <span className="sr-only">Choose theme</span>
+      <DropdownMenuTrigger
+        className={`
+    group relative flex items-center rounded-xl py-2
+    transition-all duration-200 ease-out
+    hover:bg-black/5 dark:hover:bg-white/10
+    active:scale-[0.97]
+
+    ${collapsed ? "justify-center px-2" : "gap-2 px-3 w-full"}
+  `}
+      >
+        <Palette
+          className="
+      h-5 w-5
+      text-slate-500 dark:text-slate-400
+      group-hover:text-black dark:group-hover:text-white
+      transition
+    "
+        />
+        {collapsed && (
+          <div
+            className="
+      pointer-events-none
+      absolute left-full ml-3 top-1/2 -translate-y-1/2
+      px-2 py-1 rounded-md text-xs
+      bg-black/80 text-white
+      dark:bg-white dark:text-black
+      opacity-0 translate-x-[-6px]
+      group-hover:opacity-100 group-hover:translate-x-0
+      transition-all duration-200
+      whitespace-nowrap z-[9999]
+    "
+          >
+            Theme
+          </div>
+        )}
+        {!collapsed && (
+          <span className="text-sm text-slate-600 dark:text-slate-300 ">
+            Theme
+          </span>
+        )}
       </DropdownMenuTrigger>
-      
-      <DropdownMenuContent align="end" className="w-48 p-2">
-        <DropdownMenuItem onClick={() => setTheme("light")} className="gap-2 cursor-pointer">
-          <Sun className="h-4 w-4" /> <span>Light</span>
-        </DropdownMenuItem>
-        
-        <DropdownMenuItem onClick={() => setTheme("dark")} className="gap-2 cursor-pointer">
-          <Moon className="h-4 w-4" /> <span>Dark</span>
-        </DropdownMenuItem>
 
-        <DropdownMenuItem onClick={() => setTheme("minimalist")} className="gap-2 cursor-pointer">
-          <Sparkles className="h-4 w-4 text-blue-500" /> <span>Minimalist</span>
+      <DropdownMenuContent side="right" align="start" className="w-44">
+        <DropdownMenuItem onClick={() => setTheme("light")}>
+          ☀️ Light
         </DropdownMenuItem>
-
-        <DropdownMenuItem onClick={() => setTheme("midnight")} className="gap-2 cursor-pointer">
-          <Monitor className="h-4 w-4 text-indigo-500" /> <span>Midnight</span>
+        <DropdownMenuItem onClick={() => setTheme("dark")}>
+          🌙 Dark
         </DropdownMenuItem>
-
-        <DropdownMenuItem onClick={() => setTheme("luxury")} className="gap-2 cursor-pointer font-medium text-[#C5A059]">
-          <Crown className="h-4 w-4" /> <span>Luxury Gold</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("forest")} className="gap-2 cursor-pointer">
-          <Trees className="h-4 w-4 text-emerald-500" /> <span>Forest Deep</span>
-        </DropdownMenuItem>
-
-        <DropdownMenuItem onClick={() => setTheme("cyber")} className="gap-2 cursor-pointer">
-          <Zap className="h-4 w-4 text-purple-500" /> <span>Cyber Violet</span>
-        </DropdownMenuItem>
-
-        <DropdownMenuItem onClick={() => setTheme("rose")} className="gap-2 cursor-pointer">
-          <Flower2 className="h-4 w-4 text-rose-400" /> <span>Rose Quartz</span>
+        <DropdownMenuItem onClick={() => setTheme("system")}>
+          💻 System
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
