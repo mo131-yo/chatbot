@@ -126,14 +126,6 @@ export default function HorizontalProductStack({
 
   return (
     <div className="relative flex h-[550px] w-full items-center justify-center overflow-visible select-none">
-      <FavoritesDrawer
-        isOpen={isFavoritesOpen}
-        onClose={() => setIsFavoritesOpen(false)}
-        favorites={favoriteProducts}
-        onRemove={(p: any) => handleSave(p)}
-        onAddToCart={(p: any) => addToCart(p)}
-      />
-
       <button
         onClick={() => navigate(-1)}
         className="absolute left-4 z-[60] p-3 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white"
