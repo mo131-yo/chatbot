@@ -75,56 +75,6 @@ export async function POST(req: Request) {
         maxPrice *= 1000;
     }
 
-    // let context = "";
-    // try {
-    //   const embedding = await openai.embeddings.create({
-    //     model: "text-embedding-3-small",
-    //     input: lastUserMessage,
-    //   });
-
-    //   const namespaces = [
-    //     "",
-    //     "most_used_beauty_cosmetics-namespace",
-    //     "beauty-namespace",
-    //     "fashion-namespace",
-    //     "shoes-namespace",
-    //     "electronics-namespace",
-    //     "books-namespace",
-    //     "user_3BSwyjfHAMPysPTaXqJ5CkAIGfM",
-    //   ];
-
-    //   const queryPromises = namespaces.map((ns) =>
-    //     index.namespace(ns).query({
-    //       vector: embedding.data[0].embedding,
-    //       topK: 8,
-    //       includeMetadata: true,
-    //       filter: maxPrice
-    //         ? { price: { $lte: maxPrice } }
-    //         : undefined,
-    //     }),
-    //   );
-
-    //   const queryResults = await Promise.all(queryPromises);
-    //   const allMatches = queryResults.flatMap((res) => res.matches || []);
-
-    //   const topMatches = allMatches
-    //     .sort((a, b) => (b.score || 0) - (a.score || 0))
-    //     .slice(0, 10);
-
-    //   context = topMatches
-    //     .map(
-    //       (m) =>
-    //         `БҮТЭЭГДЭХҮҮН: ${m.metadata?.name || "Нэргүй"}
-    //         ҮНЭ: ${m.metadata?.price}₮
-    //         ЗУРАГ: ${m.metadata?.product_image_url || m.metadata?.image_url || m.metadata?.image || ""}
-    //         ТАЙЛБАР: ${m.metadata?.description || "Тайлбар байхгүй"}
-    //         ID: ${m.id}
-    //         STORE_ID: ${m.metadata?.store_id || "store-001"}`,
-    //     )
-    //     .join("\n---\n");
-    // } catch (err) {
-    //   console.error("Vector Search Error:", err);
-    // }
     let context = "";
     try {
       const embedding = await openai.embeddings.create({
@@ -142,7 +92,7 @@ export async function POST(req: Request) {
         "electronics-namespace",
         clerkUserId,
         "user_3BSwyjfHAMPysPTaXqJ5CkAIGfM",
-      ].filter(Boolean) as string[];
+      ];
 
       const queryPromises = namespaces.map((ns) =>
         index.namespace(ns).query({
@@ -159,7 +109,7 @@ export async function POST(req: Request) {
 
       const topMatches = allMatches
         .sort((a, b) => (b.score || 0) - (a.score || 0))
-        .slice(0, 15);
+        .slice(0, 10);
 
       context = topMatches
         .map(
