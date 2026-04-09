@@ -1,116 +1,170 @@
 "use client";
-import React from "react";
-import { motion } from "framer-motion";
+import React, { useRef } from "react";
+import { motion, useMotionValue, useSpring } from "framer-motion";
 
 const suggestions = [
-  { label: "👟 Nike гутал харуулаач", query: "Nike гутал харуулаач" },
-  { label: "💄 Косметик санал болго", query: "Шилдэг косметик санал болго" },
-  { label: "📱 iPhone 15 хэд вэ?", query: "iPhone 15 хэд вэ?" },
-  { label: "👗 Трэнд хувцас", query: "Энэ улиралд trending хувцас юу байна?" },
+  { label: "👟 Шинэ пүүз", query: "Шинэ пүүз харуулаач" },
+  { label: "👗 Үндэсний загвар", query: "Үндэсний хувцас харъя" },
+  { label: "💄 Гоо сайхан", query: "Шилдэг косметик" },
+  { label: "🚀 Трэнд", query: "Trending одоо юу байна?" },
 ];
 
-const floatingOrbs = [
-  { size: 300, x: "10%", y: "20%", color: "#C5A059", delay: 0, duration: 8 },
-  { size: 200, x: "75%", y: "10%", color: "#0A84FF", delay: 2, duration: 10 },
-  { size: 150, x: "60%", y: "65%", color: "#C5A059", delay: 1, duration: 7 },
-  { size: 100, x: "20%", y: "70%", color: "#0A84FF", delay: 3, duration: 9 },
-];
+function MagneticButton({
+  children,
+  onClick,
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+}) {
+  const ref = useRef<HTMLButtonElement>(null);
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
 
-interface WelcomeSectionProps {
-  onSelect: (q: string) => void;
-  userName?: string | null;
+  const springX = useSpring(x, { stiffness: 150, damping: 15 });
+  const springY = useSpring(y, { stiffness: 150, damping: 15 });
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const { clientX, clientY } = e;
+    const { left, top, width, height } = ref.current!.getBoundingClientRect();
+    const centerX = left + width / 2;
+    const centerY = top + height / 2;
+    x.set((clientX - centerX) * 0.35);
+    y.set((clientY - centerY) * 0.35);
+  };
+
+  const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
+
+  return (
+    <motion.button
+      ref={ref}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      onClick={onClick}
+      style={{ x: springX, y: springY }}
+      className="relative px-5 py-2.5 rounded-2xl bg-white/[0.03] border border-white/10 text-white/60 hover:text-white hover:border-[#C5A059]/40 hover:bg-white/[0.06] backdrop-blur-xl transition-all duration-300 group overflow-hidden"
+    >
+      <motion.div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#C5A059]/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+      <span className="relative z-10 text-sm font-medium tracking-wide">
+        {children}
+      </span>
+    </motion.button>
+  );
 }
 
-export function WelcomeSection({ onSelect, userName }: WelcomeSectionProps) {
+export function WelcomeSection({
+  onSelect,
+  userName,
+}: {
+  onSelect: (q: string) => void;
+  userName?: string | null;
+}) {
+  const firstName = userName ? userName.split(" ")[0] : "";
+
   return (
-    <div className="relative flex flex-col items-center justify-center min-h-[70vh] overflow-hidden select-none">
-      {floatingOrbs.map((orb, i) => (
+    <div className="relative flex flex-col items-center justify-center min-h-[80vh] overflow-hidden px-4">
+      <div className="absolute inset-0 z-0 opacity-40">
         <motion.div
-          key={i}
-          className="absolute rounded-full pointer-events-none"
-          style={{
-            width: orb.size,
-            height: orb.size,
-            left: orb.x,
-            top: orb.y,
-            background: `radial-gradient(circle, ${orb.color}18 0%, transparent 70%)`,
-            filter: "blur(40px)",
-          }}
           animate={{
-            y: [0, -30, 0],
-            scale: [1, 1.1, 1],
-            opacity: [0.4, 0.7, 0.4],
+            scale: [1, 1.15, 1],
+            opacity: [0.3, 0.5, 0.3],
+            x: [0, 30, 0],
           }}
-          transition={{
-            duration: orb.duration,
-            delay: orb.delay,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
+          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-1/4 left-1/4 w-[400px] h-[400px] bg-[#C5A059] rounded-full blur-[120px] mix-blend-screen"
         />
-      ))}
-
-      <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-        className="relative mb-8"
-      >
-        <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-[#C5A059] to-[#8B6F35] flex items-center justify-center shadow-2xl shadow-[#C5A059]/30">
-          <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-            <path
-              d="M8 20C8 13.373 13.373 8 20 8s12 5.373 12 12-5.373 12-12 12S8 26.627 8 20z"
-              fill="white"
-              fillOpacity="0.2"
-            />
-            <path
-              d="M14 20h12M20 14v12"
-              stroke="white"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            />
-            <circle cx="20" cy="20" r="3" fill="white" />
-          </svg>
-        </div>
         <motion.div
-          className="absolute inset-0 rounded-3xl border-2 border-[#C5A059]/40"
-          animate={{ scale: [1, 1.4], opacity: [0.6, 0] }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
+          animate={{
+            scale: [1.1, 1, 1.1],
+            opacity: [0.2, 0.4, 0.2],
+            x: [0, -30, 0],
+          }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute bottom-1/4 right-1/4 w-[350px] h-[350px] bg-[#0A84FF] rounded-full blur-[100px] mix-blend-screen"
         />
-      </motion.div>
+      </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-        className="text-center mb-3"
-      >
-        <h1 className="text-3xl md:text-5xl font-black text-white mb-2 tracking-tight">
-          Сайн байна уу{userName ? `, ${userName}` : ""}! 👋
-        </h1>
-        <p className="text-white/50 text-base md:text-lg">
-          Юу хайж байна вэ? Би танд тусална.
-        </p>
-      </motion.div>
+      <div className="relative z-10 text-center flex flex-col items-center max-w-4xl">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1 }}
+          className="mb-6 px-3 py-1 rounded-full border border-white/10 bg-white/5 backdrop-blur-md"
+        >
+          <span className="text-white/40 text-[10px] font-bold tracking-[0.3em] uppercase">
+            Modern Lifestyle Curated
+          </span>
+        </motion.div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.4 }}
-        className="flex flex-wrap gap-2 justify-center mt-6 max-w-lg px-4"
-      >
-        {suggestions.map((item, i) => (
-          <motion.button
-            key={i}
-            whileHover={{ scale: 1.04, y: -2 }}
-            whileTap={{ scale: 0.97 }}
-            onClick={() => onSelect(item.query)}
-            className="px-4 py-2 rounded-2xl bg-white/5 border border-white/10 text-white/70 text-sm backdrop-blur-sm hover:bg-white/10 hover:border-[#C5A059]/40 hover:text-white transition-all shadow-lg"
+        <h1 className="text-4xl md:text-6xl font-black text-white tracking-tighter mb-4 leading-tight">
+          <motion.span
+            initial={{ opacity: 0, filter: "blur(10px)" }}
+            animate={{ opacity: 1, filter: "blur(0px)" }}
+            transition={{ duration: 0.8 }}
           >
-            {item.label}
-          </motion.button>
-        ))}
-      </motion.div>
+            Сайн уу,{" "}
+          </motion.span>
+
+          {firstName && (
+            <motion.span
+              initial={{ opacity: 0, filter: "blur(15px)", y: 10 }}
+              animate={{ opacity: 1, filter: "blur(0px)", y: 0 }}
+              transition={{ delay: 0.4, duration: 1, ease: "easeOut" }}
+              className="relative inline-block bg-clip-text text-transparent bg-gradient-to-r from-[#C5A059] via-[#F3D395] to-[#C5A059] bg-[length:200%_auto] animate-shimmer px-2"
+            >
+              {firstName}!{}
+              <span className="absolute inset-0 blur-3xl bg-[#C5A059]/20 -z-10" />
+            </motion.span>
+          )}
+        </h1>
+
+        <div className="overflow-hidden mb-10">
+          <motion.p
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8, duration: 0.8 }}
+            className="text-lg md:text-xl font-light text-white/50 tracking-wide"
+          >
+            Өөрийн хэв маягийг{" "}
+            <span className="text-white/80 font-medium">эндээс ол.</span>
+          </motion.p>
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.2, duration: 1 }}
+          className="flex flex-wrap gap-3 justify-center"
+        >
+          {suggestions.map((item, i) => (
+            <MagneticButton key={i} onClick={() => onSelect(item.query)}>
+              {item.label}
+            </MagneticButton>
+          ))}
+        </motion.div>
+      </div>
+
+      <motion.div
+        animate={{ y: [0, 8, 0], opacity: [0.2, 0.5, 0.2] }}
+        transition={{ duration: 3, repeat: Infinity }}
+        className="absolute bottom-10 w-px h-10 bg-gradient-to-b from-white/20 to-transparent"
+      />
+
+      <style jsx global>{`
+        @keyframes shimmer {
+          0% {
+            background-position: -200% center;
+          }
+          100% {
+            background-position: 200% center;
+          }
+        }
+        .animate-shimmer {
+          animation: shimmer 5s linear infinite;
+        }
+      `}</style>
     </div>
   );
 }
