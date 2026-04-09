@@ -224,14 +224,8 @@ export const ChatHistory = ({
                       setPendingDeleteId(null);
                     }, 3000);
 
-                    toast.error("Chat deleted", {
-                      action: {
-                        label: "Undo",
-                        onClick: () => {
-                          clearTimeout(timeout);
-                          setPendingDeleteId(null);
-                        },
-                      },
+                    toast.error("Чатыг устгалаа", {
+                      action: { label: "Undo", onClick: () => { clearTimeout(timeout); setPendingDeleteId(null); } },
                     });
                   }}
                   className="flex-1 py-2 rounded-lg bg-red-500 text-white text-xs font-bold"
