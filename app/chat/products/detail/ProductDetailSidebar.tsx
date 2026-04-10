@@ -6,6 +6,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Footer } from "./components/Footer";
 import { Header } from "./components/Header";
+import { createPortal } from "react-dom";
 
 interface Product {
   id: string;
@@ -47,15 +48,15 @@ export function ProductDetailSidebar({ product, onClose, onBuy }: Props) {
     setIsCartOpen(true);
   };
 
-  return (
+  return createPortal (
     <AnimatePresence>
-      <div className="fixed inset-0">
+      <div className=" fixed inset-0 z-100">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1, z: 1000 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="absolute inset-0 bg-white/10 backdrop-blur-md"
+          className="absolute inset-0 bg-white/10 backdrop-blur-xl "
         />
 
         <motion.div
@@ -129,6 +130,7 @@ export function ProductDetailSidebar({ product, onClose, onBuy }: Props) {
           />
         </motion.div>
       </div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }
