@@ -20,17 +20,22 @@ export const ProductCard = ({
   const [isSharing, setIsSharing] = useState(false);
   const { addToCart } = useCart();
 
-  // 1. Өгөгдлийг нэгтгэн тооцоолох (useMemo ашиглан гүйцэтгэлийг сайжруулав)
-  const productData = useMemo(() => {
+    const productData = useMemo(() => {
     const meta = product.metadata || {};
     
-    return {
-      id: product.id ?? product.product_id ?? product.name,
-      name: meta.name || product.product_name || product.name || "Нэргүй бараа",
+    // Үнийг тоо (Number) руу хөрвүүлэхдээ илүү нарийн шалгах
+    const rawPrice = meta.price ?? product.price ?? product.formatted_price ?? 0;
+    const cleanPrice = typeof rawPrice === 'string' 
+      ? parseFloat(rawPrice.replace(/[^0-9.]/g, "")) 
+    : Number(rawPrice);
+
+  return {
+    id: product.id ?? product.product_id ?? product.name,
+    name: meta.name || product.product_name || product.name || "Нэргүй бараа",
+    price: cleanPrice || 0,
       brand: product.brand || meta.brand || "",
       storeName: (product.storeName?.trim() || product.store_name?.trim() || meta.store_name?.trim() || "Turuu's shop"),
       stock: meta.stock ?? product.stock,
-      price: meta.price ?? product.price ?? product.formatted_price ?? 0,
     };
   }, [product]);
 
@@ -121,7 +126,7 @@ export const ProductCard = ({
         )}
 
         {/* Heart button */}
-        <div className="absolute top-4 right-4 z-20">
+        {/* <div className="absolute top-4 right-4 z-20">
           <button
             onPointerDown={(e) => e.stopPropagation()}
             onClick={(e) => {
@@ -133,7 +138,7 @@ export const ProductCard = ({
           >
             <Heart size={18} className={savedIds?.includes(productData.id) ? "text-red-500 fill-red-500" : "text-white"} />
           </button>
-        </div>
+        </div> */}
       </div>
 
       {/* Мэдээллийн хэсэг */}
@@ -174,7 +179,7 @@ export const ProductCard = ({
                 exit={{ opacity: 0, y: 10 }}
                 className="flex gap-2"
               >
-                <button
+                {/* <button
                   onPointerDown={(e) => e.stopPropagation()}
                   onClick={(e) => {
                     e.stopPropagation();
@@ -185,7 +190,26 @@ export const ProductCard = ({
                   disabled={productData.stock === 0}
                 >
                   {productData.stock === 0 ? "Дууссан" : "Захиалах"}
-                </button>
+                </button> */}
+
+              <button
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  
+                  const orderData = {
+                    ...productWithImage,
+                    price: Number(productData.price) 
+                  };
+                  
+                  console.log("Order Data:", orderData);
+                  onOrder?.(orderData);
+                }}
+                className="flex-1 h-12 bg-[#077eef] rounded-2xl text-white font-bold active:scale-95 transition-all text-sm"
+              >
+                Захиалах
+              </button>
 
                 <button
                   onPointerDown={(e) => e.stopPropagation()}

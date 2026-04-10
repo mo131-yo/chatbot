@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+"use client";
+
+import React, { useState, useEffect, useMemo } from 'react'; // Import нэмэгдсэн
 import { CheckCircle2, ShieldCheck, XCircle, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -20,9 +22,20 @@ const QPayPayment = ({ amount, orderId, onSuccess, onCancel }: QPayPaymentProps)
     }
   }, [status, timeLeft]);
 
+const finalAmount = useMemo(() => {
+  if (amount === undefined || amount === null) return 0;
+  
+  // Хэрэв тоо бол шууд буцаана
+  if (typeof amount === 'number') return amount;
+
+  // Хэрэв текст бол (жишээ нь "35,000₮", "35.000")
+  // Бүх тоо бус тэмдэгтийг устгаад тоо руу шилжүүлнэ
+  const stringValue = String(amount).replace(/[^0-9]/g, "");
+  return parseInt(stringValue, 10) || 0;
+}, [amount]);
+
   const handleVerify = async () => {
     setStatus('PROCESSING');
-    
     setTimeout(() => {
       setStatus('SUCCESS');
     }, 2000);
@@ -75,7 +88,9 @@ const QPayPayment = ({ amount, orderId, onSuccess, onCancel }: QPayPaymentProps)
 
                 <div className="text-center space-y-1">
                   <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Төлөх нийт дүн</p>
-                  <h2 className="text-4xl font-black text-[#C5A059] font-mono">{amount.toLocaleString()}₮</h2>
+                  <h2 className="text-4xl font-black text-[#C5A059] font-mono">
+                    {finalAmount.toLocaleString()}₮
+                  </h2>
                 </div>
 
                 <div className="space-y-4 pt-4">
@@ -137,11 +152,11 @@ const QPayPayment = ({ amount, orderId, onSuccess, onCancel }: QPayPaymentProps)
                   </div>
                 </div>
 
-                <button
+               <button
                   onClick={() => {
                     onSuccess({
                       transactionId: `QPY-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
-                      amount,
+                      amount: finalAmount, // Энд useMemo-оор тооцсон цэвэр тоо очиж байгаа
                       date: new Date().toLocaleString(),
                     });
                   }}

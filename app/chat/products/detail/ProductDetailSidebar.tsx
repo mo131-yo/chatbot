@@ -66,7 +66,7 @@ export function ProductDetailSidebar({ product, onClose, onBuy }: Props) {
           transition={{ type: "spring", damping: 25, stiffness: 200 }}
           className="absolute right-0 top-0 h-full w-full md:w-112.5 bg-white/10  border-l border-white/10 shadow-2xl flex flex-col text-white"
         >
-          <Header title="Бүтээгдэхүүн" onClose={onClose} />
+          {/* <Header title="Бүтээгдэхүүн" onClose={onClose} /> */}
 
           <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
             <div className="group relative rounded-3xl overflow-hidden border border-white/10 bg-linear-to-b from-white/5 to-transparent mb-8">
@@ -125,7 +125,10 @@ export function ProductDetailSidebar({ product, onClose, onBuy }: Props) {
             quantity={quantity}
             numericPrice={numericPrice}
             isAdding={isAdding}
-            onBuy={onBuy}
+            onBuy={(name, price) => {
+              onBuy(name, price);
+              onClose(); 
+            }}
             handleAddCart={handleAddCart}
           />
         </motion.div>
