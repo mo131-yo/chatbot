@@ -127,6 +127,17 @@ export default function ProductForm({
         "Value Size",
       ],
     },
+    Ном: {
+      brands: [
+        "Уран зохиол (Fiction)",
+        "Хувь хүний хөгжил",
+        "Бизнес, Эдийн засаг",
+        "Түүх, Намтар",
+        "Хүүхдийн ном",
+        "Шинжлэх ухаан",
+      ],
+      sizes: ["Pocket Book", "Paperback", "Hardcover", "E-book", "Audiobook"],
+    },
   };
 
   const CATEGORIES = Object.keys(CATEGORY_DATA);
