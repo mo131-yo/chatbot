@@ -116,7 +116,7 @@ export default function ChatInput({
             className="hidden "
           />
 
-          <button
+          {/* <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={combinedLoading}
@@ -127,7 +127,7 @@ export default function ChatInput({
             ) : (
               <ImagePlus size={22} />
             )}
-          </button>
+          </button> */}
 
           <InputField
             value={input}

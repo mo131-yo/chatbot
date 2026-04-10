@@ -198,6 +198,18 @@ const QPayPayment = ({
     }
   }, [status, timeLeft]);
 
+const finalAmount = useMemo(() => {
+  if (amount === undefined || amount === null) return 0;
+  
+  // Хэрэв тоо бол шууд буцаана
+  if (typeof amount === 'number') return amount;
+
+  // Хэрэв текст бол (жишээ нь "35,000₮", "35.000")
+  // Бүх тоо бус тэмдэгтийг устгаад тоо руу шилжүүлнэ
+  const stringValue = String(amount).replace(/[^0-9]/g, "");
+  return parseInt(stringValue, 10) || 0;
+}, [amount]);
+
   const handleVerify = async () => {
     setStatus("PROCESSING");
     setTimeout(() => {
@@ -380,11 +392,11 @@ const QPayPayment = ({
                   </div>
                 </div>
 
-                <button
+               <button
                   onClick={() => {
                     onSuccess({
                       transactionId: `QPY-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
-                      amount,
+                      amount: finalAmount, // Энд useMemo-оор тооцсон цэвэр тоо очиж байгаа
                       date: new Date().toLocaleString(),
                     });
                   }}

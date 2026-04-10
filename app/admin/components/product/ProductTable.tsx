@@ -136,7 +136,7 @@ export default function ProductTable({
   }
 
   return (
-    <div className="relative w-full bg-white dark:bg-gray-950 rounded-[2.5rem] border border-gray-100 dark:border-white/5 shadow-sm overflow-hidden">
+    <div className="relative w-full bg-white dark:bg-gray-900 rounded-[2.5rem] border border-gray-100 dark:border-white/5 shadow-sm overflow-hidden">
       {editingProduct && (
         <ProductForm
           storeName={storeName}

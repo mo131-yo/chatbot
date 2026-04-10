@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Inter, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { ClerkProvider } from "@clerk/nextjs";
 import { CartProvider } from "./context/CartContext";
 import CartSidebar from "./chat/cart/frontend/components/CartSidebar";
-import { FavoriteDrawer } from "./store/components/FavoriteDrawer";
+
 import { Toaster } from "sonner";
-import Sidebar from "./chat/sidebar/page";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,6 +17,8 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
+const font = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
   title: "chat-Store",
@@ -34,9 +35,7 @@ export default function RootLayout({
   return (
     <ClerkProvider afterSignOutUrl="/">
       <html lang="mn" suppressHydrationWarning>
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        >
+        <body className={`${font.variable} font-sans antialiased`}>
           <CartProvider>
             <ThemeProvider
               attribute="class"
@@ -46,7 +45,7 @@ export default function RootLayout({
             >
               {children}
               <Toaster richColors position="top-right" />
-           
+
               <CartSidebar />
             </ThemeProvider>
           </CartProvider>
