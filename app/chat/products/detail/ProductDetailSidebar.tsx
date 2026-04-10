@@ -6,6 +6,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Footer } from "./components/Footer";
 import { Header } from "./components/Header";
+import { createPortal } from "react-dom";
 
 interface Product {
   id: string;
@@ -18,7 +19,7 @@ interface Product {
 interface Props {
   product: Product | null;
   onClose: () => void;
-  onBuy: (name: string, price: any) => void; 
+  onBuy: (name: string, price: any) => void;
 }
 
 export function ProductDetailSidebar({ product, onClose, onBuy }: Props) {
@@ -28,16 +29,17 @@ export function ProductDetailSidebar({ product, onClose, onBuy }: Props) {
 
   if (!product) return null;
 
-  const numericPrice = typeof product.price === "string"
-    ? parseFloat(product.price.replace(/[^0-9.]/g, ""))
-    : Number(product.price);
+  const numericPrice =
+    typeof product.price === "string"
+      ? parseFloat(product.price.replace(/[^0-9.]/g, ""))
+      : Number(product.price);
 
   const handleAddCart = async () => {
     setIsAdding(true);
     const productWithQuantity = {
       ...product,
       price: numericPrice,
-      quantity: quantity
+      quantity: quantity,
     };
     await new Promise((resolve) => setTimeout(resolve, 500));
     await addToCart(productWithQuantity);
@@ -46,23 +48,23 @@ export function ProductDetailSidebar({ product, onClose, onBuy }: Props) {
     setIsCartOpen(true);
   };
 
-  return (
+  return createPortal (
     <AnimatePresence>
-      <div className="fixed inset-0 z-150">
+      <div className=" fixed inset-0 z-100">
         <motion.div
           initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          animate={{ opacity: 1, z: 1000 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="absolute inset-0 bg-black/70 backdrop-blur-md"
+          className="absolute inset-0 bg-white/10 backdrop-blur-xl "
         />
 
         <motion.div
           initial={{ x: "100%" }}
-          animate={{ x: 0 }}
+          animate={{ x: 0, z: 100 }}
           exit={{ x: "100%" }}
           transition={{ type: "spring", damping: 25, stiffness: 200 }}
-          className="absolute right-0 top-0 h-full w-full md:w-112.5 bg-[#0A0A0A] border-l border-white/10 shadow-2xl flex flex-col text-white"
+          className="absolute right-0 top-0 h-full w-full md:w-112.5 bg-white/10  border-l border-white/10 shadow-2xl flex flex-col text-white"
         >
           <Header title="Бүтээгдэхүүн" onClose={onClose} />
 
@@ -75,23 +77,28 @@ export function ProductDetailSidebar({ product, onClose, onBuy }: Props) {
               />
             </div>
 
-            <h1 className="text-3xl font-black mb-2 tracking-tight">{product.name}</h1>
-            <p className="text-[#C5A059] text-3xl font-bold mb-8">
+            <h1 className="text-3xl font-black mb-2 tracking-tight text-black">
+              {product.name}
+            </h1>
+            <p className="text-blue-400 text-3xl font-bold mb-8">
               {numericPrice.toLocaleString()}₮
             </p>
 
             <div className="space-y-6">
-              <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
-                <h3 className="text-slate-500 font-bold uppercase text-[10px] tracking-widest mb-3">
+              <div className="p-4 rounded-2xl bg-gray-500 border border-white/5">
+                <h3 className="text-white font-bold uppercase text-[10px] tracking-widest mb-3">
                   Тайлбар
                 </h3>
-                <p className="text-slate-300 leading-relaxed text-sm">
-                  {product.description || "Энэ бүтээгдэхүүний дэлгэрэнгүй тайлбар одоогоор байхгүй байна."}
+                <p className="text-slate-200 leading-relaxed text-sm">
+                  {product.description ||
+                    "Энэ бүтээгдэхүүний дэлгэрэнгүй тайлбар одоогоор байхгүй байна."}
                 </p>
               </div>
 
-              <div className="flex items-center justify-between p-4 rounded-2xl border border-white/10">
-                <span className="text-sm font-medium text-slate-400">Тоо ширхэг</span>
+              <div className="flex items-center justify-between p-4 rounded-2xl border border-white/10 bg-gray-500 ">
+                <span className="text-sm font-medium text-slate-200">
+                  Тоо ширхэг
+                </span>
                 <div className="flex items-center gap-4">
                   <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -99,7 +106,9 @@ export function ProductDetailSidebar({ product, onClose, onBuy }: Props) {
                   >
                     <Minus size={16} />
                   </button>
-                  <span className="text-lg font-bold w-4 text-center">{quantity}</span>
+                  <span className="text-lg font-bold w-4 text-center">
+                    {quantity}
+                  </span>
                   <button
                     onClick={() => setQuantity(quantity + 1)}
                     className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center hover:bg-white/10"
@@ -111,7 +120,7 @@ export function ProductDetailSidebar({ product, onClose, onBuy }: Props) {
             </div>
           </div>
 
-         <Footer 
+          <Footer
             product={product}
             quantity={quantity}
             numericPrice={numericPrice}
@@ -121,6 +130,7 @@ export function ProductDetailSidebar({ product, onClose, onBuy }: Props) {
           />
         </motion.div>
       </div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }

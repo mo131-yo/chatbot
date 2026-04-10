@@ -16,10 +16,10 @@ export const Footer = ({
   handleAddCart: () => void;
 }) => {
   return (
-    <div className="p-8 border-t border-white/5 bg-[#0F0F0F] space-y-4">
+    <div className="p-8 border-t border-white/5 bg-white/10 space-y-4">
       <div className="flex justify-between items-center mb-2 px-2">
-        <span className="text-slate-400 text-sm">Нийт дүн:</span>
-        <span className="text-xl font-bold text-white">
+        <span className="text-black text-sm">Нийт дүн:</span>
+        <span className="text-xl font-bold text-blue-400">
           {(numericPrice * quantity).toLocaleString()}₮
         </span>
       </div>
@@ -36,7 +36,7 @@ export const Footer = ({
         <button
           onClick={handleAddCart}
           disabled={isAdding}
-          className="w-full bg-[#C5A059] hover:bg-[#D9B573] text-black font-black py-4.5 rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50"
+          className="w-full bg-[#077eef] hover:bg-[#077eef]/80 text-white font-black py-4.5 rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50"
         >
           {isAdding ? (
             <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
