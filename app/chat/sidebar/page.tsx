@@ -115,7 +115,6 @@ export default function Sidebar({
       >
         <div className="p-3">
           <div className="flex items-center justify-between px-2 py-2">
-            {/* ➕ NEW CHAT */}
             {!isCollapsed && (
               <button
                 onClick={(e) => {
@@ -129,7 +128,6 @@ export default function Sidebar({
               </button>
             )}
 
-            {/* ☰ TOGGLE */}
             <div
               className={`relative group ${isCollapsed ? "mx-auto" : "ml-auto"}`}
             >
@@ -143,7 +141,6 @@ export default function Sidebar({
                 <PanelLeft size={18} />
               </button>
 
-              {/* 🔥 TOOLTIP (Desktop Rail Only) */}
               {isCollapsed && (
                 <div className="hidden md:block pointer-events-none absolute left-[calc(100%+12px)] top-1/2 -translate-y-1/2 px-3 py-2 rounded-lg bg-black text-white dark:bg-white dark:text-black text-xs opacity-0 invisible translate-x-[-6px] group-hover:opacity-100 group-hover:visible group-hover:translate-x-0 transition-all duration-200 z-[9999] whitespace-nowrap shadow-xl">
                   Open menu
@@ -159,7 +156,7 @@ export default function Sidebar({
             history={history}
             onSelectChat={(id) => {
               onSelectChat(id);
-              // Auto-close on mobile after selecting a chat
+             
               if (window.innerWidth < 768) toggleSidebar();
             }}
             onPinChat={handlePin}

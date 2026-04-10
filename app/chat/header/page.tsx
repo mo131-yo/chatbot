@@ -44,7 +44,7 @@ export default function Header({
   return (
     <header
       className="
-  sticky top-0 z-30
+  sticky top-0 z-50
   flex items-center justify-between
   px-4 py-3
 
@@ -72,7 +72,7 @@ export default function Header({
           />
 
           {favoriteCount > 0 && (
-            <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-black text-white ring-2 ring-[#0D0D0D]">
+            <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-black text-white ring-2 ring-[#ffffff]">
               {favoriteCount}
             </span>
           )}
@@ -82,9 +82,9 @@ export default function Header({
           onClick={() => setIsCartOpen(true)}
           className="relative p-3 hover:bg-white/10 rounded-full transition-all"
         >
-          <FaShoppingCart className="text-xl text-[#C5A059]" />
+          <FaShoppingCart className="text-xl text-[#077eef]" />
           {cartCount > 0 && (
-            <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#C5A059] text-[10px] font-black text-black ring-2 ring-[#0D0D0D]">
+            <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#077eef] text-[10px] font-black text-white ring-2 ring-[#ffffff]">
               {cartCount}
             </span>
           )}
