@@ -46,7 +46,7 @@ export async function POST(req: Request) {
         input: lastUserMessage,
       });
 
-      const namespaces = ["Turuu's store", "sadadasda"];
+      const namespaces = ["Turuu's store", "sadadasda", "sephora", "ETRNTY", "Tugss store"];
 
       const queryPromises = namespaces.map((ns) =>
         index.namespace(ns).query({
