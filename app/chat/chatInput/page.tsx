@@ -27,52 +27,51 @@ export default function ChatInput({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { searchByImage, isSearching } = useVisualSearch();
 
-  
   const combinedLoading = isTyping || isSearching;
-const fileToBase64 = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = (error) => reject(error);
-  });
-};
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
+  };
 
-const handleSend = async (textToSend?: string) => {
-  const text = (textToSend ?? input).trim();
+  const handleSend = async (textToSend?: string) => {
+    const text = (textToSend ?? input).trim();
 
-  if (previewImage) {
-    const { file } = previewImage;
-    
-    setPreviewImage(null);
-    setInput("");
+    if (previewImage) {
+      const { file } = previewImage;
 
-    try {
-      const base64Image = await fileToBase64(file);
+      setPreviewImage(null);
+      setInput("");
 
-      const userMsg = {
-        role: "USER",
-        content: text || "Зургаар хайж байна...",
-        imagePreview: base64Image,
-      };
+      try {
+        const base64Image = await fileToBase64(file);
 
-      const result = await searchByImage(file);
+        const userMsg = {
+          role: "USER",
+          content: text || "Зургаар хайж байна...",
+          imagePreview: base64Image,
+        };
 
-      if (result.success && result.products) {
-        onVisualResult(userMsg, result.products);
-      } else {
-        onVisualResult(userMsg, []); 
+        const result = await searchByImage(file);
+
+        if (result.success && result.products) {
+          onVisualResult(userMsg, result.products);
+        } else {
+          onVisualResult(userMsg, []);
+        }
+      } catch (error) {
+        console.error("Image search error:", error);
       }
-    } catch (error) {
-      console.error("Image search error:", error);
+      return;
     }
-    return;
-  }
 
-  if (!text || combinedLoading) return;
-  setInput("");
-  onSendMessage(text);
-};
+    if (!text || combinedLoading) return;
+    setInput("");
+    onSendMessage(text);
+  };
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -89,7 +88,6 @@ const handleSend = async (textToSend?: string) => {
 
   return (
     <footer className="w-full max-w-4xl mx-auto p-4 relative z-50">
-
       <div className="flex flex-col w-full bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
         {previewImage && (
           <div className="px-3 pt-3">
@@ -97,11 +95,11 @@ const handleSend = async (textToSend?: string) => {
               <img
                 src={previewImage.url}
                 alt="preview"
-                className="h-20 w-20 object-cover rounded-xl border border-white/20"
+                className="h-20 w-20 object-cover rounded-xl border border-white/20 "
               />
               <button
                 onClick={handleRemoveImage}
-                className="absolute -top-2 -right-2 bg-gray-700 hover:bg-gray-600 text-white rounded-full p-0.5 transition-colors"
+                className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-0.5 transition-colors"
               >
                 <X size={14} />
               </button>
@@ -115,14 +113,14 @@ const handleSend = async (textToSend?: string) => {
             ref={fileInputRef}
             onChange={handleImageSelect}
             accept="image/*"
-            className="hidden"
+            className="hidden "
           />
 
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={combinedLoading}
-            className="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded-xl transition-all disabled:opacity-30"
+            className="p-2 text-gray-500 hover:text-gray-800 dark:hover:text-white   hover:bg-white/10 rounded-xl transition-all disabled:opacity-30 "
           >
             {isSearching ? (
               <Loader2 className="animate-spin" size={22} />

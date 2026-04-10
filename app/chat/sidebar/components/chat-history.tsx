@@ -196,41 +196,77 @@ export const ChatHistory = ({
       </div>
 
       {/* 5. Modals with Restore logic (Undo Toast) */}
+      {/* 🔴 DELETE MODAL */}
       {deleteTarget && (
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/20 backdrop-blur-[2px] p-4"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm"
           onClick={() => setDeleteTarget(null)}
         >
           <div
-            className="bg-white dark:bg-[#121212] rounded-xl border border-white/10 shadow-2xl w-full max-w-[260px] p-5"
+            className="
+        w-full max-w-sm
+        bg-white dark:bg-[#121212]
+        rounded-2xl
+        border border-black/10 dark:border-white/10
+        shadow-2xl
+        p-6
+        animate-in fade-in zoom-in-95
+      "
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="text-center">
-              <h2 className="text-sm font-bold">Delete Chat?</h2>
-              <div className="flex gap-2 w-full mt-4">
+            <div className="text-center space-y-3">
+              <h2 className="text-base font-semibold text-slate-900 dark:text-white">
+                Чат устгах уу?
+              </h2>
+
+              <p className="text-xs text-slate-500 dark:text-slate-400">Та энэ
+                <span className="font-bold">{deleteTarget.title && `  "${deleteTarget.title}"`}</span>
+                чатыг устгах гэж байна. Үргэлжлүүлэх үү?
+              </p>
+
+              <div className="flex gap-2 mt-4">
                 <button
                   onClick={() => setDeleteTarget(null)}
-                  className="flex-1 py-2 text-xs"
+                  className="
+              flex-1 py-2 rounded-lg text-xs
+              bg-black/5 dark:bg-white/5
+              hover:bg-black/10 dark:hover:bg-white/10
+              transition
+            "
                 >
-                  Cancel
+                  Болих
                 </button>
+
                 <button
                   onClick={() => {
                     const id = deleteTarget.id;
                     setPendingDeleteId(id);
                     setDeleteTarget(null);
+
                     const timeout = setTimeout(() => {
                       onDeleteChat(id);
                       setPendingDeleteId(null);
                     }, 3000);
 
-                    toast.error("Чатыг устгалаа", {
-                      action: { label: "Undo", onClick: () => { clearTimeout(timeout); setPendingDeleteId(null); } },
+                    toast.error("Чат устгагдлаа", {
+                      description: "3 секундын дотор буцаах боломжтой",
+                      action: {
+                        label: "Буцаах",
+                        onClick: () => {
+                          clearTimeout(timeout);
+                          setPendingDeleteId(null);
+                        },
+                      },
                     });
                   }}
-                  className="flex-1 py-2 rounded-lg bg-red-500 text-white text-xs font-bold"
+                  className="
+              flex-1 py-2 rounded-lg text-xs font-semibold
+              bg-red-500 hover:bg-red-600
+              text-white
+              transition
+            "
                 >
-                  Delete
+                  Устгах
                 </button>
               </div>
             </div>
@@ -238,42 +274,75 @@ export const ChatHistory = ({
         </div>
       )}
 
+     
       {renameTarget && (
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/20 backdrop-blur-[2px] p-4"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm"
           onClick={() => setRenameTarget(null)}
         >
           <div
-            className="bg-white dark:bg-[#121212] rounded-xl border border-white/10 shadow-2xl w-full max-w-[260px] p-5"
+            className="
+        w-full max-w-sm
+        bg-white dark:bg-[#121212]
+        rounded-2xl
+        border border-black/10 dark:border-white/10
+        shadow-2xl
+        p-6
+        animate-in fade-in zoom-in-95
+      "
             onClick={(e) => e.stopPropagation()}
           >
+            <h2 className="text-sm font-semibold mb-3 text-slate-900 dark:text-white">
+              Чатын нэр өөрчлөх
+            </h2>
+
             <input
               autoFocus
               value={renameValue}
               onChange={(e) => setRenameValue(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg bg-black/5 dark:bg-white/5 text-sm outline-none mb-4"
+              className="
+          w-full px-3 py-2 rounded-lg
+          bg-black/5 dark:bg-white/5
+          text-sm outline-none
+          focus:ring-1 focus:ring-[#077eef]/30
+          mb-4
+        "
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   onRenameChat(renameTarget.id, renameValue);
                   setRenameTarget(null);
+                  toast.success("Нэр амжилттай өөрчлөгдлөө");
                 }
               }}
             />
+
             <div className="flex gap-2">
               <button
                 onClick={() => setRenameTarget(null)}
-                className="flex-1 py-2 text-xs"
+                className="
+            flex-1 py-2 rounded-lg text-xs
+            bg-black/5 dark:bg-white/5
+            hover:bg-black/10 dark:hover:bg-white/10
+            transition
+          "
               >
-                Cancel
+                Болих
               </button>
+
               <button
                 onClick={() => {
                   onRenameChat(renameTarget.id, renameValue);
                   setRenameTarget(null);
+                  toast.success("Нэр амжилттай өөрчлөгдлөө");
                 }}
-                className="flex-1 py-2 rounded-lg bg-[#C5A059] text-black text-xs font-bold"
+                className="
+            flex-1 py-2 rounded-lg text-xs font-semibold
+            bg-[#077eef] hover:bg-[#077eef]/90
+            text-white
+            transition
+          "
               >
-                Save
+                Хадгалах
               </button>
             </div>
           </div>

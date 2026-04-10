@@ -25,7 +25,7 @@ export default function Home() {
     deleteChat: handleDeleteChat,
   } = useChatLogic();
 
-  // Set default to collapsed (true) so mobile starts clean
+
   const [isCollapsed, setIsCollapsed] = useState(true);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -36,7 +36,7 @@ export default function Home() {
   const toggleSidebar = () => setIsCollapsed(!isCollapsed);
 
   return (
-    /* Change: added min-w-0 and w-full to the main container */
+
     <div className="flex h-screen w-full bg-slate-50 dark:bg-[#0D0D0D] overflow-hidden relative">
       <Sidebar
         toggleSidebar={toggleSidebar}
@@ -50,10 +50,6 @@ export default function Home() {
         activeChatId={activeChatId}
       />
 
-      {/* THE FIX: 
-         - flex-1 + w-full forces it to occupy the screen. 
-         - min-w-0 stops Flexbox from calculating sidebar space on mobile.
-      */}
       <div className="flex-1 flex flex-col w-full min-w-0 h-screen relative z-10 overflow-hidden">
         <Header toggleSidebar={toggleSidebar} />
 

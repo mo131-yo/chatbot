@@ -88,7 +88,7 @@ export const ProductCard = ({
   return (
     <div
       className={`relative mx-auto flex flex-col h-125 w-72 md:w-[320px] overflow-hidden rounded-[2.5rem] bg-[#121212] border transition-all duration-700 ${
-        isCurrent ? "border-[#C5A059] shadow-[0_20px_50px_rgba(0,0,0,0.5)]" : "border-white/5"
+        isCurrent ? "border-[#077eef] shadow-[0_20px_50px_rgba(0,0,0,0.5)]" : "border-white/5"
       }`}
     >
       {/* Зургийн хэсэг */}
@@ -141,7 +141,7 @@ export const ProductCard = ({
         <div className="space-y-2">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-1.5 text-white/50">
-              <Store size={14} className="text-[#C5A059]" />
+              <Store size={14} className="text-[#077eef]" />
               <span className="text-[11px] font-bold uppercase tracking-wider line-clamp-1">
                 {productData.storeName}
               </span>
@@ -156,7 +156,7 @@ export const ProductCard = ({
 
           <h3 className="text-white text-lg font-bold leading-tight line-clamp-2">{productData.name}</h3>
 
-          <p className="text-[#C5A059] text-2xl font-black">
+          <p className="text-blue-300 text-2xl font-black">
             {(() => {
               const numericPrice = parseFloat(String(productData.price).replace(/[^0-9.]/g, ""));
               return isNaN(numericPrice) || numericPrice === 0 ? "Үнэгүй" : numericPrice.toLocaleString() + "₮";
@@ -181,7 +181,7 @@ export const ProductCard = ({
                     e.preventDefault();
                     onOrder?.(productWithImage);
                   }}
-                  className="flex-1 h-12 bg-[#C5A059] rounded-2xl text-black font-bold active:scale-95 transition-all text-sm disabled:opacity-50 disabled:grayscale"
+                  className="flex-1 h-12 bg-[#077eef] rounded-2xl text-white font-bold active:scale-95 transition-all text-sm disabled:opacity-50 disabled:grayscale"
                   disabled={productData.stock === 0}
                 >
                   {productData.stock === 0 ? "Дууссан" : "Захиалах"}
