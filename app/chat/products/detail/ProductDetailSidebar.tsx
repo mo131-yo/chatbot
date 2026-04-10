@@ -125,7 +125,10 @@ export function ProductDetailSidebar({ product, onClose, onBuy }: Props) {
             quantity={quantity}
             numericPrice={numericPrice}
             isAdding={isAdding}
-            onBuy={onBuy}
+            onBuy={(name, price) => {
+              onBuy(name, price);
+              onClose(); 
+            }}
             handleAddCart={handleAddCart}
           />
         </motion.div>

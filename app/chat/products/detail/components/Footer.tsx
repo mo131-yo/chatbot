@@ -1,4 +1,5 @@
 import { CreditCard, ShoppingBag } from "lucide-react";
+import { useState } from "react";
 
 export const Footer = ({ 
   product, 
@@ -15,6 +16,7 @@ export const Footer = ({
   onBuy: (name: string, price: any) => void;
   handleAddCart: () => void;
 }) => {
+  const [step, setStep] = useState<'detail' | 'form'>('detail');
   return (
     <div className="p-8 border-t border-white/5 bg-white/10 space-y-4">
       <div className="flex justify-between items-center mb-2 px-2">

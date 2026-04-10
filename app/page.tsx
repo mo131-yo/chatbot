@@ -36,6 +36,7 @@ export default function Home() {
   const [receiptData, setReceiptData] = useState<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const currentChatMessages = activeChatId ? allChats[activeChatId] || [] : [];
+  
 
   useScrollEffect(messagesEndRef, [currentChatMessages, isTyping]);
 

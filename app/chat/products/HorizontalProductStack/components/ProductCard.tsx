@@ -192,25 +192,24 @@ export const ProductCard = ({
                   {productData.stock === 0 ? "Дууссан" : "Захиалах"}
                 </button> */}
 
-<button
-  onPointerDown={(e) => e.stopPropagation()}
-  onClick={(e) => {
-    e.stopPropagation();
-    e.preventDefault();
-    
-    // Debug хийх: Үнэ яг тоо байж чадаж байгаа эсэхийг шалгах
-    const orderData = {
-      ...productWithImage,
-      price: Number(productData.price) // Энд заавал Number болгоно
-    };
-    
-    console.log("Order Data:", orderData);
-    onOrder?.(orderData);
-  }}
-  className="flex-1 h-12 bg-[#077eef] rounded-2xl text-white font-bold active:scale-95 transition-all text-sm"
->
-  Захиалах
-</button>
+              <button
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  
+                  const orderData = {
+                    ...productWithImage,
+                    price: Number(productData.price) 
+                  };
+                  
+                  console.log("Order Data:", orderData);
+                  onOrder?.(orderData);
+                }}
+                className="flex-1 h-12 bg-[#077eef] rounded-2xl text-white font-bold active:scale-95 transition-all text-sm"
+              >
+                Захиалах
+              </button>
 
                 <button
                   onPointerDown={(e) => e.stopPropagation()}
