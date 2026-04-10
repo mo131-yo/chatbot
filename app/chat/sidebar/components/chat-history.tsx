@@ -115,7 +115,7 @@ export const ChatHistory = ({
                 onPinChat(chat.id);
               }}
               className="p-1.5 rounded-md hover:bg-black/5 dark:hover:bg-white/10 text-slate-400"
-            >
+            > 
               {chat.isPinned ? <PinOff size={13} /> : <Pin size={13} />}
             </button>
             <button
@@ -162,38 +162,59 @@ export const ChatHistory = ({
         </div>
       )}
 
-      <div className="flex-1 overflow-y-auto px-2 pb-4 scrollbar-none">
-        {pinnedChats.length > 0 && (
-          <div className="mb-4">
-            {!collapsed && (
-              <p className="px-4 text-[10px] font-bold text-slate-400/70 mb-2 uppercase tracking-widest">
-                Pinned
-              </p>
-            )}
-            {pinnedChats.map(renderChatItem)}
-          </div>
-        )}
+         <div className="flex-1 overflow-y-auto px-2 pb-4 scrollbar-none">
 
-        <div>
-          {!collapsed && (
-            <button
-              onClick={() => setIsRecentOpen(!isRecentOpen)}
-              className="w-full flex items-center justify-between px-4 text-[10px] font-bold text-slate-400/70 mb-2 uppercase tracking-widest"
-            >
-              <span>Recent</span>
-              {isRecentOpen ? (
-                <ChevronDown size={12} />
-              ) : (
-                <ChevronRight size={12} />
-              )}
-            </button>
-          )}
+  {/* 📌 PINNED */}
+  {pinnedChats.length > 0 && (
+    <div className="mb-4">
+      {!collapsed && (
+        <p className="px-4 text-[10px] font-bold text-slate-400/70 mb-2 uppercase tracking-widest">
+          Pinned
+        </p>
+      )}
 
-          <div className={`space-y-0.5 ${isRecentOpen ? "block" : "hidden"}`}>
-            {recentChats.map(renderChatItem)}
+      <div className="flex flex-col gap-1">
+        {pinnedChats.map((chat) => (
+          <div key={chat.id} className="flex items-center gap-2">
+            
+            {/* 📌 PIN ICON */}
+            <Pin
+              size={12}
+              className="rotate-45 text-[#C5A059] shrink-0 ml-2"
+            />
+
+            {/* 🔥 ORIGINAL ITEM */}
+            <div className="flex-1">
+              {renderChatItem(chat)}
+            </div>
+
           </div>
-        </div>
+        ))}
       </div>
+    </div>
+  )}
+
+  {/* 🕓 RECENT */}
+  <div>
+    {!collapsed && (
+      <button
+        onClick={() => setIsRecentOpen(!isRecentOpen)}
+        className="w-full flex items-center justify-between px-4 text-[10px] font-bold text-slate-400/70 mb-2 uppercase tracking-widest"
+      >
+        <span>Recent</span>
+        {isRecentOpen ? (
+          <ChevronDown size={12} />
+        ) : (
+          <ChevronRight size={12} />
+        )}
+      </button>
+    )}
+
+    <div className={`space-y-0.5 ${isRecentOpen ? "block" : "hidden"}`}>
+      {recentChats.map(renderChatItem)}
+    </div>
+  </div>
+</div>
 
       {/* 5. Modals with Restore logic (Undo Toast) */}
       {/* 🔴 DELETE MODAL */}
@@ -219,8 +240,11 @@ export const ChatHistory = ({
                 Чат устгах уу?
               </h2>
 
-              <p className="text-xs text-slate-500 dark:text-slate-400">Та энэ
-                <span className="font-bold">{deleteTarget.title && `  "${deleteTarget.title}"`}</span>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Та энэ
+                <span className="font-bold">
+                  {deleteTarget.title && `  "${deleteTarget.title}"`}
+                </span>
                 чатыг устгах гэж байна. Үргэлжлүүлэх үү?
               </p>
 
@@ -274,7 +298,6 @@ export const ChatHistory = ({
         </div>
       )}
 
-     
       {renameTarget && (
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm"
