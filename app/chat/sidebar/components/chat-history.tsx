@@ -45,13 +45,13 @@ export const ChatHistory = ({
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [isRecentOpen, setIsRecentOpen] = useState(true);
 
-  // 1. Restore the Pending Delete logic
+ 
   const visibleHistory = useMemo(
     () => history.filter((chat) => chat.id !== pendingDeleteId),
     [history, pendingDeleteId],
   );
 
-  // 2. Restore Search filtering logic
+ 
   const searchResults = useMemo(() => {
     if (!search.trim()) return [];
     return history.filter((chat) =>
@@ -59,7 +59,7 @@ export const ChatHistory = ({
     );
   }, [search, history]);
 
-  // 3. Restore Text Highlighting for Search
+
   const highlightText = (text: string, query: string) => {
     if (!query) return text;
     const parts = text.split(new RegExp(`(${query})`, "gi"));
@@ -106,7 +106,7 @@ export const ChatHistory = ({
           )}
         </div>
 
-        {/* Action buttons (only right side, hover only) */}
+        
         {!collapsed && (
           <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
             <button
@@ -149,7 +149,7 @@ export const ChatHistory = ({
 
   return (
     <div className="flex flex-col h-full select-none mt-2">
-      {/* 4. Restore the Search Input */}
+    
       {!collapsed && (
         <div className="px-3 mb-3 relative">
           <input
@@ -164,7 +164,7 @@ export const ChatHistory = ({
 
          <div className="flex-1 overflow-y-auto px-2 pb-4 scrollbar-none">
 
-  {/* 📌 PINNED */}
+
   {pinnedChats.length > 0 && (
     <div className="mb-4">
       {!collapsed && (
@@ -177,13 +177,13 @@ export const ChatHistory = ({
         {pinnedChats.map((chat) => (
           <div key={chat.id} className="flex items-center gap-2">
             
-            {/* 📌 PIN ICON */}
+            
             <Pin
               size={12}
               className="rotate-45 text-[#C5A059] shrink-0 ml-2"
             />
 
-            {/* 🔥 ORIGINAL ITEM */}
+           
             <div className="flex-1">
               {renderChatItem(chat)}
             </div>
@@ -194,7 +194,7 @@ export const ChatHistory = ({
     </div>
   )}
 
-  {/* 🕓 RECENT */}
+ 
   <div>
     {!collapsed && (
       <button
@@ -216,8 +216,7 @@ export const ChatHistory = ({
   </div>
 </div>
 
-      {/* 5. Modals with Restore logic (Undo Toast) */}
-      {/* 🔴 DELETE MODAL */}
+    
       {deleteTarget && (
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm"
