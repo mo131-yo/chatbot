@@ -1,157 +1,181 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { ChatHistory } from "./chat-history";
-import { useRouter } from "next/dist/client/components/navigation";
-import { NewChatBtn } from "./new-chat-btn";
-import { Menu } from "lucide-react";
+import { NewChatBtn, ChatHistory } from "../components"; // Adjust path if needed
+import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { ClerkAuth, DarkMode } from "@/app/chat/header/components";
+import { PanelLeft, SquarePen } from "lucide-react";
 
+interface SidebarProps {
+  isCollapsed: boolean;
+  history: any[];
+  onNewChat: () => void;
+  onSelectChat: (id: string) => void;
+  onDeleteChat: (id: string) => void;
+  isLoading?: boolean;
+  activeChatId?: string | null;
+  toggleSidebar: () => void;
+  collapsed: boolean; // Keep for backward compatibility if used in parent
+}
 
 export default function Sidebar({
-  collapsed,
-  setCollapsed,
-}: {
-  collapsed: boolean;
-  setCollapsed: (v: boolean) => void;
-}) {
-  const [history, setHistory] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  isCollapsed,
+  history: initialHistory,
+  onNewChat,
+  onSelectChat,
+  onDeleteChat,
+  isLoading,
+  activeChatId,
+  toggleSidebar,
+}: SidebarProps) {
   const router = useRouter();
-  // const [collapsed, setCollapsed] = useState(false);
-  // console.log("collapsed", collapsed);
+  const [history, setHistory] = useState(initialHistory);
 
-  const fetchHistory = useCallback(async () => {
-    try {
-      const res = await fetch("/chat/api/history", {
-        cache: "no-store",
-        headers: {
-          Pragma: "no-cache",
-          "Cache-Control": "no-cache",
-        },
-      });
-      const data = await res.json();
-      setHistory(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.error("Fetch error:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
+  // Sync internal state with props
   useEffect(() => {
-    fetchHistory();
-  }, [fetchHistory]);
-
-  const handleRename = async (id: string, title: string) => {
-    try {
-      const response = await fetch(`/chat/api/chat/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "rename", title }),
-      });
-      if (response.ok) {
-        await fetchHistory();
-        router.refresh();
-      }
-    } catch (error) {
-      console.error("Rename error:", error);
-    }
-  };
-
-  const handleShare = async (id: string) => {
-    try {
-      const response = await fetch(`/chat/api/chat/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "share" }),
-      });
-      if (response.ok) {
-        await fetchHistory();
-        router.refresh();
-      }
-    } catch (error) {
-      console.error("Share error:", error);
-    }
-  };
+    setHistory(initialHistory);
+  }, [initialHistory]);
 
   const handlePin = async (id: string) => {
-    setHistory((prevHistory) => {
-      const updated = prevHistory.map((chat) =>
-        chat.id === id ? { ...chat, isPinned: !chat.isPinned } : chat,
-      );
-      return [...updated].sort(
-        (a, b) => (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0),
-      );
-    });
-
     try {
       const res = await fetch(`/chat/api/chat/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "pin" }),
       });
-
-      if (!res.ok) {
-        fetchHistory();
-      } else {
-        router.refresh();
+      if (res.ok) {
+        setHistory((prev) =>
+          prev.map((c) => (c.id === id ? { ...c, isPinned: !c.isPinned } : c)),
+        );
       }
     } catch (err) {
       console.error("Pin error:", err);
-      fetchHistory();
     }
   };
 
-  const handleDeleteChat = async (id: string) => {
+  const handleRename = async (id: string, title: string) => {
     try {
       const res = await fetch(`/chat/api/chat/${id}`, {
-        method: "DELETE",
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "delete" }),
+        body: JSON.stringify({ action: "rename", title }),
       });
       if (res.ok) {
-        await fetchHistory();
-        router.refresh();
+        setHistory((prev) =>
+          prev.map((c) => (c.id === id ? { ...c, title } : c)),
+        );
       }
-    } catch (error) {
-      console.error("Delete error:", error);
+    } catch (err) {
+      console.error("Rename error:", err);
     }
   };
 
-  if (loading)
-    return <div className="p-4 text-sm text-slate-500">Уншиж байна...</div>;
+  const handleShare = async (id: string) => {
+    try {
+      const res = await fetch(`/chat/api/chat/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "share" }),
+      });
+      if (res.ok) {
+        const url = `${window.location.origin}/share/chat/${id}`;
+        await navigator.clipboard.writeText(url);
+        alert("Хуваалцах линк хуулагдлаа!");
+      }
+    } catch (err) {
+      console.error("Share error:", err);
+    }
+  };
 
   return (
-    <aside
-      className={`flex flex-col h-screen relative z-20
-  transition-all duration-300
-  bg-white/70 dark:bg-[#0D0D0D]/70 backdrop-blur-xl
-  ${collapsed ? "w-16" : "w-72"}
-  overflow-visible
-`}
-    >
-      <div className="flex items-center justify-between p-2">
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="p-2 rounded-lg hover:bg-white/10 transition text-white"
-        >
-          <Menu size={20} className="text-white" />
-        </button>
-      </div>
-      <NewChatBtn onClick={() => console.log("new")} collapsed={collapsed} />
+    <>
+      {/* 1. MOBILE OVERLAY */}
+      {!isCollapsed && (
+        <div
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[45] md:hidden"
+          onClick={toggleSidebar}
+        />
+      )}
 
-      <ChatHistory
-        collapsed={collapsed}
-        history={history}
-        onSelectChat={(id) => router.push(`/chat/${id}`)}
-        onPinChat={handlePin}
-        onRenameChat={handleRename}
-        onDeleteChat={handleDeleteChat}
-        onShareChat={handleShare}
-      />
-      <div>
- 
-      </div>
-    </aside>
+      <aside
+        className={`
+          /* POSITIONING */
+          fixed inset-y-0 left-0 z-[50] flex flex-col h-screen
+          transition-all duration-300 ease-in-out
+          bg-white/90 dark:bg-[#0D0D0D]/90 backdrop-blur-xl border-r border-black/5 dark:border-white/5
+          
+          /* DESKTOP BEHAVIOR */
+          md:relative md:translate-x-0
+          
+          /* DYNAMIC WIDTH & SLIDE */
+          ${isCollapsed ? "-translate-x-full md:translate-x-0 md:w-16" : "translate-x-0 w-72"}
+        `}
+      >
+        <div className="p-3">
+          <div className="flex items-center justify-between px-2 py-2">
+            {/* NEW CHAT BUTTON */}
+            {!isCollapsed ? (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onNewChat();
+                }}
+                className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 transition-all duration-200 text-sm text-slate-600 dark:text-slate-300"
+              >
+                <SquarePen size={18} />
+                <span>New chat</span>
+              </button>
+            ) : (
+              <div className="w-9 h-9 md:hidden" /> /* Spacer for mobile mobile */
+            )}
+
+            {/* TOGGLE BUTTON */}
+            <div className="relative group ml-auto">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleSidebar();
+                }}
+                className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 transition-all duration-200 active:scale-95"
+              >
+                <PanelLeft size={18} />
+              </button>
+
+              {/* TOOLTIP (DESKTOP ONLY) */}
+              {isCollapsed && (
+                <div className="hidden md:block pointer-events-none absolute left-[calc(100%+12px)] top-1/2 -translate-y-1/2 px-3 py-2 rounded-lg bg-black text-white dark:bg-white dark:text-black text-xs opacity-0 invisible translate-x-[-6px] group-hover:opacity-100 group-hover:visible group-hover:translate-x-0 transition-all duration-200 z-[9999] whitespace-nowrap shadow-xl">
+                  Open menu
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* CHAT HISTORY AREA */}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar">
+          <ChatHistory
+            collapsed={isCollapsed}
+            history={history}
+            onSelectChat={(id: string) => {
+              onSelectChat(id);
+              if (window.innerWidth < 768) toggleSidebar();
+            }}
+            onPinChat={handlePin}
+            onRenameChat={handleRename}
+            onShareChat={handleShare}
+            onDeleteChat={onDeleteChat}
+            isLoading={isLoading}
+            activeChatId={activeChatId}
+          />
+        </div>
+
+        {/* BOTTOM SECTION */}
+        <div className="mt-auto w-full px-2 pb-3 bg-inherit">
+          <div className="h-px bg-black/5 dark:bg-white/5 my-2 mx-2" />
+          <DarkMode collapsed={isCollapsed} />
+          <ClerkAuth collapsed={isCollapsed} />
+        </div>
+      </aside>
+    </>
   );
 }
