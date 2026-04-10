@@ -60,7 +60,7 @@ export async function POST(req: Request) {
       const allMatches = queryResults.flatMap((res) => res.matches || []);
 
       const topMatches = allMatches
-        .sort((a, b) => (b.score || 0) - (a.score || 0))
+        .sort((a, b) => (b.score || 0) - (a.score || 0))  
         .slice(0, 20);
 
       context = topMatches

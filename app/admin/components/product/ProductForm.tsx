@@ -163,13 +163,6 @@ export default function ProductForm({
         imageUrl = cloudJson.secure_url;
       }
 
-      // const payload = {
-      //   ...formData,
-      //   imageUrl,
-      //   storeName: storeName,
-      //   price: Number(formData.price),
-      //   stock: Number(formData.stock || "0"),
-      // };
 
       const payload = {
         ...formData,
@@ -326,8 +319,8 @@ export default function ProductForm({
                             value={formData.category}
                             onChange={(e) => {
                               handleInputChange("category", e.target.value);
-                              handleInputChange("brand", ""); // Категори солигдоход брэндийг цэвэрлэнэ
-                              handleInputChange("size", ""); // Размерийг бас цэвэрлэнэ
+                              handleInputChange("brand", ""); 
+                              handleInputChange("size", "");
                             }}
                           >
                             <option value="">Сонгох</option>
