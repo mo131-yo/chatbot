@@ -42,6 +42,7 @@ export const ProductCard = ({
         meta.store_name?.trim() ||
         "Turuu's shop",
       stock: meta.stock ?? product.stock,
+      price: meta.price ?? product.price ?? product.formatted_price ?? 0,
     };
   }, [product]);
 
@@ -151,7 +152,7 @@ export const ProductCard = ({
               }
             />
           </button>
-        </div> */}
+        </div>
       </div>
 
       <div className="flex flex-col flex-1 p-6 justify-between bg-[#121212]">
@@ -196,7 +197,7 @@ export const ProductCard = ({
                 exit={{ opacity: 0, y: 10 }}
                 className="flex gap-2"
               >
-                {/* <button
+                <button
                   onPointerDown={(e) => e.stopPropagation()}
                   onClick={(e) => {
                     e.stopPropagation();
@@ -207,26 +208,7 @@ export const ProductCard = ({
                   disabled={productData.stock === 0}
                 >
                   {productData.stock === 0 ? "Дууссан" : "Захиалах"}
-                </button> */}
-
-              <button
-                onPointerDown={(e) => e.stopPropagation()}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  
-                  const orderData = {
-                    ...productWithImage,
-                    price: Number(productData.price) 
-                  };
-                  
-                  console.log("Order Data:", orderData);
-                  onOrder?.(orderData);
-                }}
-                className="flex-1 h-12 bg-[#077eef] rounded-2xl text-white font-bold active:scale-95 transition-all text-sm"
-              >
-                Захиалах
-              </button>
+                </button>
 
                 <button
                   onPointerDown={(e) => e.stopPropagation()}
