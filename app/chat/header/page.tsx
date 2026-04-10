@@ -43,8 +43,7 @@ export default function Header({
 
   return (
     <header
-      className="
-  sticky top-0 z-50
+      className=" sticky top-0 z-50
   flex items-center justify-between
   px-4 py-3
 
@@ -57,11 +56,10 @@ export default function Header({
 "
     >
       <div className="flex items-center gap-4">
-        {/* <MenuToggle onClick={toggleSidebar} /> */}
       </div>
 
       <div className="flex items-center gap-3">
-        <button
+        {/* <button
           onClick={() => window.dispatchEvent(new CustomEvent("openFavorites"))}
           className="relative p-3 hover:bg-white/10 rounded-full transition-all"
         >
@@ -76,7 +74,7 @@ export default function Header({
               {favoriteCount}
             </span>
           )}
-        </button>
+        </button> */}
 
         <button
           onClick={() => setIsCartOpen(true)}
@@ -90,7 +88,6 @@ export default function Header({
           )}
         </button>
       </div>
-      {/* <NavActions /> */}
     </header>
   );
 }

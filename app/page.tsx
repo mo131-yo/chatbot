@@ -9,6 +9,10 @@ import { WelcomeSection } from "./chat/homeChat/robot-text/welcome-section";
 import Sidebar from "./chat/sidebar/page";
 import Header from "./chat/header/page";
 import ChatInput from "./chat/chatInput/page";
+import { AnimatePresence } from "framer-motion";
+import QPayPayment from "./chat/payment/components/QPayPayment ";
+import OrderAddress from "./chat/payment/components/form";
+import OrderReceipt from "./chat/ZahialgaHarah/OrderReceipt";
 
 export default function Home() {
   const { user, isLoaded } = useUser();
@@ -27,7 +31,9 @@ export default function Home() {
 
 
   const [isCollapsed, setIsCollapsed] = useState(true);
-
+  const [orderStep, setOrderStep] = useState<'NONE' | 'ADDRESS' | 'PAYMENT'>('NONE');
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [receiptData, setReceiptData] = useState<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const currentChatMessages = activeChatId ? allChats[activeChatId] || [] : [];
 
@@ -35,8 +41,12 @@ export default function Home() {
 
   const toggleSidebar = () => setIsCollapsed(!isCollapsed);
 
-  return (
+  const handleOrderInitiate = (product: any) => {
+    setSelectedProduct(product);
+    setOrderStep('ADDRESS');
+  };
 
+  return (
     <div className="flex h-screen w-full bg-slate-50 dark:bg-[#0D0D0D] overflow-hidden relative">
       <Sidebar
         toggleSidebar={toggleSidebar}
@@ -75,12 +85,56 @@ export default function Home() {
               messages={currentChatMessages}
               isTyping={isTyping}
               onProductClick={() => {}}
-              onBuy={() => {}}
+              onBuy={handleOrderInitiate}
               messagesEndRef={messagesEndRef}
             />
           )}
         </main>
+<AnimatePresence>
+  {orderStep === 'ADDRESS' && (
+    <OrderAddress 
+      onClose={() => setOrderStep('NONE')} 
+      // onConfirm-д product-ийн датаг хамт дамжуулах боломжтой болгох
+      onConfirm={() => {
+        console.log("Address confirmed, moving to payment. Price:", selectedProduct?.price);
+        setOrderStep('PAYMENT');
+      }} 
+    />
+  )}
+</AnimatePresence>
 
+<AnimatePresence>
+  {orderStep === 'PAYMENT' && selectedProduct && (
+    <QPayPayment 
+      amount={selectedProduct.price} 
+      orderId={selectedProduct.id || `ORD-${Date.now()}`}
+      onSuccess={(details) => {
+        // 1. Төлбөрийн модалийг хаах
+        setOrderStep('NONE'); 
+        
+        // 2. Баримтанд харуулах өгөгдлийг бэлдэж хадгалах
+        setReceiptData({
+          productName: selectedProduct.name || selectedProduct.title,
+          amount: details.amount,
+          orderId: details.transactionId, // QPay-ээс ирсэн гүйлгээний дугаар
+          date: details.date,
+          image: selectedProduct.image || selectedProduct.thumbnail
+        });
+      }}
+      onCancel={() => setOrderStep('NONE')}
+    />
+  )}
+</AnimatePresence>
+
+{/* Order Receipt-ийг харуулах хэсэг */}
+<AnimatePresence>
+  {receiptData && (
+    <OrderReceipt 
+      orderData={receiptData} 
+      onClose={() => setReceiptData(null)} 
+    />
+  )}
+</AnimatePresence>
         <div className="relative z-30">
           <ChatInput
             onSendMessage={sendMessage}

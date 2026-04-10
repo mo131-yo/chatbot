@@ -278,36 +278,31 @@ export default function OrderAddress({ onClose, onConfirm }: Props) {
     }
   };
 
-  const handleSubmit = async () => {
-    markAllTouched();
+  // OrderAddress.tsx доторх handleSubmit
+const handleSubmit = async () => {
+  markAllTouched();
+  const nextErrors = validateForm(formData);
+  setErrors(nextErrors);
 
-    const nextErrors = validateForm(formData);
-    setErrors(nextErrors);
+  if (Object.keys(nextErrors).length > 0) return;
 
-    if (Object.keys(nextErrors).length > 0) {
-      return;
-    }
+  try {
+    setSubmitting(true);
+    
+    // Энэ payload нь зөвхөн хаяг. 
+    // Үнийг Home.tsx-ийн selectedProduct-аас авч байгаа тул
+    // Энд заавал price нэмэх албагүй, гэхдээ логикоо шалгах хэрэгтэй.
+    const payload = {
+      ...formData,
+      // Хэрэв та backend рүү шууд хаягаа илгээх гэж байгаа бол энд үнээ нэмнэ
+    };
 
-    try {
-      setSubmitting(true);
-
-      const payload = {
-        city: formData.city.trim(),
-        district: formData.district.trim(),
-        street: formData.street.trim(),
-        address: formData.address.trim(),
-        phone: formData.phone.trim(),
-        lat: formData.lat,
-        lng: formData.lng,
-      };
-
-      console.log("Final Order Data:", payload);
-
-      onConfirm();
-    } finally {
-      setSubmitting(false);
-    }
-  };
+    console.log("Address Ready:", payload);
+    onConfirm(); // Энэ нь Home.tsx-ийн setOrderStep('PAYMENT')-ийг дуудна
+  } finally {
+    setSubmitting(false);
+  }
+};
 
   const getFieldClassName = (field: keyof FormErrors) => {
     const hasError = touched[field] && errors[field];
