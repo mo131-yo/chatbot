@@ -170,7 +170,7 @@ export function WelcomeSection({
           transition={{ delay: 1, duration: 1 }}
           className="text-base md:text-lg font-light text-slate-400 dark:text-white/20 tracking-wide text-center mb-16 max-w-lg"
         >
-          Таны үнэ цэнийг{" "}
+          Таны{" "}
           <span className="text-blue-500/80 italic font-medium">
             үнэ цэнийг
           </span>{" "}

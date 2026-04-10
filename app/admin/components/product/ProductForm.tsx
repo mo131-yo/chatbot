@@ -52,29 +52,28 @@ export default function ProductForm({
 
   const CATEGORY_DATA: Record<string, { brands: string[]; sizes: string[] }> = {
     Гутал: {
-      brands: ["Timberland"],
-      sizes: ["38", "39", "40", "41", "42", "43", "44", "45"],
-    },
-    Пүүз: {
       brands: [
+        "Timberland",
         "Nike",
         "Adidas",
-        "Puma",
-        "Jordan",
-        "New Balance",
-        "Vans",
-        "Reebok",
-        "Yeezy",
-        "Nike Sportswear",
+        // "Puma",
+        // "Jordan",
+        // "New Balance",
+        // "Vans",
+        // "Reebok",
+        // "Yeezy",
+        // "Nike Sportswear",
         "Converse",
-        "ASICS",
-        "Under Armour",
-        "Balenciaga",
+        // "ASICS",
+        // "Under Armour",
+        // "Balenciaga",
       ],
-      sizes: ["36", "37", "38", "39", "40", "41", "42", "43"],
+      sizes: ["38", "39", "40", "41", "42", "43", "44", "45"],
     },
+
     Хувцас: {
       brands: [
+        "Adidas",
         "Zara",
         "H&M",
         "Uniqlo",
@@ -96,6 +95,37 @@ export default function ProductForm({
         "Prada",
       ],
       sizes: ["Small", "Medium", "Large", "One Size"],
+    },
+    "Нүүр будалт (Makeup)": {
+      brands: [
+        "MAC",
+        "Dior",
+        "Fenty Beauty",
+        "Maybelline",
+        "Rare Beauty",
+        "Charlotte Tilbury",
+        "NARS",
+        "YSL",
+      ],
+      sizes: ["Mini", "Standard", "Palette", "Refill"],
+    },
+    "Арьс арчилгаа (Skincare)": {
+      brands: [
+        "La Roche-Posay",
+        "The Ordinary",
+        "COSRX",
+        "Estée Lauder",
+        "Laneige",
+        "Innisfree",
+        "Kiehl's",
+        "L'Occitane",
+      ],
+      sizes: [
+        "Travel Size",
+        "Standard (30ml)",
+        "Full Size (50ml+)",
+        "Value Size",
+      ],
     },
   };
 
@@ -164,14 +194,6 @@ export default function ProductForm({
         const cloudJson = await uploadRes.json();
         imageUrl = cloudJson.secure_url;
       }
-
-      // const payload = {
-      //   ...formData,
-      //   imageUrl,
-      //   storeName: storeName,
-      //   price: Number(formData.price),
-      //   stock: Number(formData.stock || "0"),
-      // };
 
       const payload = {
         ...formData,
@@ -328,8 +350,8 @@ export default function ProductForm({
                             value={formData.category}
                             onChange={(e) => {
                               handleInputChange("category", e.target.value);
-                              handleInputChange("brand", ""); // Категори солигдоход брэндийг цэвэрлэнэ
-                              handleInputChange("size", ""); // Размерийг бас цэвэрлэнэ
+                              handleInputChange("brand", "");
+                              handleInputChange("size", "");
                             }}
                           >
                             <option value="">Сонгох</option>
