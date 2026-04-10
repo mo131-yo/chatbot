@@ -139,8 +139,8 @@ export default function AdminDashboardContent({
     <div className="space-y-8">
       <div className="flex justify-between items-center">
         <div>
-           <p className="text-indigo-400 font-bold uppercase tracking-widest text-xs">Админ удирдлага</p>
-           <h1 className="text-4xl font-black italic text-white">{storeName}</h1>
+
+           <h1 className="text-4xl font-black italic text-white dark:text-black">"{storeName}"</h1>
         </div>
         <ProductForm 
             key={storeName} 

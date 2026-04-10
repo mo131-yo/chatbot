@@ -17,7 +17,7 @@ export default function Sidebar() {
     { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
     { name: "Products", href: "/admin/products", icon: Package },
     { name: "Orders", href: "/admin/orders", icon: ShoppingCart },
-    { name: "Analytics", href: "/admin/analytics", icon: BarChart3 },
+
   ];
 
   const [openSettings, setOpenSettings] = useState(false);
