@@ -49,10 +49,10 @@ export function ProductDetailSidebar({ product, onClose, onBuy }: Props) {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-9999">
+      <div className="fixed inset-0">
         <motion.div
           initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          animate={{ opacity: 1, z: 1000 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
           className="absolute inset-0 bg-white/10 backdrop-blur-md"
