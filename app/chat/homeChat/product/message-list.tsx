@@ -194,15 +194,8 @@ export const MessageList: React.FC<MessageListProps> = ({
                     />
                   )}
                   {hasText && (
-                    <div className="px-5 py-3 rounded-[1.5rem] rounded-tr-sm bg-[#007AFF] text-white font-medium">
-                      <ReactMarkdown
-                        components={{
-                          img: () => null,
-                          p: ({ children }) => (
-                            <p className="mb-0">{children}</p>
-                          ),
-                        }}
-                      >
+                    <div className="px-5 py-3 rounded-[1.5rem] rounded-tr-sm bg-[#077eef] text-white font-medium">
+                      <ReactMarkdown components={{ img: () => null, p: ({ children }) => <p className="mb-0">{children}</p> }}>
                         {rawText}
                       </ReactMarkdown>
                     </div>
