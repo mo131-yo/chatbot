@@ -1,7 +1,16 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, Share2, ShoppingBag, ImageIcon, Check, Store, Box, Tag } from "lucide-react";
+import {
+  Heart,
+  Share2,
+  ShoppingBag,
+  ImageIcon,
+  Check,
+  Store,
+  Box,
+  Tag,
+} from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { useCart } from "@/app/chat/hooks/useCart";
 
@@ -20,26 +29,22 @@ export const ProductCard = ({
   const [isSharing, setIsSharing] = useState(false);
   const { addToCart } = useCart();
 
-    const productData = useMemo(() => {
+  const productData = useMemo(() => {
     const meta = product.metadata || {};
-    
-    // Үнийг тоо (Number) руу хөрвүүлэхдээ илүү нарийн шалгах
-    const rawPrice = meta.price ?? product.price ?? product.formatted_price ?? 0;
-    const cleanPrice = typeof rawPrice === 'string' 
-      ? parseFloat(rawPrice.replace(/[^0-9.]/g, "")) 
-    : Number(rawPrice);
 
-  return {
-    id: product.id ?? product.product_id ?? product.name,
-    name: meta.name || product.product_name || product.name || "Нэргүй бараа",
-    price: cleanPrice || 0,
+    return {
+      id: product.id ?? product.product_id ?? product.name,
+      name: meta.name || product.product_name || product.name || "Нэргүй бараа",
       brand: product.brand || meta.brand || "",
-      storeName: (product.storeName?.trim() || product.store_name?.trim() || meta.store_name?.trim() || "Turuu's shop"),
+      storeName:
+        product.storeName?.trim() ||
+        product.store_name?.trim() ||
+        meta.store_name?.trim() ||
+        "Turuu's shop",
       stock: meta.stock ?? product.stock,
     };
   }, [product]);
 
-  // 2. Зургийн URL-ийг тодорхойлох
   useEffect(() => {
     const rawImage =
       product.metadata?.product_image_url ||
@@ -93,10 +98,11 @@ export const ProductCard = ({
   return (
     <div
       className={`relative mx-auto flex flex-col h-125 w-72 md:w-[320px] overflow-hidden rounded-[2.5rem] bg-[#121212] border transition-all duration-700 ${
-        isCurrent ? "border-[#077eef] shadow-[0_20px_50px_rgba(0,0,0,0.5)]" : "border-white/5"
+        isCurrent
+          ? "border-[#077eef] shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
+          : "border-white/5"
       }`}
     >
-      {/* Зургийн хэсэг */}
       <div className="relative h-65 w-full overflow-hidden shrink-0">
         {imageUrl && !imgError ? (
           <img
@@ -108,7 +114,7 @@ export const ProductCard = ({
             onError={() => setImgError(true)}
           />
         ) : (
-          <div 
+          <div
             className="h-full w-full flex flex-col items-center justify-center bg-white/5 cursor-pointer"
             onClick={() => onSelect?.(productWithImage)}
           >
@@ -117,16 +123,16 @@ export const ProductCard = ({
           </div>
         )}
 
-        {/* Brand badge */}
         {productData.brand && (
           <div className="absolute top-4 left-4 z-20 px-3 py-1 bg-black/60 backdrop-blur-md border border-white/10 rounded-full flex items-center gap-1">
             <Tag size={12} className="text-[#C5A059]" />
-            <span className="text-white text-[10px] font-medium">{productData.brand}</span>
+            <span className="text-white text-[10px] font-medium">
+              {productData.brand}
+            </span>
           </div>
         )}
 
-        {/* Heart button */}
-        {/* <div className="absolute top-4 right-4 z-20">
+        <div className="absolute top-4 right-4 z-20">
           <button
             onPointerDown={(e) => e.stopPropagation()}
             onClick={(e) => {
@@ -136,12 +142,18 @@ export const ProductCard = ({
             }}
             className="p-3 rounded-full bg-black/40 backdrop-blur-md border border-white/10 active:scale-95 transition-all"
           >
-            <Heart size={18} className={savedIds?.includes(productData.id) ? "text-red-500 fill-red-500" : "text-white"} />
+            <Heart
+              size={18}
+              className={
+                savedIds?.includes(productData.id)
+                  ? "text-red-500 fill-red-500"
+                  : "text-white"
+              }
+            />
           </button>
         </div> */}
       </div>
 
-      {/* Мэдээллийн хэсэг */}
       <div className="flex flex-col flex-1 p-6 justify-between bg-[#121212]">
         <div className="space-y-2">
           <div className="flex justify-between items-center">
@@ -159,17 +171,22 @@ export const ProductCard = ({
             )}
           </div>
 
-          <h3 className="text-white text-lg font-bold leading-tight line-clamp-2">{productData.name}</h3>
+          <h3 className="text-white text-lg font-bold leading-tight line-clamp-2">
+            {productData.name}
+          </h3>
 
           <p className="text-blue-300 text-2xl font-black">
             {(() => {
-              const numericPrice = parseFloat(String(productData.price).replace(/[^0-9.]/g, ""));
-              return isNaN(numericPrice) || numericPrice === 0 ? "Үнэгүй" : numericPrice.toLocaleString() + "₮";
+              const numericPrice = parseFloat(
+                String(productData.price).replace(/[^0-9.]/g, ""),
+              );
+              return isNaN(numericPrice) || numericPrice === 0
+                ? "Үнэгүй"
+                : numericPrice.toLocaleString() + "₮";
             })()}
           </p>
         </div>
 
-        {/* Үйлдлийн товчлуурууд */}
         <div className="h-13 mt-4">
           <AnimatePresence mode="wait">
             {isCurrent && (
@@ -184,9 +201,9 @@ export const ProductCard = ({
                   onClick={(e) => {
                     e.stopPropagation();
                     e.preventDefault();
-                    onOrder?.(productWithImage);
+                    if (onOrder) onOrder();
                   }}
-                  className="flex-1 h-12 bg-[#077eef] rounded-2xl text-white font-bold active:scale-95 transition-all text-sm disabled:opacity-50 disabled:grayscale"
+                  className="flex-1 h-12 bg-[#077eef] rounded-2xl text-white font-bold active:scale-95 transition-all text-sm disabled:opacity-50"
                   disabled={productData.stock === 0}
                 >
                   {productData.stock === 0 ? "Дууссан" : "Захиалах"}
