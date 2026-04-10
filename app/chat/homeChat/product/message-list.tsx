@@ -29,9 +29,6 @@ interface MessageListProps {
   storeName?: string;
 }
 
-/**
- * 1. Текст доторх ![alt](src) хэлбэртэй Markdown-ийг устгаж цэвэр текст үлдээх
- */
 const removeImageMarkdown = (content: string): string => {
   if (!content) return "";
   return content
@@ -40,20 +37,14 @@ const removeImageMarkdown = (content: string): string => {
     .trim();
 };
 
-/**
- * 2. Markdown-ий alt text-ээс барааны дэлгэрэнгүй мэдээллийг салгах
- * Бүтэц: ![Name | Price | Description | ID | Brand | StoreID | StoreName](URL)
- */
 const extractProducts = (content: string): Product[] => {
   const imgRegex = /!\[([^\]]+)\]\(([^)]+)\)/g;
   const products: Product[] = [];
   let match;
-
   while ((match = imgRegex.exec(content)) !== null) {
     const altText = match[1];
     const imageSrc = match[2];
     const parts = altText.split("|").map((p) => p.trim());
-
     if (parts.length >= 2) {
       products.push({
         name: parts[0] || "Нэргүй бараа",
@@ -70,9 +61,6 @@ const extractProducts = (content: string): Product[] => {
   return products;
 };
 
-/**
- * 3. Төлбөрийн триггер болон цэвэрлэгээний функцууд
- */
 const extractPaymentTrigger = (content: string) => {
   const match = content.match(/PAYMENT_TRIGGER:(\{[^}]+\})/);
   if (!match) return null;
@@ -87,20 +75,11 @@ const cleanPaymentTrigger = (content: string): string => {
   return content.replace(/PAYMENT_TRIGGER:\{[^}]+\}/g, "").trim();
 };
 
-function isVisualSearchReply(messages: any[], index: number): boolean {
-  if (index === 0) return false;
-  const prev = messages[index - 1];
-  return (
-    prev?.role?.toLowerCase() === "user" &&
-    (!!prev?.imagePreview || !!prev?.image)
-  );
-}
-
 export const MessageList: React.FC<MessageListProps> = ({
   messages,
   isTyping,
   onProductClick,
-  onBuy,
+  onBuy: externalOnBuy,
   messagesEndRef,
   storeName,
 }) => {
@@ -108,10 +87,24 @@ export const MessageList: React.FC<MessageListProps> = ({
   const [activePayment, setActivePayment] = useState<any>(null);
   const [receiptData, setReceiptData] = useState<any>(null);
 
-  const handleAddressConfirm = () => {
-    const product = addressFormProduct;
-    if (!product) return;
+  const handleOpenOrderForm = (name: string, price: any) => {
+    const allProducts = messages.flatMap((m) =>
+      extractProducts(m.content || ""),
+    );
+    const match = allProducts.find((p) => p.name === name);
 
+    setAddressFormProduct({
+      name: name,
+      price: price,
+      image: match?.image || "",
+      id: match?.id || `id-${Date.now()}`,
+      storeName: storeName || match?.storeName,
+    });
+  };
+
+  const handleAddressConfirm = () => {
+    if (!addressFormProduct) return;
+    const product = { ...addressFormProduct };
     setAddressFormProduct(null);
 
     const numericPrice =
@@ -127,13 +120,12 @@ export const MessageList: React.FC<MessageListProps> = ({
         image: product.image,
         storeName: storeName || product.storeName || "Манай дэлгүүр",
       });
-    }, 300);
+    }, 400);
   };
 
   const handlePaymentSuccess = (details: any) => {
     const paidInfo = activePayment;
     setActivePayment(null);
-
     setReceiptData({
       productName: paidInfo.productName,
       amount: paidInfo.amount,
@@ -146,79 +138,54 @@ export const MessageList: React.FC<MessageListProps> = ({
 
   return (
     <>
-      <div className="max-w-3xl mx-auto pb-20 flex flex-col space-y-8">
+      <div className="max-w-3xl mx-auto pb-32 flex flex-col space-y-10 px-4">
         {messages.map((message: any, index: number) => {
           const isUser = message.role?.toLowerCase() === "user";
-
-          // Мессеж бүрээс бараа болон төлбөрийн мэдээллийг салгах
           const products = !isUser
             ? extractProducts(message.content || "")
             : [];
           const paymentTrigger = !isUser
             ? extractPaymentTrigger(message.content || "")
             : null;
-
           const cleanedContent = paymentTrigger
             ? cleanPaymentTrigger(message.content || "")
             : message.content || "";
-
           const rawText = removeImageMarkdown(cleanedContent);
           const hasText = rawText.length > 0;
-
-          const isVisual =
-            !isUser &&
-            isVisualSearchReply(messages, index) &&
-            products.length > 0;
-
           const displayImage = message.imagePreview || message.image;
-          const isActualImage =
-            displayImage &&
-            (displayImage.startsWith("data:image") ||
-              displayImage.startsWith("http"));
 
           return (
             <motion.div
               key={`msg-${index}`}
-              initial={{ opacity: 0, y: 15 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className={`flex flex-col ${isUser ? "items-end" : "items-start"} w-full`}
+              className={`flex flex-col ${isUser ? "items-end" : "items-start"} w-full group`}
             >
               {isUser ? (
-                // --- Хэрэглэгчийн мессеж ---
-                <div className="flex flex-col items-end gap-2 max-w-[85%]">
-                  {isActualImage && (
+                <div className="flex flex-col items-end gap-3 max-w-[85%]">
+                  {displayImage && (
                     <img
                       src={displayImage}
-                      className="w-full max-w-[320px] rounded-2xl shadow-lg border border-white/5"
-                      alt="User upload"
+                      className="w-full max-w-[280px] rounded-2xl border border-white/10"
+                      alt="User"
                     />
                   )}
                   {hasText && (
-                    <div className="px-5 py-3 rounded-[1.5rem] rounded-tr-sm bg-[#007AFF] text-white font-medium">
-                      <ReactMarkdown
-                        components={{
-                          img: () => null,
-                          p: ({ children }) => (
-                            <p className="mb-0">{children}</p>
-                          ),
-                        }}
-                      >
-                        {rawText}
-                      </ReactMarkdown>
+                    <div className="px-5 py-3 rounded-[1.6rem] rounded-tr-md bg-blue-600 text-white shadow-lg text-sm md:text-base">
+                      {rawText}
                     </div>
                   )}
                 </div>
               ) : (
-                // --- AI-ийн хариулт ---
                 <div className="w-full space-y-4">
                   {hasText && (
-                    <div className="max-w-[85%] px-5 py-3 rounded-[1.8rem] rounded-tl-sm bg-white dark:bg-[#1A1A1A] border border-slate-100 dark:border-white/5 shadow-sm">
-                      <div className="prose dark:prose-invert max-w-none text-sm md:text-base leading-relaxed">
+                    <div className="max-w-[88%] px-6 py-4 rounded-[1.8rem] rounded-tl-md bg-white/80 dark:bg-slate-900/50 backdrop-blur-xl border border-slate-100 dark:border-white/5 shadow-sm">
+                      <div className="prose dark:prose-invert max-w-none text-sm md:text-[15px] leading-relaxed">
                         <ReactMarkdown
                           components={{
                             img: () => null,
                             p: ({ children }) => (
-                              <p className="mb-0">{children}</p>
+                              <p className="m-0">{children}</p>
                             ),
                           }}
                         >
@@ -227,37 +194,28 @@ export const MessageList: React.FC<MessageListProps> = ({
                       </div>
 
                       {paymentTrigger && (
-                        <button
-                          onClick={() => {
-                            const match =
-                              products.find(
-                                (p) => p.name === paymentTrigger.name,
-                              ) || products[0];
-                            setAddressFormProduct({
-                              ...paymentTrigger,
-                              image: match?.image || "",
-                              id: match?.id || `trig-${Date.now()}`,
-                            });
-                          }}
-                          className="mt-4 px-6 py-2.5 bg-[#C5A059] hover:bg-[#d4b476] text-black font-bold rounded-xl transition-all text-sm flex items-center gap-2"
+                        <motion.button
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() =>
+                            handleOpenOrderForm(
+                              paymentTrigger.name,
+                              paymentTrigger.price,
+                            )
+                          }
+                          className="mt-5 w-full md:w-auto px-8 py-3 bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-bold rounded-xl shadow-lg flex items-center justify-center gap-2 text-sm uppercase"
                         >
                           🛍️ Захиалах
-                        </button>
+                        </motion.button>
                       )}
                     </div>
                   )}
 
-                  {/* Барааны жагсаалт (Carousel) */}
                   {products.length > 0 && (
                     <div className="w-full mt-2">
-                      {isVisual && (
-                        <div className="pl-4 mb-3 text-[11px] font-bold text-[#C5A059] uppercase tracking-widest">
-                          Олдсон бараа ({products.length})
-                        </div>
-                      )}
                       <ProductCarousel
                         products={products}
-                        onBuy={onBuy}
+                        onBuy={handleOpenOrderForm}
                         onSelect={onProductClick}
                         history={[]}
                       />
@@ -270,14 +228,13 @@ export const MessageList: React.FC<MessageListProps> = ({
         })}
 
         {isTyping && (
-          <div className="flex items-center gap-3 py-4 px-2">
+          <div className="flex items-center gap-3 py-6 px-4">
             <PulsatingDots />
           </div>
         )}
-        <div ref={messagesEndRef} className="h-2 w-full" />
+        <div ref={messagesEndRef} className="h-4 w-full" />
       </div>
 
-      {/* --- Popups / Modals --- */}
       <AnimatePresence>
         {addressFormProduct && (
           <OrderAddress
