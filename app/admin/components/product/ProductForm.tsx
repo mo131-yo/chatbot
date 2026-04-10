@@ -53,7 +53,7 @@ export default function ProductForm({
   const CATEGORY_DATA: Record<string, { brands: string[]; sizes: string[] }> = {
     Гутал: {
       brands: [
-        // "Timberland",
+        "Timberland",
         "Nike",
         "Adidas",
         // "Puma",
@@ -63,7 +63,7 @@ export default function ProductForm({
         // "Reebok",
         // "Yeezy",
         // "Nike Sportswear",
-        // "Converse",
+        "Converse",
         // "ASICS",
         // "Under Armour",
         // "Balenciaga",
@@ -73,6 +73,7 @@ export default function ProductForm({
 
     Хувцас: {
       brands: [
+        "Adidas",
         "Zara",
         "H&M",
         "Uniqlo",
@@ -94,6 +95,37 @@ export default function ProductForm({
         "Prada",
       ],
       sizes: ["Small", "Medium", "Large", "One Size"],
+    },
+    "Нүүр будалт (Makeup)": {
+      brands: [
+        "MAC",
+        "Dior",
+        "Fenty Beauty",
+        "Maybelline",
+        "Rare Beauty",
+        "Charlotte Tilbury",
+        "NARS",
+        "YSL",
+      ],
+      sizes: ["Mini", "Standard", "Palette", "Refill"],
+    },
+    "Арьс арчилгаа (Skincare)": {
+      brands: [
+        "La Roche-Posay",
+        "The Ordinary",
+        "COSRX",
+        "Estée Lauder",
+        "Laneige",
+        "Innisfree",
+        "Kiehl's",
+        "L'Occitane",
+      ],
+      sizes: [
+        "Travel Size",
+        "Standard (30ml)",
+        "Full Size (50ml+)",
+        "Value Size",
+      ],
     },
   };
 
@@ -162,7 +194,6 @@ export default function ProductForm({
         const cloudJson = await uploadRes.json();
         imageUrl = cloudJson.secure_url;
       }
-
 
       const payload = {
         ...formData,
@@ -319,7 +350,7 @@ export default function ProductForm({
                             value={formData.category}
                             onChange={(e) => {
                               handleInputChange("category", e.target.value);
-                              handleInputChange("brand", ""); 
+                              handleInputChange("brand", "");
                               handleInputChange("size", "");
                             }}
                           >
