@@ -127,23 +127,25 @@ export default function Home() {
   )}
 </AnimatePresence>
 
-{/* Order Receipt-ийг харуулах хэсэг */}
-<AnimatePresence>
-  {receiptData && (
-    <OrderReceipt 
-      orderData={receiptData} 
-      onClose={() => setReceiptData(null)} 
+       {currentChatMessages.length === 0 ? (
+  <div className="absolute inset-0 flex items-center justify-center z-30">
+    <ChatInput
+      onSendMessage={sendMessage}
+      onVisualResult={addVisualResult}
+      history={currentChatMessages}
+      isTyping={isTyping || isStreaming}
     />
-  )}
-</AnimatePresence>
-        <div className="relative z-30">
-          <ChatInput
-            onSendMessage={sendMessage}
-            onVisualResult={addVisualResult}
-            history={currentChatMessages}
-            isTyping={isTyping || isStreaming}
-          />
-        </div>
+  </div>
+) : (
+  <div className="relative z-30 border-t border-black/5 dark:border-white/10">
+    <ChatInput
+      onSendMessage={sendMessage}
+      onVisualResult={addVisualResult}
+      history={currentChatMessages}
+      isTyping={isTyping || isStreaming}
+    />
+  </div>
+)}
       </div>
     </div>
   );

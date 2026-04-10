@@ -30,7 +30,7 @@ export default function Sidebar() {
 
   return (
     <aside
-      className={`h-screen p-5 flex flex-col justify-between transition-all duration-300
+      className={`h-100% p-5 flex flex-col justify-between transition-all duration-300
       ${collapsed ? "w-20" : "w-64"}
       bg-[#1c2541]/90 backdrop-blur-xl border-r border-white/10 text-white`}
     >

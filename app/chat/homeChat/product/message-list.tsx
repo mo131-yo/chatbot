@@ -313,6 +313,7 @@ interface MessageListProps {
   onProductClick: (product: Product) => void;
   onBuy: (name: string, price: any) => void;
   messagesEndRef: React.RefObject<HTMLDivElement | null>;
+  storeName?: string;
 }
  
 const removeImageMarkdown = (content: string): string => {
@@ -378,6 +379,7 @@ export const MessageList: React.FC<MessageListProps> = ({
   onProductClick,
   onBuy,
   messagesEndRef,
+  storeName,
 }) => {
   const [addressFormProduct, setAddressFormProduct] = useState<any>(null);
   const [activePayment, setActivePayment] = useState<any>(null);
@@ -400,6 +402,7 @@ export const MessageList: React.FC<MessageListProps> = ({
         orderId: product.id || `ORD-${Date.now()}`,
         productName: product.name,
         image: product.image,
+        storeName: storeName || product.storeName || "Манай дэлгүүр",
       });
     }, 300);
   };
@@ -423,32 +426,33 @@ export const MessageList: React.FC<MessageListProps> = ({
       <div className="max-w-3xl mx-auto pb-20 flex flex-col space-y-8">
         {messages.map((message: any, index: number) => {
           const isUser = message.role?.toLowerCase() === "user";
- 
+
+          // Мессеж бүрээс бараа болон төлбөрийн мэдээллийг салгах
           const products = !isUser
             ? extractProducts(message.content || "")
             : [];
           const paymentTrigger = !isUser
             ? extractPaymentTrigger(message.content || "")
             : null;
- 
+
           const cleanedContent = paymentTrigger
             ? cleanPaymentTrigger(message.content || "")
             : message.content || "";
- 
+
           const rawText = removeImageMarkdown(cleanedContent);
           const hasText = rawText.length > 0;
- 
+
           const isVisual =
             !isUser &&
             isVisualSearchReply(messages, index) &&
             products.length > 0;
- 
+
           const displayImage = message.imagePreview || message.image;
           const isActualImage =
             displayImage &&
             (displayImage.startsWith("data:image") ||
               displayImage.startsWith("http"));
- 
+
           return (
             <motion.div
               key={`msg-${index}`}
@@ -466,15 +470,8 @@ export const MessageList: React.FC<MessageListProps> = ({
                     />
                   )}
                   {hasText && (
-                    <div className="px-5 py-3 rounded-[1.5rem] rounded-tr-sm bg-[#007AFF] text-white font-medium">
-                      <ReactMarkdown
-                        components={{
-                          img: () => null,
-                          p: ({ children }) => (
-                            <p className="mb-0">{children}</p>
-                          ),
-                        }}
-                      >
+                    <div className="px-5 py-3 rounded-[1.5rem] rounded-tr-sm bg-[#077eef] text-white font-medium">
+                      <ReactMarkdown components={{ img: () => null, p: ({ children }) => <p className="mb-0">{children}</p> }}>
                         {rawText}
                       </ReactMarkdown>
                     </div>
@@ -578,4 +575,3 @@ export const MessageList: React.FC<MessageListProps> = ({
     </>
   );
 };
- 
