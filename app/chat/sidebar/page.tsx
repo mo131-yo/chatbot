@@ -156,7 +156,7 @@ export default function Sidebar({
             history={history}
             onSelectChat={(id) => {
               onSelectChat(id);
-             
+
               if (window.innerWidth < 768) toggleSidebar();
             }}
             onPinChat={handlePin}
@@ -168,11 +168,18 @@ export default function Sidebar({
           />
         </div>
 
-        <div className="mt-auto w-full px-2 pb-3 bg-inherit">
-          <div className="h-px bg-black/5 dark:bg-white/5 my-2 mx-2" />
+        {isCollapsed && (
+          <div className="mt-auto w-full px-2 pb-3 bg-inherit max-sm:hidden ">
+            <div className="h-px bg-black/5 dark:bg-white/5 my-2 mx-2 max-sm:hidden" />
+            <DarkMode collapsed={isCollapsed} />
+            <ClerkAuth collapsed={isCollapsed} />
+          </div>
+        )}
+        {!isCollapsed && ( <div className="mt-auto w-full px-2 pb-3 bg-inherit ">
+          <div className="h-px bg-black/5 dark:bg-white/5 my-2 mx-2 max-sm:hidden" />
           <DarkMode collapsed={isCollapsed} />
           <ClerkAuth collapsed={isCollapsed} />
-        </div>
+        </div>)}
       </aside>
     </>
   );
