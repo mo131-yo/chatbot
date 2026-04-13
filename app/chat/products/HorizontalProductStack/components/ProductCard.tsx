@@ -1,5 +1,5 @@
 "use client";
-
+ 
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Heart,
@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { useCart } from "@/app/chat/hooks/useCart";
-
+ 
 export const ProductCard = ({
   product,
   isCurrent,
@@ -28,10 +28,10 @@ export const ProductCard = ({
   const [isShared, setIsShared] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const { addToCart } = useCart();
-
+ 
   const productData = useMemo(() => {
     const meta = product.metadata || {};
-
+ 
     return {
       id: product.id ?? product.product_id ?? product.name,
       name: meta.name || product.product_name || product.name || "Нэргүй бараа",
@@ -42,16 +42,17 @@ export const ProductCard = ({
         meta.store_name?.trim() ||
         "Turuu's shop",
       stock: meta.stock ?? product.stock,
+      price: meta.price ?? product.price ?? product.formatted_price ?? 0,
     };
   }, [product]);
-
+ 
   useEffect(() => {
     const rawImage =
       product.metadata?.product_image_url ||
       product.product_image_url ||
       product.metadata?.image_url ||
       product.image;
-
+ 
     if (rawImage && String(rawImage).startsWith("http")) {
       setImageUrl(rawImage);
     } else {
@@ -59,26 +60,26 @@ export const ProductCard = ({
     }
     setImgError(false);
   }, [product]);
-
+ 
   const productWithImage = {
     ...product,
     ...productData,
     image: imageUrl || product.image,
   };
-
+ 
   const handleShare = async (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-
+ 
     if (isSharing) return;
-
+ 
     const shareUrl = `${window.location.origin}/product/${productData.id}`;
     const shareData = {
       title: productData.name,
       text: `${productData.name} - Хамгийн ухаалаг AI дэлгүүрээс сонирхоорой!`,
       url: shareUrl,
     };
-
+ 
     try {
       setIsSharing(true);
       if (navigator.share) {
@@ -94,7 +95,7 @@ export const ProductCard = ({
       setIsSharing(false);
     }
   };
-
+ 
   return (
     <div
       className={`relative mx-auto flex flex-col h-125 w-72 md:w-[320px] overflow-hidden rounded-[2.5rem] bg-[#121212] border transition-all duration-700 ${
@@ -122,7 +123,7 @@ export const ProductCard = ({
             <span className="text-white/10 text-[10px]">Зураггүй</span>
           </div>
         )}
-
+ 
         {productData.brand && (
           <div className="absolute top-4 left-4 z-20 px-3 py-1 bg-black/60 backdrop-blur-md border border-white/10 rounded-full flex items-center gap-1">
             <Tag size={12} className="text-[#C5A059]" />
@@ -131,7 +132,7 @@ export const ProductCard = ({
             </span>
           </div>
         )}
-
+ 
         <div className="absolute top-4 right-4 z-20">
           <button
             onPointerDown={(e) => e.stopPropagation()}
@@ -151,9 +152,9 @@ export const ProductCard = ({
               }
             />
           </button>
-        </div> */}
+        </div>
       </div>
-
+ 
       <div className="flex flex-col flex-1 p-6 justify-between bg-[#121212]">
         <div className="space-y-2">
           <div className="flex justify-between items-center">
@@ -170,11 +171,11 @@ export const ProductCard = ({
               </div>
             )}
           </div>
-
+ 
           <h3 className="text-white text-lg font-bold leading-tight line-clamp-2">
             {productData.name}
           </h3>
-
+ 
           <p className="text-blue-300 text-2xl font-black">
             {(() => {
               const numericPrice = parseFloat(
@@ -186,7 +187,7 @@ export const ProductCard = ({
             })()}
           </p>
         </div>
-
+ 
         <div className="h-13 mt-4">
           <AnimatePresence mode="wait">
             {isCurrent && (
@@ -196,7 +197,7 @@ export const ProductCard = ({
                 exit={{ opacity: 0, y: 10 }}
                 className="flex gap-2"
               >
-                {/* <button
+                <button
                   onPointerDown={(e) => e.stopPropagation()}
                   onClick={(e) => {
                     e.stopPropagation();
@@ -207,27 +208,8 @@ export const ProductCard = ({
                   disabled={productData.stock === 0}
                 >
                   {productData.stock === 0 ? "Дууссан" : "Захиалах"}
-                </button> */}
-
-              <button
-                onPointerDown={(e) => e.stopPropagation()}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  
-                  const orderData = {
-                    ...productWithImage,
-                    price: Number(productData.price) 
-                  };
-                  
-                  console.log("Order Data:", orderData);
-                  onOrder?.(orderData);
-                }}
-                className="flex-1 h-12 bg-[#077eef] rounded-2xl text-white font-bold active:scale-95 transition-all text-sm"
-              >
-                Захиалах
-              </button>
-
+                </button>
+ 
                 <button
                   onPointerDown={(e) => e.stopPropagation()}
                   onClick={(e) => {
@@ -239,7 +221,7 @@ export const ProductCard = ({
                 >
                   <ShoppingBag size={18} />
                 </button>
-
+ 
                 <button
                   onPointerDown={(e) => e.stopPropagation()}
                   onClick={handleShare}
@@ -259,3 +241,5 @@ export const ProductCard = ({
     </div>
   );
 };
+ 
+ 
