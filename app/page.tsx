@@ -13,6 +13,7 @@ import { AnimatePresence } from "framer-motion";
 import QPayPayment from "./chat/payment/components/QPayPayment ";
 import OrderAddress from "./chat/payment/components/form";
 import OrderReceipt from "./chat/ZahialgaHarah/OrderReceipt";
+import OrdersButton from "./chat/ZahialgaHarah/OrdersButton";
 
 export default function Home() {
   const { user, isLoaded } = useUser();
@@ -29,14 +30,14 @@ export default function Home() {
     deleteChat: handleDeleteChat,
   } = useChatLogic();
 
-
   const [isCollapsed, setIsCollapsed] = useState(true);
-  const [orderStep, setOrderStep] = useState<'NONE' | 'ADDRESS' | 'PAYMENT'>('NONE');
+  const [orderStep, setOrderStep] = useState<"NONE" | "ADDRESS" | "PAYMENT">(
+    "NONE",
+  );
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [receiptData, setReceiptData] = useState<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const currentChatMessages = activeChatId ? allChats[activeChatId] || [] : [];
-  
 
   useScrollEffect(messagesEndRef, [currentChatMessages, isTyping]);
 
@@ -44,7 +45,7 @@ export default function Home() {
 
   const handleOrderInitiate = (product: any) => {
     setSelectedProduct(product);
-    setOrderStep('ADDRESS');
+    setOrderStep("ADDRESS");
   };
 
   return (
@@ -63,7 +64,7 @@ export default function Home() {
 
       <div className="flex-1 flex flex-col w-full min-w-0 h-screen relative z-10 overflow-hidden">
         <Header toggleSidebar={toggleSidebar} />
-
+        <OrdersButton />
         <div className="absolute inset-0 z-0 pointer-events-none">
           <SparklesCore
             id="tsparticlesfullpage"
@@ -91,61 +92,64 @@ export default function Home() {
             />
           )}
         </main>
-<AnimatePresence>
-  {orderStep === 'ADDRESS' && (
-    <OrderAddress 
-      onClose={() => setOrderStep('NONE')} 
-      // onConfirm-д product-ийн датаг хамт дамжуулах боломжтой болгох
-      onConfirm={() => {
-        console.log("Address confirmed, moving to payment. Price:", selectedProduct?.price);
-        setOrderStep('PAYMENT');
-      }} 
-    />
-  )}
-</AnimatePresence>
+        <AnimatePresence>
+          {orderStep === "ADDRESS" && (
+            <OrderAddress
+              onClose={() => setOrderStep("NONE")}
+              // onConfirm-д product-ийн датаг хамт дамжуулах боломжтой болгох
+              onConfirm={() => {
+                console.log(
+                  "Address confirmed, moving to payment. Price:",
+                  selectedProduct?.price,
+                );
+                setOrderStep("PAYMENT");
+              }}
+            />
+          )}
+        </AnimatePresence>
 
-<AnimatePresence>
-  {orderStep === 'PAYMENT' && selectedProduct && (
-    <QPayPayment 
-      amount={selectedProduct.price} 
-      orderId={selectedProduct.id || `ORD-${Date.now()}`}
-      onSuccess={(details) => {
-        // 1. Төлбөрийн модалийг хаах
-        setOrderStep('NONE'); 
-        
-        // 2. Баримтанд харуулах өгөгдлийг бэлдэж хадгалах
-        setReceiptData({
-          productName: selectedProduct.name || selectedProduct.title,
-          amount: details.amount,
-          orderId: details.transactionId, // QPay-ээс ирсэн гүйлгээний дугаар
-          date: details.date,
-          image: selectedProduct.image || selectedProduct.thumbnail
-        });
-      }}
-      onCancel={() => setOrderStep('NONE')}
-    />
-  )}
-</AnimatePresence>
+        <AnimatePresence>
+          {orderStep === "PAYMENT" && selectedProduct && (
+            <QPayPayment
+              amount={selectedProduct.price}
+              orderId={selectedProduct.id || `ORD-${Date.now()}`}
+              onSuccess={(details) => {
+                // 1. Төлбөрийн модалийг хаах
+                setOrderStep("NONE");
 
-       {currentChatMessages.length === 0 ? (
-  <div className="absolute inset-0 flex items-center justify-center z-30">
-    <ChatInput
-      onSendMessage={sendMessage}
-      onVisualResult={addVisualResult}
-      history={currentChatMessages}
-      isTyping={isTyping || isStreaming}
-    />
-  </div>
-) : (
-  <div className="relative z-30 border-t border-black/5 dark:border-white/10">
-    <ChatInput
-      onSendMessage={sendMessage}
-      onVisualResult={addVisualResult}
-      history={currentChatMessages}
-      isTyping={isTyping || isStreaming}
-    />
-  </div>
-)}
+                // 2. Баримтанд харуулах өгөгдлийг бэлдэж хадгалах
+                setReceiptData({
+                  productName: selectedProduct.name || selectedProduct.title,
+                  amount: details.amount,
+                  orderId: details.transactionId, // QPay-ээс ирсэн гүйлгээний дугаар
+                  date: details.date,
+                  image: selectedProduct.image || selectedProduct.thumbnail,
+                });
+              }}
+              onCancel={() => setOrderStep("NONE")}
+            />
+          )}
+        </AnimatePresence>
+
+        {currentChatMessages.length === 0 ? (
+          <div className="absolute inset-0 flex items-center justify-center z-30">
+            <ChatInput
+              onSendMessage={sendMessage}
+              onVisualResult={addVisualResult}
+              history={currentChatMessages}
+              isTyping={isTyping || isStreaming}
+            />
+          </div>
+        ) : (
+          <div className="relative z-30 border-t border-black/5 dark:border-white/10">
+            <ChatInput
+              onSendMessage={sendMessage}
+              onVisualResult={addVisualResult}
+              history={currentChatMessages}
+              isTyping={isTyping || isStreaming}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
