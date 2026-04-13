@@ -10,7 +10,7 @@ import Sidebar from "./chat/sidebar/page";
 import Header from "./chat/header/page";
 import ChatInput from "./chat/chatInput/page";
 import { AnimatePresence } from "framer-motion";
-import QPayPayment from "./chat/payment/components/QPayPayment "; // Хоосон зайг анхаарна уу
+import QPayPayment from "./chat/payment/components/QPayPayment ";
 import OrderAddress from "./chat/payment/components/form";
 import OrderReceipt from "./chat/ZahialgaHarah/OrderReceipt";
 import OrdersButton from "./chat/ZahialgaHarah/OrdersButton";
@@ -117,14 +117,12 @@ export default function Home() {
               amount={selectedProduct.price}
               orderId={selectedProduct.id || `ORD-${Date.now()}`}
               onSuccess={(details) => {
-                // 1. Төлбөрийн модалийг хаах
                 setOrderStep("NONE");
 
-                // 2. Баримтанд харуулах өгөгдлийг бэлдэж хадгалах
                 setReceiptData({
                   productName: selectedProduct.name || selectedProduct.title,
                   amount: details.amount,
-                  orderId: details.transactionId, // QPay-ээс ирсэн гүйлгээний дугаар
+                  orderId: details.transactionId,
                   date: details.date,
                   image: selectedProduct.image || selectedProduct.thumbnail,
                 });
