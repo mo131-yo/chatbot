@@ -1,15 +1,15 @@
 "use client";
-
+ 
 import { motion, AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
 import { useMemo, useState } from "react";
 import { LOCATION_DATA } from "./form1";
-
+ 
 interface Props {
   onClose: () => void;
   onConfirm: () => void;
 }
-
+ 
 type FormData = {
   city: string;
   district: string;
@@ -19,7 +19,7 @@ type FormData = {
   lat: number;
   lng: number;
 };
-
+ 
 const initialFormData: FormData = {
   city: "",
   district: "",
@@ -29,9 +29,9 @@ const initialFormData: FormData = {
   lat: 47.9188,
   lng: 106.9176,
 };
-
+ 
 type FormErrors = Partial<Record<keyof Omit<FormData, "lat" | "lng">, string>>;
-
+ 
 export default function OrderAddress({ onClose, onConfirm }: Props) {
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [loading, setLoading] = useState(false);
@@ -42,16 +42,16 @@ export default function OrderAddress({ onClose, onConfirm }: Props) {
   const [touched, setTouched] = useState<
     Partial<Record<keyof Omit<FormData, "lat" | "lng">, boolean>>
   >({});
-
+ 
   const districtOptions = useMemo(() => {
     return formData.city ? (LOCATION_DATA[formData.city] ?? []) : [];
   }, [formData.city]);
-
+ 
   const LocationPicker = useMemo(
     () => dynamic(() => import("./LocationPicker"), { ssr: false }),
     [],
   );
-
+ 
   const validateField = (
     name: keyof Omit<FormData, "lat" | "lng">,
     value: string,
@@ -77,7 +77,7 @@ export default function OrderAddress({ onClose, onConfirm }: Props) {
         return "";
     }
   };
-
+ 
   const handleMapChange = async (lat: number, lng: number) => {
     setFormData((prev) => ({ ...prev, lat, lng }));
     setLoading(true);
@@ -107,7 +107,7 @@ export default function OrderAddress({ onClose, onConfirm }: Props) {
       setLoading(false);
     }
   };
-
+ 
   const setFieldValue = (
     name: keyof Omit<FormData, "lat" | "lng">,
     value: string,
@@ -117,7 +117,7 @@ export default function OrderAddress({ onClose, onConfirm }: Props) {
       setErrors((prev) => ({ ...prev, [name]: validateField(name, value) }));
     }
   };
-
+ 
   const handleBlur = (name: keyof Omit<FormData, "lat" | "lng">) => {
     setTouched((prev) => ({ ...prev, [name]: true }));
     setErrors((prev) => ({
@@ -125,7 +125,7 @@ export default function OrderAddress({ onClose, onConfirm }: Props) {
       [name]: validateField(name, formData[name]),
     }));
   };
-
+ 
   const handleSubmit = () => {
     const newErrors: FormErrors = {};
     (["city", "district", "street", "address", "phone"] as const).forEach(
@@ -144,7 +144,7 @@ export default function OrderAddress({ onClose, onConfirm }: Props) {
     setErrors(newErrors);
     if (Object.keys(newErrors).length === 0) onConfirm();
   };
-
+ 
   const ErrorMsg = ({ field }: { field: keyof FormErrors }) => (
     <AnimatePresence>
       {touched[field] && errors[field] && (
@@ -162,7 +162,7 @@ export default function OrderAddress({ onClose, onConfirm }: Props) {
       )}
     </AnimatePresence>
   );
-
+ 
   const getFieldClassName = (field: keyof FormErrors) => {
     const hasError = touched[field] && errors[field];
     return `w-full rounded-2xl border p-4 outline-none transition-all duration-300 bg-slate-50 dark:bg-white/5 text-slate-900 dark:text-white ${
@@ -171,7 +171,7 @@ export default function OrderAddress({ onClose, onConfirm }: Props) {
         : "border-slate-200 dark:border-white/10 focus:border-[#077eef] focus:shadow-[0_0_20px_rgba(7,126,239,0.15)] focus:bg-white dark:focus:bg-white/10"
     }`;
   };
-
+ 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
       <motion.div
@@ -181,7 +181,7 @@ export default function OrderAddress({ onClose, onConfirm }: Props) {
         onClick={onClose}
         className="absolute inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-md"
       />
-
+ 
       <motion.div
         initial={{ scale: 0.95, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -198,7 +198,7 @@ export default function OrderAddress({ onClose, onConfirm }: Props) {
               : "Газрын зургаас байршлаа сонгоно уу"}
           </p>
         </div>
-
+ 
         <div className="custom-scrollbar flex max-h-[75vh] flex-col gap-6 overflow-y-auto p-8">
           <div className="w-full rounded-3xl overflow-hidden border border-slate-200 dark:border-white/5 shadow-sm">
             <LocationPicker
@@ -206,7 +206,7 @@ export default function OrderAddress({ onClose, onConfirm }: Props) {
               initialPos={[formData.lat, formData.lng]}
             />
           </div>
-
+ 
           <div className="grid grid-cols-2 gap-4">
             <div className="relative flex flex-col gap-2">
               <label className="px-1 text-[10px] font-black uppercase tracking-[0.2em] text-[#077eef]">
@@ -255,7 +255,7 @@ export default function OrderAddress({ onClose, onConfirm }: Props) {
                 )}
               </AnimatePresence>
             </div>
-
+ 
             <div className="relative flex flex-col gap-2">
               <label className="px-1 text-[10px] font-black uppercase tracking-[0.2em] text-[#077eef]">
                 Дүүрэг / Сум
@@ -307,7 +307,7 @@ export default function OrderAddress({ onClose, onConfirm }: Props) {
               </AnimatePresence>
             </div>
           </div>
-
+ 
           <div className="space-y-4">
             <div className="flex flex-col gap-2">
               <label className="px-1 text-[10px] font-black uppercase tracking-[0.2em] text-[#077eef]">
@@ -353,7 +353,7 @@ export default function OrderAddress({ onClose, onConfirm }: Props) {
               <ErrorMsg field="phone" />
             </div>
           </div>
-
+ 
           <button
             onClick={handleSubmit}
             className="w-full py-5 bg-[#077eef] hover:bg-[#066fd4] text-white font-black rounded-2xl transition-all shadow-lg shadow-blue-500/20 active:scale-[0.98] uppercase tracking-widest text-sm mt-2"
@@ -365,3 +365,6 @@ export default function OrderAddress({ onClose, onConfirm }: Props) {
     </div>
   );
 }
+ 
+ 
+ 

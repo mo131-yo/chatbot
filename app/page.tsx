@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useChatLogic } from "./chat/hooks/useChatLogic";
 import { SparklesCore } from "@/lib/utils/chat-animation/sparkles";
@@ -10,7 +10,7 @@ import Sidebar from "./chat/sidebar/page";
 import Header from "./chat/header/page";
 import ChatInput from "./chat/chatInput/page";
 import { AnimatePresence } from "framer-motion";
-import QPayPayment from "./chat/payment/components/QPayPayment ";
+import QPayPayment from "./chat/payment/components/QPayPayment "; // Хоосон зайг анхаарна уу
 import OrderAddress from "./chat/payment/components/form";
 import OrderReceipt from "./chat/ZahialgaHarah/OrderReceipt";
 
@@ -29,7 +29,6 @@ export default function Home() {
     deleteChat: handleDeleteChat,
   } = useChatLogic();
 
-
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [orderStep, setOrderStep] = useState<'NONE' | 'ADDRESS' | 'PAYMENT'>('NONE');
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
@@ -37,7 +36,6 @@ export default function Home() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const currentChatMessages = activeChatId ? allChats[activeChatId] || [] : [];
   
-
   useScrollEffect(messagesEndRef, [currentChatMessages, isTyping]);
 
   const toggleSidebar = () => setIsCollapsed(!isCollapsed);
@@ -64,6 +62,7 @@ export default function Home() {
       <div className="flex-1 flex flex-col w-full min-w-0 h-screen relative z-10 overflow-hidden">
         <Header toggleSidebar={toggleSidebar} />
 
+        {/* Background Animation */}
         <div className="absolute inset-0 z-0 pointer-events-none">
           <SparklesCore
             id="tsparticlesfullpage"
@@ -75,12 +74,15 @@ export default function Home() {
           />
         </div>
 
+        {/* Content Area */}
         <main className="flex-1 overflow-y-auto bg-transparent p-4 relative z-20 custom-scrollbar">
           {currentChatMessages.length === 0 ? (
-            <WelcomeSection
-              onSelect={(q) => sendMessage(q)}
-              userName={isLoaded ? user?.firstName : null}
-            />
+            <div className="min-h-full flex flex-col justify-center">
+              <WelcomeSection
+                onSelect={(q) => sendMessage(q)}
+                userName={isLoaded ? user?.firstName : null}
+              />
+            </div>
           ) : (
             <MessageList
               messages={currentChatMessages}
@@ -91,61 +93,49 @@ export default function Home() {
             />
           )}
         </main>
-<AnimatePresence>
-  {orderStep === 'ADDRESS' && (
-    <OrderAddress 
-      onClose={() => setOrderStep('NONE')} 
-      // onConfirm-д product-ийн датаг хамт дамжуулах боломжтой болгох
-      onConfirm={() => {
-        console.log("Address confirmed, moving to payment. Price:", selectedProduct?.price);
-        setOrderStep('PAYMENT');
-      }} 
-    />
-  )}
-</AnimatePresence>
 
-<AnimatePresence>
-  {orderStep === 'PAYMENT' && selectedProduct && (
-    <QPayPayment 
-      amount={selectedProduct.price} 
-      orderId={selectedProduct.id || `ORD-${Date.now()}`}
-      onSuccess={(details) => {
-        // 1. Төлбөрийн модалийг хаах
-        setOrderStep('NONE'); 
-        
-        // 2. Баримтанд харуулах өгөгдлийг бэлдэж хадгалах
-        setReceiptData({
-          productName: selectedProduct.name || selectedProduct.title,
-          amount: details.amount,
-          orderId: details.transactionId, // QPay-ээс ирсэн гүйлгээний дугаар
-          date: details.date,
-          image: selectedProduct.image || selectedProduct.thumbnail
-        });
-      }}
-      onCancel={() => setOrderStep('NONE')}
-    />
-  )}
-</AnimatePresence>
+        {/* Chat Input Section - Absolute биш харин тогтмол байрлалтай болгов */}
+        <div className="relative z-30 w-full max-w-4xl mx-auto px-4 pb-4">
+          <ChatInput
+            onSendMessage={sendMessage}
+            onVisualResult={addVisualResult}
+            history={currentChatMessages}
+            isTyping={isTyping || isStreaming}
+          />
+        </div>
 
-       {currentChatMessages.length === 0 ? (
-  <div className="absolute inset-0 flex items-center justify-center z-30">
-    <ChatInput
-      onSendMessage={sendMessage}
-      onVisualResult={addVisualResult}
-      history={currentChatMessages}
-      isTyping={isTyping || isStreaming}
-    />
-  </div>
-) : (
-  <div className="relative z-30 border-t border-black/5 dark:border-white/10">
-    <ChatInput
-      onSendMessage={sendMessage}
-      onVisualResult={addVisualResult}
-      history={currentChatMessages}
-      isTyping={isTyping || isStreaming}
-    />
-  </div>
-)}
+        {/* Overlays */}
+        <AnimatePresence>
+          {orderStep === 'ADDRESS' && (
+            <OrderAddress 
+              onClose={() => setOrderStep('NONE')} 
+              onConfirm={() => setOrderStep('PAYMENT')} 
+            />
+          )}
+          {orderStep === 'PAYMENT' && selectedProduct && (
+            <QPayPayment 
+              amount={selectedProduct.price} 
+              orderId={selectedProduct.id || `ORD-${Date.now()}`}
+              onSuccess={(details) => {
+                setOrderStep('NONE'); 
+                setReceiptData({
+                  productName: selectedProduct.name || selectedProduct.title,
+                  amount: details.amount,
+                  orderId: details.transactionId,
+                  date: details.date,
+                  image: selectedProduct.image || selectedProduct.thumbnail
+                });
+              }}
+              onCancel={() => setOrderStep('NONE')}
+            />
+          )}
+          {receiptData && (
+            <OrderReceipt 
+              orderData={receiptData} 
+              onClose={() => setReceiptData(null)} 
+            />
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

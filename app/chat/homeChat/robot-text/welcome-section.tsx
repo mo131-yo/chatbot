@@ -1,7 +1,7 @@
 "use client";
 import React, { useRef } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
-
+ 
 const suggestions = [
   {
     label: "Шинэ коллекц",
@@ -28,7 +28,7 @@ const suggestions = [
     desc: "What's Hot",
   },
 ];
-
+ 
 function PerspectiveMagneticCard({
   label,
   emoji,
@@ -45,13 +45,13 @@ function PerspectiveMagneticCard({
   const ref = useRef<HTMLButtonElement>(null);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
-
+ 
   const springX = useSpring(x, { stiffness: 80, damping: 20 });
   const springY = useSpring(y, { stiffness: 80, damping: 20 });
-
+ 
   const rotateX = useTransform(springY, [-100, 100], [12, -12]);
   const rotateY = useTransform(springX, [-100, 100], [-12, 12]);
-
+ 
   const handleMouseMove = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (!ref.current) return;
     const rect = ref.current.getBoundingClientRect();
@@ -60,7 +60,7 @@ function PerspectiveMagneticCard({
     x.set(e.clientX - centerX);
     y.set(e.clientY - centerY);
   };
-
+ 
   return (
     <div style={{ perspective: "1000px" }} className="w-full">
       <motion.button
@@ -106,7 +106,7 @@ function PerspectiveMagneticCard({
     </div>
   );
 }
-
+ 
 export function WelcomeSection({
   onSelect,
   userName,
@@ -115,7 +115,7 @@ export function WelcomeSection({
   userName?: string | null;
 }) {
   const firstName = userName ? userName.split(" ")[0] : "Зочин";
-
+ 
   const handleSuggestionClick = (query: string) => {
     onSelect(query);
     setTimeout(() => {
@@ -134,13 +134,13 @@ export function WelcomeSection({
       }
     }, 50);
   };
-
+ 
   return (
     <div className="relative flex flex-col items-center justify-center min-h-[70vh] md:min-h-[85vh] overflow-hidden px-6">
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(7,126,239,0.05),transparent_70%)]" />
       </div>
-
+ 
       <div className="relative z-10 flex flex-col items-center w-full max-w-5xl">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
@@ -151,14 +151,14 @@ export function WelcomeSection({
             AI Lifestyle Curated
           </span>
         </motion.div>
-
+ 
         <h1 className="text-3xl md:text-7xl font-black tracking-tighter text-center leading-tight md:leading-[1.1] mb-4 md:mb-6">
           <span className="text-slate-900 dark:text-white">Сайн уу, </span>
           <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#077eef] via-cyan-400 to-[#077eef] animate-shimmer bg-[length:200%_auto] italic">
             {firstName}!
           </span>
         </h1>
-
+ 
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -169,7 +169,7 @@ export function WelcomeSection({
           <span className="text-[#077eef] italic font-bold">үнэ цэнийг</span>{" "}
           төгс илэрхийлэх шийдэл энд бий.
         </motion.p>
-
+ 
         <div className="hidden md:grid grid-cols-4 gap-4 w-full max-w-4xl px-2">
           {suggestions.map((item, i) => (
             <PerspectiveMagneticCard
@@ -181,7 +181,7 @@ export function WelcomeSection({
           ))}
         </div>
       </div>
-
+ 
       <style jsx global>{`
         @keyframes shimmer {
           0% {
