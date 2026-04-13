@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useChatLogic } from "./chat/hooks/useChatLogic";
 import { SparklesCore } from "@/lib/utils/chat-animation/sparkles";
@@ -10,7 +10,7 @@ import Sidebar from "./chat/sidebar/page";
 import Header from "./chat/header/page";
 import ChatInput from "./chat/chatInput/page";
 import { AnimatePresence } from "framer-motion";
-import QPayPayment from "./chat/payment/components/QPayPayment ";
+import QPayPayment from "./chat/payment/components/QPayPayment "; // Хоосон зайг анхаарна уу
 import OrderAddress from "./chat/payment/components/form";
 import OrderReceipt from "./chat/ZahialgaHarah/OrderReceipt";
 import OrdersButton from "./chat/ZahialgaHarah/OrdersButton";
@@ -76,12 +76,15 @@ export default function Home() {
           />
         </div>
 
+        {/* Content Area */}
         <main className="flex-1 overflow-y-auto bg-transparent p-4 relative z-20 custom-scrollbar">
           {currentChatMessages.length === 0 ? (
-            <WelcomeSection
-              onSelect={(q) => sendMessage(q)}
-              userName={isLoaded ? user?.firstName : null}
-            />
+            <div className="min-h-full flex flex-col justify-center">
+              <WelcomeSection
+                onSelect={(q) => sendMessage(q)}
+                userName={isLoaded ? user?.firstName : null}
+              />
+            </div>
           ) : (
             <MessageList
               messages={currentChatMessages}
