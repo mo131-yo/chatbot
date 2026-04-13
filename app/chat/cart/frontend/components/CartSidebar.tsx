@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FaMinus, FaPlus, FaTrash, FaTimes } from "react-icons/fa";
 import LocationForm from "@/app/chat/payment/components/form";
 import QPayPayment from "@/app/chat/payment/components/QPayPayment ";
+import { saveOrder } from "@/app/chat/hooks/useOrders";
 
 export default function CartSidebar() {
   const {
@@ -55,6 +56,15 @@ export default function CartSidebar() {
             amount={totalPrice}
             orderId={`CART-${Math.floor(Math.random() * 10000)}`}
             onSuccess={() => {
+              cartItems.forEach((item) => {
+                saveOrder({
+                  orderId: `CART-${item.id}-${Date.now()}`,
+                  productName: item.name,
+                  amount: item.price * item.quantity,
+                  date: new Date().toLocaleString(),
+                  image: item.image,
+                });
+              });
               setShowPayment(false);
               setIsCartOpen(false);
             }}
@@ -161,7 +171,7 @@ export default function CartSidebar() {
               </div>
               <button
                 onClick={() => setShowLocationForm(true)}
-                className="w-full py-4 bg-[#0094ff] text-white font-black  rounded-xl  hover:bg-[#e3e6ec] hover:text-black transition-all text-xl"
+                className="w-full py-4 bg-[#0094ff] text-white font-black rounded-xl hover:bg-[#e3e6ec] hover:text-black transition-all text-xl"
               >
                 Захиалга өгөх
               </button>

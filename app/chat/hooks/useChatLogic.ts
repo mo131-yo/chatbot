@@ -237,6 +237,100 @@ export const useChatLogic = () => {
     return fallback || "New Chat";
   };
 
+  // const addVisualResult = useCallback(
+  //   async (userMsg: any, products: any[]) => {
+  //     let chatId = activeChatId;
+
+  //     if (!chatId) {
+  //       const title = generateTitleFromProducts(
+  //         products,
+  //         userMsg.content?.slice(0, 40),
+  //       );
+  //       try {
+  //         const session = await createSession(title);
+  //         chatId = session.id;
+  //         setActiveChatIdState(chatId);
+  //         setSidebarHistory((prev) => {
+  //           const updated = [{ id: session.id, title }, ...prev];
+  //           if (!isSignedIn)
+  //             localStorage.setItem(GUEST_HISTORY_KEY, JSON.stringify(updated));
+  //           return updated;
+  //         });
+  //         setAllChats((prev) => ({ ...prev, [chatId!]: [] }));
+  //       } catch (e) {
+  //         return;
+  //       }
+  //     }
+
+  //     const newUserMsg: ChatMessage = {
+  //       role: "USER",
+  //       content: userMsg.content || "Зургаар хайж байна...",
+  //       imagePreview: userMsg.imagePreview,
+  //     };
+
+  //     const productLines = (products || [])
+  //       .map((p: any) => {
+  //         const m = p.metadata || p;
+  //         const productId =
+  //           p.id || m.id || m.product_id || `${m.store_id}_${Date.now()}`;
+  //         const storeId = p.store_id || m.store_id || m.storeId || "";
+  //         const desc = (p.description || m.description || "").replace(
+  //           /[|]/g,
+  //           "",
+  //         );
+  //         return `![${p.name || m.name}|${p.price || m.price}|${desc}|${productId}|${storeId}](...)`;
+  //       })
+  //       .join("\n");
+
+  //     const newAiMsg: ChatMessage = {
+  //       role: "ASSISTANT",
+  //       content:
+  //         products.length > 0
+  //           ? `Зургаас ${products.length} тохирох бараа олдлоо!\n\n${productLines}`
+  //           : "Уучлаарай, тохирох бараа олдсонгүй.",
+  //     };
+
+  //     setAllChats((prev) => {
+  //       const updated = {
+  //         ...prev,
+  //         [chatId!]: [...(prev[chatId!] || []), newUserMsg, newAiMsg],
+  //       };
+
+  //       if (!isSignedIn) {
+  //         localStorage.setItem(GUEST_CHATS_KEY, JSON.stringify(updated));
+  //         localStorage.setItem(GUEST_ACTIVE_KEY, chatId!);
+  //       }
+  //       return updated;
+  //     });
+
+  //     if (!isSignedIn || chatId?.startsWith("guest_")) return;
+
+  //     try {
+  //       await fetch("/chat/api/chat/save", {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/json" },
+  //         body: JSON.stringify({
+  //           chatId,
+  //           title: generateTitleFromProducts(
+  //             products,
+  //             userMsg.content?.slice(0, 40),
+  //           ),
+  //           messages: [
+  //             {
+  //               role: "USER",
+  //               content: newUserMsg.content,
+  //               imagePreview: newUserMsg.imagePreview,
+  //             },
+  //             { role: "ASSISTANT", content: newAiMsg.content },
+  //           ],
+  //         }),
+  //       });
+  //     } catch (e) {
+  //       console.error("Save error:", e);
+  //     }
+  //   },
+  //   [activeChatId, createSession, isSignedIn],
+  // );
   const addVisualResult = useCallback(
     async (userMsg: any, products: any[]) => {
       let chatId = activeChatId;
@@ -271,14 +365,24 @@ export const useChatLogic = () => {
       const productLines = (products || [])
         .map((p: any) => {
           const m = p.metadata || p;
-          const productId =
-            p.id || m.id || m.product_id || `${m.store_id}_${Date.now()}`;
+          const productId = p.id || m.id || "";
           const storeId = p.store_id || m.store_id || m.storeId || "";
+          const name = p.name || m.name || "Нэргүй";
+          const price = p.price || m.price || "0";
           const desc = (p.description || m.description || "").replace(
             /[|]/g,
             "",
           );
-          return `![${p.name || m.name}|${p.price || m.price}|${desc}|${productId}|${storeId}](...)`;
+          const imgUrl =
+            p.image ||
+            p.image_url ||
+            m.image ||
+            m.image_url ||
+            m.product_image_url ||
+            m.imageUrl ||
+            "";
+
+          return `![${name}|${price}|${desc}|${productId}|${storeId}](${imgUrl})`;
         })
         .join("\n");
 
@@ -295,7 +399,6 @@ export const useChatLogic = () => {
           ...prev,
           [chatId!]: [...(prev[chatId!] || []), newUserMsg, newAiMsg],
         };
-
         if (!isSignedIn) {
           localStorage.setItem(GUEST_CHATS_KEY, JSON.stringify(updated));
           localStorage.setItem(GUEST_ACTIVE_KEY, chatId!);

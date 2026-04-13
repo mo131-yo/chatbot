@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { motion } from "motion/react";
 import {
   XCircle,
@@ -11,6 +11,7 @@ import {
   Calendar,
   Hash,
 } from "lucide-react";
+import { saveOrder } from "../hooks/useOrders";
 
 interface OrderReceiptProps {
   orderData: {
@@ -25,6 +26,16 @@ interface OrderReceiptProps {
 }
 
 const OrderReceipt = ({ orderData, onClose }: OrderReceiptProps) => {
+  useEffect(() => {
+    saveOrder({
+      orderId: orderData.orderId,
+      productName: orderData.productName,
+      amount: orderData.amount,
+      date: orderData.date,
+      image: orderData.image,
+    });
+  }, []);
+
   return (
     <div className="fixed inset-0 z-[210] flex items-center justify-center p-4">
       <motion.div
