@@ -388,6 +388,7 @@ export const ModelName = {
   ChatSession: 'ChatSession',
   ChatMessage: 'ChatMessage',
   Store: 'Store',
+  AIInstruction: 'AIInstruction',
   Product: 'Product',
   Category: 'Category',
   Cart: 'Cart',
@@ -412,7 +413,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "chatSession" | "chatMessage" | "store" | "product" | "category" | "cart" | "cartItem" | "order" | "orderItem" | "payment" | "productEmbedding" | "favorite"
+    modelProps: "user" | "chatSession" | "chatMessage" | "store" | "aIInstruction" | "product" | "category" | "cart" | "cartItem" | "order" | "orderItem" | "payment" | "productEmbedding" | "favorite"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -709,6 +710,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.StoreCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.StoreCountAggregateOutputType> | number
+        }
+      }
+    }
+    AIInstruction: {
+      payload: Prisma.$AIInstructionPayload<ExtArgs>
+      fields: Prisma.AIInstructionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AIInstructionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AIInstructionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AIInstructionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AIInstructionPayload>
+        }
+        findFirst: {
+          args: Prisma.AIInstructionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AIInstructionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AIInstructionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AIInstructionPayload>
+        }
+        findMany: {
+          args: Prisma.AIInstructionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AIInstructionPayload>[]
+        }
+        create: {
+          args: Prisma.AIInstructionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AIInstructionPayload>
+        }
+        createMany: {
+          args: Prisma.AIInstructionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AIInstructionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AIInstructionPayload>[]
+        }
+        delete: {
+          args: Prisma.AIInstructionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AIInstructionPayload>
+        }
+        update: {
+          args: Prisma.AIInstructionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AIInstructionPayload>
+        }
+        deleteMany: {
+          args: Prisma.AIInstructionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AIInstructionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AIInstructionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AIInstructionPayload>[]
+        }
+        upsert: {
+          args: Prisma.AIInstructionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AIInstructionPayload>
+        }
+        aggregate: {
+          args: Prisma.AIInstructionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAIInstruction>
+        }
+        groupBy: {
+          args: Prisma.AIInstructionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AIInstructionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AIInstructionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AIInstructionCountAggregateOutputType> | number
         }
       }
     }
@@ -1460,6 +1535,7 @@ export type ChatMessageScalarFieldEnum = (typeof ChatMessageScalarFieldEnum)[key
 
 export const StoreScalarFieldEnum = {
   id: 'id',
+  userId: 'userId',
   name: 'name',
   description: 'description',
   ownerId: 'ownerId',
@@ -1468,6 +1544,19 @@ export const StoreScalarFieldEnum = {
 } as const
 
 export type StoreScalarFieldEnum = (typeof StoreScalarFieldEnum)[keyof typeof StoreScalarFieldEnum]
+
+
+export const AIInstructionScalarFieldEnum = {
+  id: 'id',
+  storeId: 'storeId',
+  promotionText: 'promotionText',
+  couponCode: 'couponCode',
+  priorityItems: 'priorityItems',
+  tone: 'tone',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AIInstructionScalarFieldEnum = (typeof AIInstructionScalarFieldEnum)[keyof typeof AIInstructionScalarFieldEnum]
 
 
 export const ProductScalarFieldEnum = {
@@ -1877,6 +1966,7 @@ export type GlobalOmitConfig = {
   chatSession?: Prisma.ChatSessionOmit
   chatMessage?: Prisma.ChatMessageOmit
   store?: Prisma.StoreOmit
+  aIInstruction?: Prisma.AIInstructionOmit
   product?: Prisma.ProductOmit
   category?: Prisma.CategoryOmit
   cart?: Prisma.CartOmit

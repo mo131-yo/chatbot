@@ -55,6 +55,7 @@ export const ModelName = {
   ChatSession: 'ChatSession',
   ChatMessage: 'ChatMessage',
   Store: 'Store',
+  AIInstruction: 'AIInstruction',
   Product: 'Product',
   Category: 'Category',
   Cart: 'Cart',
@@ -125,6 +126,7 @@ export type ChatMessageScalarFieldEnum = (typeof ChatMessageScalarFieldEnum)[key
 
 export const StoreScalarFieldEnum = {
   id: 'id',
+  userId: 'userId',
   name: 'name',
   description: 'description',
   ownerId: 'ownerId',
@@ -133,6 +135,19 @@ export const StoreScalarFieldEnum = {
 } as const
 
 export type StoreScalarFieldEnum = (typeof StoreScalarFieldEnum)[keyof typeof StoreScalarFieldEnum]
+
+
+export const AIInstructionScalarFieldEnum = {
+  id: 'id',
+  storeId: 'storeId',
+  promotionText: 'promotionText',
+  couponCode: 'couponCode',
+  priorityItems: 'priorityItems',
+  tone: 'tone',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AIInstructionScalarFieldEnum = (typeof AIInstructionScalarFieldEnum)[keyof typeof AIInstructionScalarFieldEnum]
 
 
 export const ProductScalarFieldEnum = {

@@ -100,6 +100,8 @@ model ChatMessage {
 
 model Store {
   id          String   @id @default(uuid())
+  userId        String         @unique
+
   name        String
   description String?
   ownerId     String
@@ -107,11 +109,23 @@ model Store {
 
   products  Product[]
   orders    Order[]
+  aiInstruction AIInstruction?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([ownerId])
+}
+
+model AIInstruction {
+  id              String   @id @default(cuid())
+  storeId         String   @unique
+  store           Store    @relation(fields: [storeId], references: [id])
+  promotionText   String?  @db.Text
+  couponCode      String?
+  priorityItems   String?  @db.Text 
+  tone            String   @default("friendly")
+  updatedAt       DateTime @updatedAt
 }
 
 model Product {

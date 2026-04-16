@@ -38,6 +38,11 @@ export type ChatMessage = Prisma.ChatMessageModel
  */
 export type Store = Prisma.StoreModel
 /**
+ * Model AIInstruction
+ * 
+ */
+export type AIInstruction = Prisma.AIInstructionModel
+/**
  * Model Product
  * 
  */
