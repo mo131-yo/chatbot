@@ -1,100 +1,123 @@
 "use client";
+import React from "react";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Bar, ComposedChart } from 'recharts';
 
-import { useEffect, useState } from "react";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  CartesianGrid,
-} from "recharts";
+export default function RevenueChart({ orders }: { orders: any[] }) {
+  const chartData = React.useMemo(() => {
+    const last30Days = [...Array(30)].map((_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - (29 - i));
+      return {
+        date: d.toLocaleDateString("en-US", { month: 'short', day: 'numeric' }),
+        fullDate: d.toISOString().split('T')[0],
+        revenue: 0,
+        orders: 0
+      };
+    });
 
-export default function RevenueChart() {
-  const [dark, setDark] = useState(true);
-  const [data, setData] = useState<any[]>([]);
+    orders.forEach((o) => {
+      const orderDate = new Date(o.createdAt).toISOString().split('T')[0];
+      const dayData = last30Days.find(d => d.fullDate === orderDate);
+      if (dayData) {
+        dayData.revenue += Number(o.totalAmount || 0);
+        dayData.orders += 1;
+      }
+    });
 
-  useEffect(() => {
-    const isDark = document.documentElement.classList.contains("dark");
-    setDark(isDark);
+    return last30Days;
+  }, [orders]);
 
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
-    try {
-      const res = await fetch("/admin/api/orders");
-      const orders = await res.json();
-      const grouped: Record<string, number> = {};
-
-      orders.forEach((o: any) => {
-        const rawDate = o.createdAt || o.date;
-
-        const total = Number(o.total ?? o.totalPrice ?? o.price ?? 0);
-
-        if (!rawDate || isNaN(total)) return;
-
-        const day = new Date(rawDate).toLocaleDateString("en-US", {
-          weekday: "short",
-        });
-
-        if (!grouped[day]) grouped[day] = 0;
-
-        const chartData = Object.entries(grouped).map(([day, revenue]) => ({
-          day,
-          revenue,
-        }));
-
-        setData(chartData);
-      });
-    } catch (err) {
-      console.error("Revenue fetch error:", err);
-    }
-  };
+  const totalRevenue = chartData.reduce((sum, d) => sum + d.revenue, 0);
+  const totalOrders = chartData.reduce((sum, d) => sum + d.orders, 0);
+  const avgOrderValue = totalOrders > 0 ? (totalRevenue / totalOrders).toFixed(0) : 0;
 
   return (
-    <div
-      className="p-6 rounded-2xl shadow-lg border transition-colors duration-300
-      bg-white/5 border-white/10 text-white
-      dark:bg-white dark:border-gray-200 dark:text-black"
-    >
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-semibold">Revenue</h2>
-        <span className="text-green-400 text-sm">Live</span>
+    <div className="w-full mt-8 animate-in fade-in duration-1000">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="bg-white/5 p-4 rounded-3xl border border-white/5">
+          <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">30 хоногийн орлого</p>
+          <p className="text-xl font-black text-white mt-1">{totalRevenue.toLocaleString()}₮</p>
+        </div>
+        <div className="bg-white/5 p-4 rounded-3xl border border-white/5">
+          <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Нийт захиалга</p>
+          <p className="text-xl font-black text-white mt-1">{totalOrders} ш</p>
+        </div>
+        <div className="bg-white/5 p-4 rounded-3xl border border-white/5">
+          <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Дундаж дүн (AOV)</p>
+          <p className="text-xl font-black text-[#C5A059] mt-1">{Number(avgOrderValue).toLocaleString()}₮</p>
+        </div>
+        <div className="bg-white/5 p-4 rounded-3xl border border-white/5">
+          <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Идэвхтэй мөчлөг</p>
+          <p className="text-xl font-black text-emerald-500 mt-1">30 Days</p>
+        </div>
       </div>
 
-      <ResponsiveContainer width="100%" height={250}>
-        <LineChart data={data}>
-          <CartesianGrid
-            strokeDasharray="3 3"
-            stroke={dark ? "#444" : "#ddd"}
-          />
+      <div className="h-100 w-full bg-black/20 p-6 rounded-[2.5rem] border border-white/5">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-white font-black uppercase text-xs tracking-[0.3em]">Борлуулалтын дэлгэрэнгүй график</h3>
+          <div className="flex gap-4">
+             <div className="flex items-center gap-2 text-[10px] text-gray-400">
+                <div className="w-2 h-2 rounded-full bg-[#C5A059]" /> Орлого
+             </div>
+             <div className="flex items-center gap-2 text-[10px] text-gray-400">
+                <div className="w-2 h-2 rounded-full bg-white/20" /> Захиалгын тоо
+             </div>
+          </div>
+        </div>
 
-          <XAxis dataKey="day" stroke={dark ? "#aaa" : "#555"} />
-
-          <YAxis stroke={dark ? "#aaa" : "#555"} />
-
-          <Tooltip
-            contentStyle={{
-              backgroundColor: dark ? "#1e1b4b" : "#ffffff",
-              border: "none",
-              borderRadius: "10px",
-              color: dark ? "white" : "black",
-            }}
-          />
-
-          <Line
-            type="monotone"
-            dataKey="revenue"
-            stroke="#4f46e5"
-            strokeWidth={3}
-            dot={{ r: 4 }}
-            isAnimationActive
-            animationDuration={800}
-          />
-        </LineChart>
-      </ResponsiveContainer>
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={chartData}>
+            <defs>
+              <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#C5A059" stopOpacity={0.3}/>
+                <stop offset="95%" stopColor="#C5A059" stopOpacity={0}/>
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ffffff05" />
+            <XAxis 
+              dataKey="date" 
+              stroke="#555" 
+              fontSize={10} 
+              tickLine={false} 
+              axisLine={false} 
+              interval="preserveStartEnd"
+              minTickGap={20} 
+            />
+            <YAxis 
+              stroke="#555" 
+              fontSize={10} 
+              tickLine={false} 
+              axisLine={false} 
+              tickFormatter={(val) => `${(val/1000).toFixed(0)}k`} 
+            />
+            <Tooltip 
+              contentStyle={{ 
+                backgroundColor: '#0D0D0D', 
+                border: '1px solid #ffffff10', 
+                borderRadius: '20px', 
+                color: '#fff',
+                padding: '15px'
+              }}
+              cursor={{ stroke: '#C5A059', strokeWidth: 1, strokeDasharray: '5 5' }}
+              formatter={(value: any, name?: any) => {
+                if (name === "revenue") return [`${Number(value).toLocaleString()}₮`, "Нийт Орлого"];
+                if (name === "orders") return [`${value} ш`, "Захиалга"];
+                return [value, name];
+              }}
+            />
+            <Area 
+              type="monotone" 
+              dataKey="revenue" 
+              stroke="#C5A059" 
+              strokeWidth={4} 
+              fillOpacity={1} 
+              fill="url(#colorRevenue)" 
+              animationDuration={1500}
+            />
+            <Area type="monotone" dataKey="orders" stroke="transparent" fill="transparent" />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }

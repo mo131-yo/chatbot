@@ -154,7 +154,7 @@ export function WelcomeSection({
 
         <h1 className="text-3xl md:text-7xl font-black tracking-tighter text-center leading-tight md:leading-[1.1] mb-4 md:mb-6">
           <span className="text-slate-900 dark:text-white">Сайн уу, </span>
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#077eef] via-cyan-400 to-[#077eef] animate-shimmer bg-[length:200%_auto] italic">
+          <span className="bg-clip-text text-transparent bg-linear-to-r from-[#077eef] via-cyan-400 to-[#077eef] animate-shimmer bg-[length:200%_auto] italic">
             {firstName}!
           </span>
         </h1>
