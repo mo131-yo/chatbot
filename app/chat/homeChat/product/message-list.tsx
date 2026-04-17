@@ -453,7 +453,7 @@ export const MessageList: React.FC<MessageListProps> = ({
                   {displayImage && (
                     <img
                       src={displayImage}
-                      className="w-full max-w-[280px] rounded-2xl border border-white/10"
+                      className="w-full max-w-70 rounded-2xl border border-white/10"
                       alt="User"
                     />
                   )}
@@ -490,7 +490,7 @@ export const MessageList: React.FC<MessageListProps> = ({
                               paymentTrigger.price,
                             )
                           }
-                          className="mt-5 w-full md:w-auto px-8 py-3 bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-bold rounded-xl shadow-lg flex items-center justify-center gap-2 text-sm uppercase"
+                          className="mt-5 w-full md:w-auto px-8 py-3 bg-linear-to-r from-blue-600 to-cyan-500 text-white font-bold rounded-xl shadow-lg flex items-center justify-center gap-2 text-sm uppercase"
                         >
                           🛍️ Захиалах
                         </motion.button>
