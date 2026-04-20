@@ -146,18 +146,18 @@
 //       <div className="max-w-3xl mx-auto pb-20 flex flex-col space-y-8">
 //         {messages.map((message: any, index: number) => {
 //           const isUser = message.role?.toLowerCase() === "user";
-          
+
 //           // Мессеж бүрээс бараа болон төлбөрийн мэдээллийг салгах
 //           const products = !isUser ? extractProducts(message.content || "") : [];
 //           const paymentTrigger = !isUser ? extractPaymentTrigger(message.content || "") : null;
-          
+
 //           const cleanedContent = paymentTrigger
 //             ? cleanPaymentTrigger(message.content || "")
 //             : message.content || "";
-            
+
 //           const rawText = removeImageMarkdown(cleanedContent);
 //           const hasText = rawText.length > 0;
-          
+
 //           const isVisual = !isUser && isVisualSearchReply(messages, index) && products.length > 0;
 
 //           const displayImage = message.imagePreview || message.image;
@@ -280,13 +280,8 @@
 //   );
 // };
 
-
-
-
-
-
 "use client";
- 
+
 import React, { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { motion, AnimatePresence } from "framer-motion";
@@ -295,7 +290,7 @@ import { ProductCarousel } from "@/app/chat/products/scrollEffect/ProductCarouse
 import OrderAddress from "../../payment/components/form";
 import QPayPayment from "../../payment/components/QPayPayment ";
 import OrderReceipt from "../../ZahialgaHarah/OrderReceipt";
- 
+
 interface Product {
   id: string;
   name: string;
@@ -306,7 +301,7 @@ interface Product {
   brand?: string;
   storeName?: string;
 }
- 
+
 interface MessageListProps {
   messages: any[];
   isTyping: boolean;
@@ -357,7 +352,7 @@ const extractPaymentTrigger = (content: string) => {
     return null;
   }
 };
- 
+
 const cleanPaymentTrigger = (content: string): string => {
   return content.replace(/PAYMENT_TRIGGER:\{[^}]+\}/g, "").trim();
 };
@@ -389,32 +384,73 @@ export const MessageList: React.FC<MessageListProps> = ({
     });
   };
 
-  const handleAddressConfirm = () => {
+  // const handleAddressConfirm = () => {
+  //   if (!addressFormProduct) return;
+  //   const product = { ...addressFormProduct };
+  //   setAddressFormProduct(null);
+
+  //   const numericPrice =
+  //     typeof product.price === "string"
+  //       ? parseFloat(product.price.replace(/[^0-9.]/g, ""))
+  //       : product.price;
+
+  //   setTimeout(() => {
+  //     setActivePayment({
+  //       amount: numericPrice || 0,
+  //       orderId: product.id || `ORD-${Date.now()}`,
+  //       productName: product.name,
+  //       image: product.image,
+  //       storeName: storeName || product.storeName || "Манай дэлгүүр",
+  //     });
+  //   }, 400);
+  // };
+
+  const handleAddressConfirm = (addressData: {
+    phone: string;
+    address: string;
+  }) => {
     if (!addressFormProduct) return;
     const product = { ...addressFormProduct };
-    setAddressFormProduct(null);
- 
+
+    // 1. Үнийг цэвэрлэж тоо болгох (₮ тэмдэгт, таслал зэргийг устгана)
     const numericPrice =
       typeof product.price === "string"
-        ? parseFloat(product.price.replace(/[^0-9.]/g, ""))
-        : product.price;
- 
+        ? parseFloat(product.price.replace(/[^0-9.-]/g, ""))
+        : Number(product.price);
+
+    // Үнэ тоо биш байвал 0 эсвэл алдаа харуулна
+    const finalAmount = isNaN(numericPrice) ? 0 : numericPrice;
+
     setTimeout(() => {
       setActivePayment({
-        amount: numericPrice || 0,
-        orderId: product.id || `ORD-${Date.now()}`,
-        productName: product.name,
-        image: product.image,
-        storeName: storeName || product.storeName || "Манай дэлгүүр",
+        ...addressFormProduct,
+        customerPhone: addressData.phone,
+        address: addressData.address,
+        amount: finalAmount, // Энд Number(product.price) биш finalAmount-аа ашиглана
+        orderId: `ORD-${Date.now()}`,
+        items: [
+          {
+            productId: addressFormProduct.id,
+            name: addressFormProduct.name,
+            price: finalAmount, // Энд бас тоо байх ёстой
+            quantity: 1,
+            image:
+              addressFormProduct.image || addressFormProduct.product_image_url,
+
+            storeId: addressFormProduct.storeId || "store-01",
+          },
+        ],
       });
     }, 400);
   };
- 
   const handlePaymentSuccess = (details: any) => {
     const paidInfo = activePayment;
+
     setActivePayment(null);
+    setAddressFormProduct(null);
+
     setReceiptData({
-      productName: paidInfo.productName,
+      productName: paidInfo.name || paidInfo.productName,
       amount: paidInfo.amount,
       orderId: paidInfo.orderId,
       date: new Date().toLocaleString(),
@@ -422,7 +458,7 @@ export const MessageList: React.FC<MessageListProps> = ({
       transactionId: details.transactionId,
     });
   };
- 
+
   return (
     <>
       <div className="max-w-3xl mx-auto pb-32 flex flex-col space-y-10 px-4">
@@ -479,7 +515,7 @@ export const MessageList: React.FC<MessageListProps> = ({
                           {rawText}
                         </ReactMarkdown>
                       </div>
- 
+
                       {paymentTrigger && (
                         <motion.button
                           whileHover={{ scale: 1.02 }}
@@ -513,7 +549,7 @@ export const MessageList: React.FC<MessageListProps> = ({
             </motion.div>
           );
         })}
- 
+
         {isTyping && (
           <div className="flex items-center gap-3 py-6 px-4">
             <PulsatingDots />
@@ -530,8 +566,8 @@ export const MessageList: React.FC<MessageListProps> = ({
           />
         )}
       </AnimatePresence>
- 
-      <AnimatePresence>
+
+      {/* <AnimatePresence>
         {activePayment && (
           <QPayPayment
             amount={activePayment.amount}
@@ -540,8 +576,25 @@ export const MessageList: React.FC<MessageListProps> = ({
             onCancel={() => setActivePayment(null)}
           />
         )}
+      </AnimatePresence> */}
+      {/* MessageList.tsx доторх хэсэг */}
+      <AnimatePresence>
+        {activePayment && (
+          <QPayPayment
+            amount={activePayment.amount}
+            orderId={activePayment.orderId}
+            items={activePayment.items}
+            customerPhone={activePayment.customerPhone}
+            address={activePayment.address}
+            onSuccess={handlePaymentSuccess} // Дээрх зассан функц ажиллана
+            onCancel={() => {
+              setActivePayment(null);
+              setAddressFormProduct(null); // Цуцлах үед хаягны формыг бас хаана
+            }}
+          />
+        )}
       </AnimatePresence>
- 
+
       <AnimatePresence>
         {receiptData && (
           <OrderReceipt

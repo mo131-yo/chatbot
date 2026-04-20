@@ -7,43 +7,94 @@ import {
   QrCode,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
- 
+
 interface QPayPaymentProps {
   amount: number;
   orderId: string;
+  items: any[];
   onSuccess: (details: any) => void;
   onCancel: () => void;
+  customerPhone?: string;
+  address?: string;
 }
- 
+
 const QPayPayment = ({
   amount,
   orderId,
   onSuccess,
   onCancel,
+  items,
+  customerPhone,
+  address,
 }: QPayPaymentProps) => {
   const [status, setStatus] = useState<"QR" | "PROCESSING" | "SUCCESS">("QR");
   const [timeLeft, setTimeLeft] = useState(300);
- 
+
   useEffect(() => {
     if (status === "QR" && timeLeft > 0) {
       const timer = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
       return () => clearInterval(timer);
     }
   }, [status, timeLeft]);
- 
+
+  // const handleVerify = async () => {
+  //   setStatus("PROCESSING");
+  //   setTimeout(() => {
+  //     setStatus("SUCCESS");
+  //   }, 2000);
+  // };
+
   const handleVerify = async () => {
     setStatus("PROCESSING");
-    setTimeout(() => {
-      setStatus("SUCCESS");
-    }, 2000);
-  };
+
+    try {
+   
+      const storeIdentifier = items[0]?.storeId || items[0]?.storeName;
+
+      const response = await fetch("/admin/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderId,
+          total: amount,
+          items: items.map((item) => ({
+            productId: item.id || item.productId,
+            productName: item.name,
+            productImage: item.image,
+            price: item.price,
+            quantity: item.quantity || 1,
+          })),
+          storeId: storeIdentifier,
+          customerPhone: customerPhone || "Утасгүй",
+          address: address || "Хаяггүй",
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log("Захиалга хадгалагдлаа:", result);
+
+
+        setStatus("SUCCESS");
+
  
+      } else {
+        const errorData = await response.json();
+        alert(`Алдаа: ${errorData.error}`);
+        setStatus("QR");
+      }
+    } catch (error) {
+      console.error("Payment verification error:", error);
+      alert("Сүлжээний алдаа гарлаа. Дахин оролдоно уу.");
+      setStatus("QR");
+    }
+  };
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
     return `${m}:${s.toString().padStart(2, "0")}`;
   };
- 
+
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
       {/* Background Overlay */}
@@ -54,7 +105,7 @@ const QPayPayment = ({
         onClick={onCancel}
         className="absolute inset-0 bg-slate-900/40 dark:bg-black/80 backdrop-blur-md"
       />
- 
+
       <motion.div
         initial={{ scale: 0.95, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -78,7 +129,7 @@ const QPayPayment = ({
             <XCircle size={28} strokeWidth={1.5} />
           </button>
         </div>
- 
+
         <div className="p-8 flex flex-col gap-6">
           <AnimatePresence mode="wait">
             {status === "QR" && (
@@ -101,7 +152,7 @@ const QPayPayment = ({
                     </div>
                   </div>
                 </div>
- 
+
                 {/* Amount Display */}
                 <div className="text-center space-y-2">
                   <p className="text-[11px] font-black text-[#077eef] uppercase tracking-[0.25em]">
@@ -114,7 +165,7 @@ const QPayPayment = ({
                     <span className="text-2xl font-bold text-slate-400">₮</span>
                   </div>
                 </div>
- 
+
                 {/* Timer & Progress */}
                 <div className="space-y-4 pt-2">
                   <div className="flex justify-between text-[11px] font-black uppercase tracking-widest">
@@ -137,7 +188,7 @@ const QPayPayment = ({
                       className="h-full bg-[#077eef] rounded-full shadow-[0_0_10px_rgba(7,126,239,0.5)]"
                     />
                   </div>
- 
+
                   <button
                     onClick={handleVerify}
                     className="w-full py-5 bg-[#077eef] hover:bg-[#066fd4] text-white rounded-2xl font-black text-sm shadow-lg shadow-blue-500/20 transition-all active:scale-[0.98] uppercase tracking-[0.1em]"
@@ -147,7 +198,7 @@ const QPayPayment = ({
                 </div>
               </motion.div>
             )}
- 
+
             {status === "PROCESSING" && (
               <motion.div
                 key="processing"
@@ -167,7 +218,7 @@ const QPayPayment = ({
                 </p>
               </motion.div>
             )}
- 
+
             {status === "SUCCESS" && (
               <motion.div
                 key="success"
@@ -193,7 +244,7 @@ const QPayPayment = ({
                     Таны захиалга баталгаажлаа
                   </p>
                 </div>
- 
+
                 <div className="bg-slate-50 dark:bg-white/5 rounded-3xl p-6 space-y-5 border border-slate-100 dark:border-white/5 shadow-inner">
                   <div className="flex justify-between items-center border-b border-slate-200 dark:border-white/5 pb-4">
                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
@@ -212,7 +263,7 @@ const QPayPayment = ({
                     </span>
                   </div>
                 </div>
- 
+
                 <button
                   onClick={() => {
                     onSuccess({
@@ -228,8 +279,7 @@ const QPayPayment = ({
               </motion.div>
             )}
           </AnimatePresence>
- 
- 
+
           <div className="flex items-center justify-center gap-2 text-[9px] font-black text-slate-400 uppercase tracking-[0.25em] pt-4 border-t border-slate-100 dark:border-white/5">
             <ShieldCheck size={14} className="text-[#077eef]" />
             <span>Secure SSL Encrypted Transaction</span>
@@ -239,9 +289,5 @@ const QPayPayment = ({
     </div>
   );
 };
- 
+
 export default QPayPayment;
- 
- 
- 
- 
