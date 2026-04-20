@@ -13,7 +13,6 @@ import ThemeToggle from "../ui/ThemeToggle";
 export default function Sidebar() {
   const { user, isLoaded } = useUser();
   const [collapsed, setCollapsed] = useState(false);
-  const [openSettings, setOpenSettings] = useState(false);
   const path = usePathname();
 
   const storeName = (user?.publicMetadata?.storeName as string) || user?.firstName || "Store";
@@ -23,6 +22,7 @@ export default function Sidebar() {
     { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
     { name: "Products", href: "/admin/products", icon: Package },
     { name: "Orders", href: "/admin/orders", icon: ShoppingCart },
+    { name: "Settings", href: "/admin/setting", icon: Settings }, 
   ];
 
   return (
@@ -71,21 +71,13 @@ export default function Sidebar() {
         </nav>
       </div>
 
-      <div className="space-y-2">
-        {openSettings && !collapsed && (
-          <div className="p-3 bg-white/3 rounded-2xl border border-white/5 animate-in slide-in-from-bottom-2 duration-300">
-            <div className="flex justify-between items-center text-[10px] font-bold text-gray-500 uppercase tracking-widest px-1">
-              <span>Theme</span>
-              <ThemeToggle />
-            </div>
+      <div className="pt-4 border-t border-white/5">
+        {!collapsed && (
+          <div className="flex items-center justify-between px-4 py-2 bg-white/5 rounded-2xl">
+            <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest"></span>
+            <ThemeToggle />
           </div>
         )}
-        <button onClick={() => setOpenSettings(!openSettings)} 
-          className={`flex items-center gap-3 w-full p-3.5 rounded-xl transition-all
-          ${openSettings ? "bg-indigo-600/10 text-indigo-400" : "text-gray-400 hover:bg-white/5 hover:text-white"}`}>
-          <Settings size={19} className={openSettings ? "animate-spin-slow" : ""} />
-          {!collapsed && <span className="text-sm font-medium">Settings</span>}
-        </button>
       </div>
     </aside>
   );
