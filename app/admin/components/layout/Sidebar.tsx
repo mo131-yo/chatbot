@@ -1,120 +1,90 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  LayoutDashboard,
-  Package,
-  ShoppingCart,
-  BarChart3,
+import { useUser } from "@clerk/nextjs";
+import { 
+  LayoutDashboard, Package, ShoppingCart, 
+  ChevronLeft, ChevronRight, Settings 
 } from "lucide-react";
-import { useState } from "react";
-import { useUser, UserButton } from "@clerk/nextjs";
 import ThemeToggle from "../ui/ThemeToggle";
 
 export default function Sidebar() {
+  const { user, isLoaded } = useUser();
+  const [collapsed, setCollapsed] = useState(false);
+  const [openSettings, setOpenSettings] = useState(false);
+  const path = usePathname();
+
+  const storeName = (user?.publicMetadata?.storeName as string) || user?.firstName || "Store";
+  const firstLetter = storeName.charAt(0).toUpperCase();
+
   const menu = [
     { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
     { name: "Products", href: "/admin/products", icon: Package },
     { name: "Orders", href: "/admin/orders", icon: ShoppingCart },
-
   ];
 
-  const [openSettings, setOpenSettings] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
-
-  const path = usePathname();
-  const { user } = useUser();
-
-  const role = user?.publicMetadata?.role as string;
-
   return (
-    <aside
-      className={`h-100% p-5 flex flex-col justify-between transition-all duration-300
-      ${collapsed ? "w-20" : "w-64"}
-      bg-[#1c2541]/90 backdrop-blur-xl border-r border-white/10 text-white`}
-    >
+    <aside className={`relative h-screen p-4 flex flex-col justify-between transition-all duration-500 ease-in-out z-60
+      ${collapsed ? "w-20" : "w-64"} bg-[#0B1120] border-r border-white/5 text-white shadow-2xl`}>
+      
+      <button
+        onClick={() => setCollapsed(!collapsed)}
+        className="absolute -right-3 top-10 bg-indigo-600 hover:bg-indigo-500 w-6 h-6 rounded-full flex items-center justify-center border border-[#0B1120] shadow-xl z-50 transition-transform active:scale-90"
+      >
+        {collapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
+      </button>
+
       <div>
-        <div className="flex items-center justify-between mb-3">
-          {!collapsed && (
-            <h1 className="text-xl font-bold tracking-wide bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
-              Luxe AI
-            </h1>
-          )}
-
-          <div className="flex items-center gap-2">
-            <UserButton />
-
-            <button
-              onClick={() => setCollapsed(!collapsed)}
-              className="text-xs bg-white/10 px-2 py-1 rounded hover:bg-white/20 transition"
-            >
-              {collapsed ? "👉" : "👈"}
-            </button>
+        <Link 
+          href="/" 
+          className={`flex items-center gap-3 mb-12 mt-2 px-2 hover:opacity-80 transition-opacity active:scale-95 ${collapsed ? "justify-center" : ""}`}
+        >
+          <div className="w-9 h-9 bg-linear-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center font-black text-sm shadow-lg shadow-indigo-500/20 shrink-0">
+             {isLoaded ? firstLetter : <div className="w-4 h-4 bg-white/20 animate-pulse rounded-full" />}
           </div>
-        </div>
+          {!collapsed && (
+            <div className="flex flex-col animate-in fade-in duration-500 overflow-hidden">
+              <span className="font-bold text-sm tracking-tight text-white leading-tight truncate max-w-35">
+                {storeName}
+              </span>
+              <span className="text-[10px] text-indigo-400 font-bold uppercase tracking-widest">Admin</span>
+            </div>
+          )}
+        </Link>
 
-        {!collapsed && role === "admin" && (
-          <span
-            className="text-[10px] px-2 py-1 rounded-full text-white mb-4 inline-block
-  bg-gradient-to-r from-red-500 via-pink-500 to-orange-500
-  animate-pulse shadow-lg shadow-red-500/40"
-          >
-            ADMIN 🔥
-          </span>
-        )}
-
-        <nav className="space-y-2 mt-4">
+        <nav className="space-y-1.5">
           {menu.map((item) => {
             const Icon = item.icon;
-
+            const active = path === item.href;
             return (
-              <div key={item.name} className="relative group">
-                {path === item.href && (
-                  <span className="absolute left-0 top-0 h-full w-1 bg-indigo-400 rounded-r" />
-                )}
-
-                <Link
-                  href={item.href}
-                  className={`flex items-center gap-3 p-3 pl-4 rounded-xl transition-all duration-300
-                  ${
-                    path === item.href
-                      ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg scale-[1.02]"
-                      : "hover:bg-white/10 hover:translate-x-1 hover:shadow-md"
-                  }`}
-                >
-                  <Icon
-                    size={18}
-                    className="transition-transform duration-300 group-hover:scale-125"
-                  />
-
-                  {!collapsed && (
-                    <span className="transition-all duration-200">
-                      {item.name}
-                    </span>
-                  )}
-                </Link>
-              </div>
+              <Link key={item.name} href={item.href} 
+                className={`flex items-center gap-3 p-3.5 rounded-xl transition-all group relative
+                ${active ? "bg-indigo-600/10 text-indigo-400 border border-indigo-600/10" : "text-gray-400 hover:bg-white/5 hover:text-white"}`}>
+                <Icon size={19} className={active ? "scale-110" : "group-hover:scale-110 transition-transform"} />
+                {!collapsed && <span className="text-sm font-medium tracking-wide">{item.name}</span>}
+                {active && <div className="absolute left-0 top-1/4 h-1/2 w-0.5 bg-indigo-400 rounded-full" />}
+              </Link>
             );
           })}
         </nav>
       </div>
 
-      <div className="relative">
+      <div className="space-y-2">
         {openSettings && !collapsed && (
-          <div className="mb-3 p-4 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/10 space-y-3 animate-fade">
-            <div className="flex justify-between items-center">
-              <span className="text-sm">Theme</span>
+          <div className="p-3 bg-white/3 rounded-2xl border border-white/5 animate-in slide-in-from-bottom-2 duration-300">
+            <div className="flex justify-between items-center text-[10px] font-bold text-gray-500 uppercase tracking-widest px-1">
+              <span>Theme</span>
               <ThemeToggle />
             </div>
           </div>
         )}
-
-        <button
-          onClick={() => setOpenSettings(!openSettings)}
-          className="w-full bg-white/5 p-3 rounded-xl text-left hover:bg-white/10 transition"
-        >
-          {!collapsed ? "⚙️ Settings" : "⚙️"}
+        <button onClick={() => setOpenSettings(!openSettings)} 
+          className={`flex items-center gap-3 w-full p-3.5 rounded-xl transition-all
+          ${openSettings ? "bg-indigo-600/10 text-indigo-400" : "text-gray-400 hover:bg-white/5 hover:text-white"}`}>
+          <Settings size={19} className={openSettings ? "animate-spin-slow" : ""} />
+          {!collapsed && <span className="text-sm font-medium">Settings</span>}
         </button>
       </div>
     </aside>

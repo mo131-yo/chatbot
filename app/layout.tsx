@@ -7,6 +7,8 @@ import { CartProvider } from "./context/CartContext";
 import CartSidebar from "./chat/cart/frontend/components/CartSidebar";
 
 import { Toaster } from "sonner";
+import Navbar from "./chat/homeChat/product/Navbar";
+import { isAdmin } from "@/lib/isAdmin";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,25 +29,22 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const adminStatus = await isAdmin();
+
   return (
     <ClerkProvider afterSignOutUrl="/">
       <html lang="mn" suppressHydrationWarning>
-        <body className={`${font.variable} font-sans antialiased`}>
+        <body className={`${font.variable} font-sans antialiased bg-[#0D0D0D]`}>
           <CartProvider>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem={true}
-              disableTransitionOnChange
-            >
+            <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+              <Navbar isAdmin={adminStatus} /> 
               {children}
               <Toaster richColors position="top-right" />
-
               <CartSidebar />
             </ThemeProvider>
           </CartProvider>

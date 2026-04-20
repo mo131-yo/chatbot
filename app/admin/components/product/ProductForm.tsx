@@ -19,6 +19,8 @@ interface ProductFormProps {
   initialData?: any;
   onClose?: () => void;
   storeName: string;
+  editData?: any;
+  onCancel?: () => void;
 }
 
 export default function ProductForm({
@@ -350,7 +352,6 @@ export default function ProductForm({
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                      {/* КАТЕГОРИ */}
                       <div className="space-y-2">
                         <label className="text-[10px] text-gray-500 font-bold ml-2 uppercase tracking-widest">
                           Категори
@@ -390,7 +391,6 @@ export default function ProductForm({
                         </div>
                       </div>
 
-                      {/* БРЭНД */}
                       <div className="space-y-2">
                         <label className="text-[10px] text-gray-500 font-bold ml-2 uppercase tracking-widest">
                           Брэнд
@@ -434,7 +434,6 @@ export default function ProductForm({
                         </div>
                       </div>
 
-                      {/* РАЗМЕР */}
                       <div className="space-y-2">
                         <label className="text-[10px] text-gray-500 font-bold ml-2 uppercase tracking-widest">
                           Размер
@@ -478,7 +477,6 @@ export default function ProductForm({
                         </div>
                       </div>
 
-                      {/* ҮЛДЭГДЭЛ */}
                       <div className="space-y-2">
                         <label className="text-[10px] text-gray-500 font-bold ml-2 uppercase tracking-widest">
                           Үлдэгдэл

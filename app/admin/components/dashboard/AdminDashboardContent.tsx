@@ -1,9 +1,22 @@
 "use client";
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+
+import { useState, useEffect, useCallback } from "react";
+import { 
+  Package, 
+  ShoppingBag, 
+  TrendingUp, 
+  PlusCircle,
+} from "lucide-react";
 import ProductForm from "../product/ProductForm";
+import ProductTable from "../product/ProductTable";
 import RevenueChart from "./RevenueChart";
 import { useAppStore } from "../../store/useStore";
+import OrderTable from "../product/OrderTable";
+
+interface AdminDashboardProps {
+  initialStoreName: string | null;
+  userId: string; 
+}
 
 export default function AdminDashboardContent({
   initialStoreName,
@@ -14,28 +27,24 @@ export default function AdminDashboardContent({
 }) {
   const router = useRouter();
   const { storeName, setStoreName, isLoading, setIsLoading } = useAppStore();
+  
+  const [stats, setStats] = useState({ products: 0, orders: 0 });
+  const [orderList, setOrderList] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState<'products' | 'orders'>('products');
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  const [tempName, setTempName] = useState("");
-  const [isSettingUp, setIsSettingUp] = useState(false);
-  const [products, setProducts] = useState<any[]>([]);
+  const fetchData = useCallback(async (name: string) => {
+    try {
+      const [statsRes, orderRes] = await Promise.all([
+        fetch(`/admin/api/dashboard-stats?storeName=${encodeURIComponent(name)}`),
+        fetch(`/admin/api/orders?storeName=${encodeURIComponent(name)}`)
+      ]);
 
-  useEffect(() => {
-    const checkStore = async () => {
-      if (initialStoreName) {
-        setStoreName(initialStoreName);
-        setIsLoading(false);
-      } else {
-        try {
-          const res = await fetch("/admin/api/get-store");
-          const data = await res.json();
-          if (data.success && data.storeName) {
-            setStoreName(data.storeName);
-          }
-        } catch (e) {
-          console.error("Store ачаалахад алдаа гарлаа:", e);
-        } finally {
-          setIsLoading(false);
-        }
+      const statsData = await statsRes.json();
+      const orderData = await orderRes.json();
+
+      if (statsData.success) {
+        setStats({ products: statsData.productCount, orders: statsData.orderCount });
       }
     };
 
@@ -95,13 +104,12 @@ export default function AdminDashboardContent({
       } else {
         alert(data.error || "Хадгалахад алдаа гарлаа.");
       }
-    } catch (error) {
-      console.error(error);
-      alert("Сервертэй холбогдоход алдаа гарлаа.");
+    } catch (e) {
+      console.error("Data fetch error:", e);
     } finally {
-      setIsSettingUp(false);
+      setIsLoading(false);
     }
-  };
+  }, [setIsLoading]);
 
   const fetchProducts = async () => {
     if (!storeName) return;
@@ -116,13 +124,14 @@ export default function AdminDashboardContent({
     } catch (error) {
       console.error("Error fetching products:", error);
     }
-  };
+  }, [initialStoreName, setStoreName, fetchData]);
 
-  useEffect(() => {
+  const handleActionSuccess = () => {
     if (storeName) {
-      fetchProducts();
+      fetchData(storeName);
+      setRefreshKey(prev => prev + 1);
     }
-  }, [storeName]);
+  };
 
   if (isLoading) {
     return (
@@ -174,8 +183,9 @@ export default function AdminDashboardContent({
   }
 
   return (
-    <div className="space-y-8">
-      <div className="flex justify-between items-center">
+    <div className="space-y-10 pb-20 max-w-[1600px] mx-auto animate-in fade-in duration-700">
+      
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
           <h1 className="text-4xl font-black italic text-white dark:text-black">
             "{storeName}"
@@ -201,11 +211,33 @@ export default function AdminDashboardContent({
           </p>
           <h2 className="text-5xl font-black mt-2">0</h2>
         </div>
-      </div>
 
-      <div className="bg-white/5 backdrop-blur-md rounded-[2.5rem] p-6 border border-white/10">
-        <RevenueChart />
+        {activeTab === 'products' ? (
+          <ProductTable key={refreshKey} storeName={storeName} />
+        ) : (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
+            <OrderTable orders={orderList} /> 
+            <div className="bg-[#0A0A0A] rounded-[3rem] p-8 border border-white/5">
+               <RevenueChart orders={orderList || []} />
+            </div>  
+            
+          </div>
+        )}
       </div>
+    </div>
+  );
+}
+
+function StatCard({ label, value, icon, gradient, bg, isStatus }: any) {
+  return (
+    <div className={`relative overflow-hidden p-8 rounded-[2.5rem] shadow-xl group hover:-translate-y-1 transition-all ${gradient ? `bg-gradient-to-br ${gradient}` : bg} border border-white/5`}>
+      <div className="absolute -right-4 -bottom-4 transition-transform group-hover:rotate-6">
+        {icon}
+      </div>
+      <p className={`${gradient ? 'text-indigo-100' : 'text-gray-500'} text-[10px] font-bold uppercase tracking-[0.2em]`}>{label}</p>
+      <h2 className={`text-6xl font-black mt-2 tracking-tighter ${isStatus ? 'text-emerald-500 italic text-5xl' : 'text-white'}`}>
+        {value}
+      </h2>
     </div>
   );
 }

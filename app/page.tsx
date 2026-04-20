@@ -14,6 +14,7 @@ import QPayPayment from "./chat/payment/components/QPayPayment ";
 import OrderAddress from "./chat/payment/components/form";
 import OrderReceipt from "./chat/ZahialgaHarah/OrderReceipt";
 import OrdersButton from "./chat/ZahialgaHarah/OrdersButton";
+import Navbar from "./chat/homeChat/product/Navbar";
 
 export default function Home() {
   const { user, isLoaded } = useUser();
@@ -84,6 +85,7 @@ export default function Home() {
                 onSelect={(q) => sendMessage(q)}
                 userName={isLoaded ? user?.firstName : null}
               />
+              <Navbar isAdmin={false}/>
             </div>
           ) : (
             <MessageList

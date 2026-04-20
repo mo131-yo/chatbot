@@ -18,29 +18,6 @@ export default function ProductTable({
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // const fetchData = useCallback(async () => {
-  //   if (!storeName) return;
-
-  //   try {
-  //     setLoading(true);
-  //     const res = await fetch(`/admin/api/productAllGet?storeName=${encodeURIComponent(storeName)}`);
-
-  //     if (!res.ok) {
-  //       console.error(`Серверийн алдаа: ${res.status}`);
-  //       return;
-  //     }
-
-  //     const data = await res.json();
-  //     if (data.success) {
-  //       setProducts(data.products || []);
-  //     }
-  //   } catch (error) {
-  //     console.error("JSON уншихад алдаа гарлаа. Серверээс HTML ирсэн байх магадлалтай.");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // }, [storeName]);
-
   const fetchData = useCallback(async () => {
     if (!storeName) return;
 
@@ -59,7 +36,7 @@ export default function ProductTable({
 
       const data = await res.json();
       if (data.success) {
-        setProducts(data.products || []);
+        setProducts(data.products || []); 
       }
     } catch (error) {
       console.error("Дата татахад алдаа гарлаа:", error);
