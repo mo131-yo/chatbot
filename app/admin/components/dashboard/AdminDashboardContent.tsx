@@ -185,7 +185,6 @@ import {
   Layers3,
 } from "lucide-react";
 import ProductForm from "../product/ProductForm";
-import ProductTable from "../product/ProductTable";
 import RevenueChart from "./RevenueChart";
 import { useAppStore } from "../../store/useStore";
 import OrderTable from "../product/OrderTable";
@@ -195,7 +194,10 @@ import {
 } from "../../lib/adminFeatures";
 import AdminFeatureModuleCard from "./AdminFeatureModuleCard";
 
-interface AdminDashboardProps {
+export default function AdminDashboardContent({
+  initialStoreName,
+  userId,
+}: {
   initialStoreName: string | null;
   userId: string;
 }
@@ -264,66 +266,73 @@ export default function AdminDashboardContent({
     }
   }, [initialStoreName, setStoreName, fetchData, setIsLoading]);
 
-  const handleActionSuccess = () => {
+  useEffect(() => {
     if (storeName) {
-      fetchData(storeName);
-      setRefreshKey((prev) => prev + 1);
+      fetchProducts();
     }
-  };
+  }, [storeName]);
 
-  if (isLoading)
+  if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-        <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-        <p className="text-gray-400 font-medium italic animate-pulse">
-          Системийг бэлдэж байна...
-        </p>
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
+  }
 
-  if (!storeName)
+  if (!storeName) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-4">
-        <PlusCircle size={48} className="text-indigo-500/50" />
-        <h2 className="text-2xl font-bold text-white">Дэлгүүр олдсонгүй</h2>
-        <p className="text-gray-500">Та эхлээд дэлгүүрийн нэрээ тохируулна уу.</p>
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-white transition-colors duration-300 px-4">
+        <h1 className="text-3xl italic mb-8 text-center">
+          Дэлгүүрийн нэрээ бүртгүүлнэ үү
+        </h1>
+
+        <div className="bg-gray-900 p-10 rounded-[2.5rem] border border-gray-800 w-full max-w-md shadow-2xl">
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-[10px] text-gray-400 font-bold ml-2 uppercase tracking-widest">
+                Дэлгүүрийн нэр
+              </label>
+              <input
+                className="w-full bg-gray-800 border border-gray-700 p-4 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-white placeholder:text-gray-500"
+                value={tempName}
+                onChange={(e) => setTempName(e.target.value)}
+                placeholder="Жишээ: High-Tech Store"
+              />
+            </div>
+
+            <button
+              onClick={handleSetupStore}
+              disabled={isSettingUp}
+              className="w-full bg-indigo-600 py-4 rounded-2xl font-bold text-white hover:bg-indigo-700 active:scale-[0.98] transition-all disabled:opacity-50 shadow-lg shadow-indigo-500/30 flex items-center justify-center gap-2"
+            >
+              {isSettingUp ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span>Хадгалж байна...</span>
+                </>
+              ) : (
+                "Дэлгүүр үүсгэх"
+              )}
+            </button>
+          </div>
+        </div>
       </div>
     );
+  }
 
   return (
-    <div className="space-y-10 pb-20 max-w-[1600px] mx-auto animate-in fade-in duration-700">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+    <div className="space-y-8">
+      <div className="flex justify-between items-center">
         <div>
-          <p className="text-indigo-400 text-[10px] font-black uppercase tracking-[0.4em] mb-2">
-            Live Control Center
-          </p>
-          <h1 className="text-5xl font-black text-white tracking-tighter italic uppercase">
-            {storeName}
-            <span className="text-indigo-500">.</span>
+          <h1 className="text-4xl font-black italic text-white dark:text-black">
+            "{storeName}"
           </h1>
         </div>
-        <ProductForm storeName={storeName} onSuccess={handleActionSuccess} />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <StatCard
-          label="Нийт бараа"
-          value={stats.products}
-          icon={<Package className="text-white/10" size={120} />}
-          gradient="from-indigo-600 to-indigo-800"
-        />
-        <StatCard
-          label="Захиалга"
-          value={stats.orders}
-          icon={<ShoppingBag className="text-white/5" size={120} />}
-          bg="bg-[#111111]"
-        />
-        <StatCard
-          label="Статус"
-          value="ACTIVE"
-          isStatus
-          icon={<TrendingUp className="text-emerald-500/10" size={120} />}
-          bg="bg-[#111111]"
+        <ProductForm
+          key={storeName}
+          storeName={storeName}
+          onSuccess={fetchProducts}
         />
         <StatCard
           label="Modules"
@@ -422,9 +431,6 @@ export default function AdminDashboardContent({
           </div>
         )}
       </div>
-    </div>
-  );
-}
 
 function StatCard({ label, value, icon, gradient, bg, isStatus }: any) {
   return (
