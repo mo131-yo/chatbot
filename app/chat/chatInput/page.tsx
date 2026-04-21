@@ -1,3 +1,177 @@
+// "use client";
+
+// import { useState, useRef } from "react";
+// import { ImagePlus, Loader2, X } from "lucide-react";
+// import { SendButton } from "./components/SendButton";
+// import { InputField } from "./components";
+// import { useVisualSearch } from "../hooks/useVisualSearch";
+
+// interface ChatInputProps {
+//   onSendMessage: (text: string) => void;
+//   onVisualResult: (userMsg: any, products: any[]) => void;
+//   history: { role: string; content: string }[];
+//   isTyping: boolean;
+// }
+
+// export default function ChatInput({
+//   onSendMessage,
+//   onVisualResult,
+//   history,
+//   isTyping,
+// }: ChatInputProps) {
+//   const [input, setInput] = useState("");
+//   const [previewImage, setPreviewImage] = useState<{
+//     file: File;
+//     url: string;
+//   } | null>(null);
+//   const fileInputRef = useRef<HTMLInputElement>(null);
+//   const { searchByImage, isSearching } = useVisualSearch();
+
+//   const combinedLoading = isTyping || isSearching;
+
+//   const fileToBase64 = (file: File): Promise<string> => {
+//     return new Promise((resolve, reject) => {
+//       const reader = new FileReader();
+//       reader.readAsDataURL(file);
+//       reader.onload = () => resolve(reader.result as string);
+//       reader.onerror = (error) => reject(error);
+//     });
+//   };
+
+//   const handleSend = async (textToSend?: string) => {
+//     const text = (textToSend ?? input).trim();
+
+//     if (previewImage) {
+//       const { file } = previewImage;
+//       setPreviewImage(null);
+//       setInput("");
+//       try {
+//         const base64Image = await fileToBase64(file);
+//         const userMsg = {
+//           role: "USER",
+//           content: text || "Зургаар хайж байна...",
+//           imagePreview: base64Image,
+//         };
+//         const result = await searchByImage(file);
+//         if (result.success && result.products) {
+//           onVisualResult(userMsg, result.products);
+//         } else {
+//           onVisualResult(userMsg, []);
+//         }
+//       } catch (error) {
+//         console.error("Image search error:", error);
+//       }
+//       return;
+//     }
+
+//     if (!text || combinedLoading) return;
+//     setInput("");
+//     onSendMessage(text);
+//   };
+
+//   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+//     const file = e.target.files?.[0];
+//     if (!file || combinedLoading) return;
+//     const url = URL.createObjectURL(file);
+//     setPreviewImage({ file, url });
+//     if (fileInputRef.current) fileInputRef.current.value = "";
+//   };
+
+//   const handleRemoveImage = () => {
+//     if (previewImage) URL.revokeObjectURL(previewImage.url);
+//     setPreviewImage(null);
+//   };
+
+//   return (
+//     <footer
+//       className="w-full max-w-4xl mx-auto p-4 relative z-50  -inset-[5px] blur-xl opacity-40 dark:opacity-25 animate-siri-rotate animate-siri-shift"
+//       style={{
+//         backgroundImage:
+//           "linear-gradient(45deg, #00d2ff, #3a7bd5, #ff00c1, #9d50bb)",
+//         backgroundSize: "200% 200%",
+//         animation:
+//           "siriRotate 4s linear infinite, siriShift 8s ease-in-out infinite",
+//       }}
+//     >
+//       {/* <div
+//         className="absolute "
+
+//       > */}
+//       <div
+//         className="
+//           flex flex-col w-full rounded-2xl overflow-hidden
+//           bg-white border border-slate-200 shadow-sm
+//           dark:bg-white/5 dark:border-white/10 dark:shadow-2xl dark:backdrop-blur-xl
+//           focus-within:border-[#077eef]/60 dark:focus-within:border-[#077eef]/50
+//           focus-within:shadow-[0_0_0_4px_rgba(7,126,239,0.08)]
+//           transition-all duration-200
+//         "
+//       >
+//         {previewImage && (
+//           <div className="px-3 pt-3">
+//             <div className="relative inline-block">
+//               <img
+//                 src={previewImage.url}
+//                 alt="preview"
+//                 className="h-20 w-20 object-cover rounded-xl border border-slate-200 dark:border-white/20"
+//               />
+//               <button
+//                 onClick={handleRemoveImage}
+//                 className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-0.5 transition-colors"
+//               >
+//                 <X size={14} />
+//               </button>
+//             </div>
+//           </div>
+//         )}
+
+//         <div className="relative flex items-center w-full gap-3 p-2 bg-white/80 dark:bg-white/10 rounded-xl border border-slate-200 dark:border-white/20 shadow-sm text-black/80 dark:text-white/80">
+//           <input
+//             type="file"
+//             ref={fileInputRef}
+//             onChange={handleImageSelect}
+//             accept="image/*"
+//             className="hidden"
+//           />
+
+//           <button
+//             type="button"
+//             onClick={() => fileInputRef.current?.click()}
+//             disabled={combinedLoading}
+//             className="
+//               p-2 rounded-xl transition-all disabled:opacity-30
+//               text-slate-400 hover:text-slate-700 hover:bg-slate-100
+//               dark:text-gray-500 dark:hover:text-white dark:hover:bg-white/10
+//             "
+//           >
+//             {isSearching ? (
+//               <Loader2 className="animate-spin" size={22} />
+//             ) : (
+//               <ImagePlus size={22} />
+//             )}
+//           </button>
+
+//           <InputField
+//             value={input}
+//             onChange={setInput}
+//             onKeyDown={(e: any) =>
+//               e.key === "Enter" && !e.shiftKey && handleSend()
+//             }
+//             disabled={combinedLoading}
+//             placeholder={previewImage ? "Зураг илгээх..." : undefined}
+//           />
+
+//           <SendButton
+//             onClick={() => handleSend()}
+//             disabled={combinedLoading || (!input.trim() && !previewImage)}
+//             isLoading={isTyping || isSearching}
+//           />
+//         </div>
+//       </div>
+//       {/* </div> */}
+//     </footer>
+//   );
+// }
 "use client";
 
 import { useState, useRef } from "react";
@@ -5,6 +179,7 @@ import { ImagePlus, Loader2, X } from "lucide-react";
 import { SendButton } from "./components/SendButton";
 import { InputField } from "./components";
 import { useVisualSearch } from "../hooks/useVisualSearch";
+import { motion } from "motion/react";
 
 interface ChatInputProps {
   onSendMessage: (text: string) => void;
@@ -83,15 +258,42 @@ export default function ChatInput({
   };
 
   return (
-    <footer className="w-full max-w-4xl mx-auto p-4 relative z-50">
+    <footer className="w-full max-w-4xl mx-auto p-4 relative z-50 mt-30 md:mt-0">
+      <motion.div
+        className="absolute -inset-2 rounded-3xl blur-2xl opacity-50 dark:opacity-40 animate-siri-rotate animate-siri-shift"
+        style={{
+          backgroundImage:
+            "linear-gradient(45deg, #00d2ff, #3a7bd5, #ff00c1, #9d50bb)",
+          backgroundSize: "200% 200%",
+          zIndex: -1,
+        }}
+        animate={{
+          backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
+
+          scale: [1, 1, 1],
+        }}
+        transition={{
+          backgroundPosition: {
+            duration: 2,
+            repeat: Infinity,
+            ease: "easeInOut",
+          },
+          scale: {
+            duration: 5,
+            repeat: Infinity,
+            ease: "easeInOut",
+          },
+        }}
+      />
+      {/* Main Input Container */}
       <div
         className="
           flex flex-col w-full rounded-2xl overflow-hidden
           bg-white border border-slate-200 shadow-sm
-          dark:bg-white/5 dark:border-white/10 dark:shadow-2xl dark:backdrop-blur-xl
+          dark:bg-slate-900/80 dark:border-white/10 dark:shadow-2xl dark:backdrop-blur-xl
           focus-within:border-[#077eef]/60 dark:focus-within:border-[#077eef]/50
           focus-within:shadow-[0_0_0_4px_rgba(7,126,239,0.08)]
-          transition-all duration-200
+          transition-all duration-200 
         "
       >
         {previewImage && (
@@ -128,7 +330,7 @@ export default function ChatInput({
             className="
               p-2 rounded-xl transition-all disabled:opacity-30
               text-slate-400 hover:text-slate-700 hover:bg-slate-100
-              dark:text-gray-500 dark:hover:text-white dark:hover:bg-white/10
+              dark:text-gray-400 dark:hover:text-white dark:hover:bg-white/10
             "
           >
             {isSearching ? (
