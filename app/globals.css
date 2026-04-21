@@ -3,6 +3,25 @@
 @import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
+/* globals.css */
+@keyframes siriRotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes siriShift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(5px, -5px) scale(1.05);
+  }
+}
 
 @theme inline {
   --color-background: var(--background);
@@ -130,11 +149,11 @@
 
 @layer utilities {
   .scrollbar-hide {
-    -ms-overflow-style: none; 
-    scrollbar-width: none;   
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
   .scrollbar-hide::-webkit-scrollbar {
-    display: none;        
+    display: none;
   }
 
   .custom-scrollbar {
@@ -168,63 +187,71 @@
   transform-style: preserve-3d;
 }
 
-
 @layer base {
+  .minimalist {
+    --background: oklch(1 0 0);
+    --foreground: oklch(0.145 0 0);
+    --primary: oklch(0.6 0.118 259);
+    --border: oklch(0.922 0 0);
+  }
 
-.minimalist {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --primary: oklch(0.6 0.118 259);
-  --border: oklch(0.922 0 0);
-}
+  .cyber {
+    --background: oklch(0.15 0.05 264);
+    --foreground: oklch(0.98 0.01 264);
+    --primary: oklch(0.7 0.2 310);
+    --border: oklch(1 0 0 / 20%);
+  }
 
-.cyber {
-  --background: oklch(0.15 0.05 264);
-  --foreground: oklch(0.98 0.01 264);
-  --primary: oklch(0.7 0.2 310);
-  --border: oklch(1 0 0 / 20%);
+  .luxury {
+    --background: oklch(0.18 0.02 35);
+    --foreground: oklch(0.98 0.01 35);
+    --primary: oklch(0.8 0.1 70);
+    --border: oklch(0.8 0.1 70 / 20%);
+  }
+
+  .cyber {
+    --background: 260 30% 4%;
+    --foreground: 260 10% 98%;
+    --card: 260 30% 9%;
+    --primary: 270 90% 65%;
+    --border: 260 30% 18%;
+  }
+
+  .forest {
+    --background: 160 20% 4%;
+    --foreground: 160 5% 95%;
+    --card: 160 20% 8%;
+    --primary: 160 80% 45%;
+    --border: 160 20% 15%;
+  }
+
+  .rose {
+    --background: 340 20% 98%;
+    --foreground: 340 10% 15%;
+    --card: 340 20% 96%;
+    --primary: 340 70% 60%;
+    --border: 340 10% 90%;
+  }
 }
 
 .luxury {
-  --background: oklch(0.18 0.02 35);
-  --foreground: oklch(0.98 0.01 35);
-  --primary: oklch(0.8 0.1 70);
-  --border: oklch(0.8 0.1 70 / 20%);
+  --background: 20 14.3% 4.1%;
+  --primary: 38 45% 63%;
 }
-
-.cyber {
-  --background: 260 30% 4%;
-  --foreground: 260 10% 98%;
-  --card: 260 30% 9%;
-  --primary: 270 90% 65%;
-  --border: 260 30% 18%;
+.minimalist {
+  --background: 0 0% 100%;
+  --primary: 221.2 83.2% 53.3%;
 }
-
-.forest {
-  --background: 160 20% 4%;
-  --foreground: 160 5% 95%;
-  --card: 160 20% 8%;
-  --primary: 160 80% 45%;
-  --border: 160 20% 15%;
-}
-
-.rose {
-  --background: 340 20% 98%;
-  --foreground: 340 10% 15%;
-  --card: 340 20% 96%;
-  --primary: 340 70% 60%;
-  --border: 340 10% 90%;
-}
-}
-
-.luxury { --background: 20 14.3% 4.1%; --primary: 38 45% 63%; }
-.minimalist { --background: 0 0% 100%; --primary: 221.2 83.2% 53.3%; }
 
 @tailwind utilities;
 
 @keyframes spin-slow {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 .animate-spin-slow {
   animation: spin-slow 8s linear infinite;

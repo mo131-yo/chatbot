@@ -165,7 +165,7 @@ export type ProductEmbeddingGroupByOutputType = {
   _max: ProductEmbeddingMaxAggregateOutputType | null
 }
 
-export type GetProductEmbeddingGroupByPayload<T extends ProductEmbeddingGroupByArgs> = Prisma.PrismaPromise<
+type GetProductEmbeddingGroupByPayload<T extends ProductEmbeddingGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<ProductEmbeddingGroupByOutputType, T['by']> &
       {

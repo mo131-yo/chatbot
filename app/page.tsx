@@ -85,7 +85,7 @@ export default function Home() {
                 onSelect={(q) => sendMessage(q)}
                 userName={isLoaded ? user?.firstName : null}
               />
-              <Navbar isAdmin={false}/>
+              <Navbar isAdmin={false} />
             </div>
           ) : (
             <MessageList
@@ -130,6 +130,7 @@ export default function Home() {
                 });
               }}
               onCancel={() => setOrderStep("NONE")}
+              items={[]}
             />
           )}
         </AnimatePresence>
