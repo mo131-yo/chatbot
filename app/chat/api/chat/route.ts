@@ -14,7 +14,9 @@ type IncomingMessage = {
   content: string;
 };
 
-function normalizeOpenAIRole(role: IncomingMessage["role"]): "user" | "assistant" | "system" {
+function normalizeOpenAIRole(
+  role: IncomingMessage["role"],
+): "user" | "assistant" | "system" {
   const r = role.toLowerCase();
   if (r === "user" || r === "assistant" || r === "system") return r as any;
   return "user";
@@ -30,12 +32,18 @@ export async function POST(req: Request) {
     const fallbackUserId = body?.userId as string | undefined;
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
-      return NextResponse.json({ error: "Messages array is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Messages array is required" },
+        { status: 400 },
+      );
     }
 
     const lastUserMessage = messages[messages.length - 1]?.content?.trim();
     if (!lastUserMessage) {
-      return NextResponse.json({ error: "Last message content is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Last message content is required" },
+        { status: 400 },
+      );
     }
 
     // --- VECTOR SEARCH ---
@@ -46,38 +54,68 @@ export async function POST(req: Request) {
         input: lastUserMessage,
       });
 
-      const namespaces = ["Turuu's store", "sadadasda", "sephora", "ETRNTY", "Tugss store"];
+      const namespaces = [
+        "Turuu's store",
+        "sadadasda",
+        "sephora",
+        "ETRNTY",
+        "Tugss store",
+      ];
 
       const queryPromises = namespaces.map((ns) =>
         index.namespace(ns).query({
           vector: embedding.data[0].embedding,
           topK: 20,
           includeMetadata: true,
-        })
+        }),
       );
 
       const queryResults = await Promise.all(queryPromises);
       const allMatches = queryResults.flatMap((res) => res.matches || []);
 
       const topMatches = allMatches
-        .sort((a, b) => (b.score || 0) - (a.score || 0))  
+        .sort((a, b) => (b.score || 0) - (a.score || 0))
         .slice(0, 20);
+
+      // context = topMatches
+      //   .map((m) => {
+      //     const name = m.metadata?.name || m.metadata?.product_name || "Нэргүй бараа";
+      //     const price = m.metadata?.price || m.metadata?.formatted_price || "0";
+      //     const img = m.metadata?.product_image_url || m.metadata?.image_url || "";
+      //     const desc = m.metadata?.description || "Тайлбар байхгүй";
+      //     const storeName = m.metadata?.store_name || "Official Store";
+
+      //     return `БҮТЭЭГДЭХҮҮН: ${name}
+      //     ҮНЭ: ${price}₮
+      //     ЗУРАГ: ${img}
+      //     ТАЙЛБАР: ${desc}
+      //     ID: ${m.id}
+      //     STORE_NAME: ${storeName}
+      //     STORE_ID: ${m.metadata?.store_id || "store-001"}`;
+      //   })
+      //   .join("\n---\n");
 
       context = topMatches
         .map((m) => {
-          const name = m.metadata?.name || m.metadata?.product_name || "Нэргүй бараа";
-          const price = m.metadata?.price || m.metadata?.formatted_price || "0";
-          const img = m.metadata?.product_image_url || m.metadata?.image_url || "";
+          const name =
+            m.metadata?.name || m.metadata?.product_name || "Нэргүй бараа";
+          const price = m.metadata?.price || "0";
+          const img =
+            m.metadata?.product_image_url || m.metadata?.image_url || "";
           const desc = m.metadata?.description || "Тайлбар байхгүй";
-          const storeName = m.metadata?.store_name || "Official Store";
-          
+          const storeName =
+            m.metadata?.store_name || m.metadata?.storeName || "Official Store";
+          const storeId = m.metadata?.storeId || m.metadata?.store_id || "";
+          const brand = m.metadata?.brand || "";
+
           return `БҮТЭЭГДЭХҮҮН: ${name}
-          ҮНЭ: ${price}₮
-          ЗУРАГ: ${img}
-          ТАЙЛБАР: ${desc}
-          ID: ${m.id}
-          STORE_NAME: ${storeName}
-          STORE_ID: ${m.metadata?.store_id || "store-001"}`;
+ҮНЭ: ${price}₮
+ЗУРАГ: ${img}
+ТАЙЛБАР: ${desc}
+БРЕНД: ${brand}
+ID: ${m.id}
+STORE_NAME: ${storeName}
+STORE_ID: ${storeId}`;
         })
         .join("\n---\n");
 
@@ -85,13 +123,13 @@ export async function POST(req: Request) {
     } catch (err) {
       console.error("Vector Search Error:", err);
     }
- 
-   const chatResponse = await openai.chat.completions.create({
-  model: "gpt-4o-mini",
-  messages: [
-    {
-      role: "system",
-      content: `Чи бол өгөгдсөн Context (Pinecone дата) дээр үндэслэн ажилладаг Монголын хамгийн ухаалаг "Shopping Assistant" юм.
+
+    const chatResponse = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content: `Чи бол өгөгдсөн Context (Pinecone дата) дээр үндэслэн ажилладаг Монголын хамгийн ухаалаг "Shopping Assistant" юм.
           
       --- ЧУХАЛ: ХАТУУ ХЯЗГААРЛАЛТ (CRITICAL RULES) ---
       1. ЗӨВХӨН CONTEXT АШИГЛА: Өгөгдсөн Context дотор байхгүй барааг хэзээ ч бүү зохио. Хэрэв Context дотор хэрэглэгчийн хайсан бараа байхгүй бол "Уучлаарай, манайд яг одоо [барааны нэр] алга байна" гэж хариул.
@@ -120,28 +158,40 @@ export async function POST(req: Request) {
       2. Хэрэглэгчийг сонголтоо тодорхой болгоход нь туслах асуулт асуу.
       3. УЯН ХАТАН ХАЙЛТ: Хэрэглэгч "Nike" гэж асуухад Context дотор "Nike Air Max" байвал үүнийг шууд харуул. Утгын хувьд ойролцоо байхад хангалттай.
       
-      --- БАРАА ХАРУУЛАХ ФОРМАТ (MARKDOWN) ---
-      ![Нэр|Үнэ|Тайлбар|ProductID|StoreID](Зургийн_URL)
-      *Санамж: Тусгаарлагч нь ЗААВАЛ | (pipe) байх ёстой.*
+    
+
+--- БАРАА ХАРУУЛАХ ФОРМАТ (MARKDOWN) ---
+Бараа харуулахдаа ЗААВАЛ дараах форматыг ашигла:
+![Нэр|Үнэ|Тайлбар|ID|Бренд|STORE_ID|STORE_NAME](Зургийн_URL)
+
+Жишээ:
+![Nike Air Max|150000|Гүйлтийн гутал|prod_1748291234|Nike|cm9abc123|Turuu's store](https://image.url)
+
+ЧУХАЛ ДҮРЭМ:
+- Тусгаарлагч нь ЗААВАЛ | (pipe) байх ёстой
+- parts[5] = STORE_ID — Context дахь STORE_ID-г ЗААВАЛ бичнэ
+- parts[6] = STORE_NAME — Context дахь STORE_NAME-г ЗААВАЛ бичнэ  
+- STORE_ID хоосон байвал STORE_NAME-г давтаж бичнэ
  
       --- ТӨЛБӨРИЙН ЛОГИК ---
       PAYMENT_TRIGGER:{"id":"id","name":"name","price":price}
  
       --- CONTEXT (ӨГӨГДӨЛ) ---
       ${context}`,
-    },
-    ...messages.map((m) => ({
-      role: normalizeOpenAIRole(m.role),
-      content: m.content,
-    })),
-  ],
-  temperature: 0.6,
-  presence_penalty: 0.6, 
-  frequency_penalty: 0.3,
-  max_tokens: 2500
-});
- 
-    const aiReply = chatResponse.choices[0]?.message?.content?.trim() || "Хариу олдсонгүй.";
+        },
+        ...messages.map((m) => ({
+          role: normalizeOpenAIRole(m.role),
+          content: m.content,
+        })),
+      ],
+      temperature: 0.6,
+      presence_penalty: 0.6,
+      frequency_penalty: 0.3,
+      max_tokens: 2500,
+    });
+
+    const aiReply =
+      chatResponse.choices[0]?.message?.content?.trim() || "Хариу олдсонгүй.";
 
     // --- DB SAVE (PRISMA) ---
     const effectiveUserId = clerkUserId || fallbackUserId;
@@ -161,12 +211,20 @@ export async function POST(req: Request) {
         const session = await prisma.chatSession.upsert({
           where: { id: String(chatId) },
           update: { updatedAt: new Date(), userId: dbUser.id },
-          create: { id: String(chatId), userId: dbUser.id, title: lastUserMessage.slice(0, 40) },
+          create: {
+            id: String(chatId),
+            userId: dbUser.id,
+            title: lastUserMessage.slice(0, 40),
+          },
         });
 
         await prisma.chatMessage.createMany({
           data: [
-            { chatSessionId: session.id, role: "USER", content: lastUserMessage },
+            {
+              chatSessionId: session.id,
+              role: "USER",
+              content: lastUserMessage,
+            },
             { chatSessionId: session.id, role: "ASSISTANT", content: aiReply },
           ],
         });
@@ -178,6 +236,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ reply: aiReply });
   } catch (error: any) {
     console.error("API_GLOBAL_ERROR:", error);
-    return NextResponse.json({ error: "Internal Error", details: error.message }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Error", details: error.message },
+      { status: 500 },
+    );
   }
 }
