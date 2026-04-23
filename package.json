@@ -7,7 +7,8 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "migrate:pinecone": "ts-node --project tsconfig.json scripts/migrate-pinecone-storeId.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.3.0",
@@ -37,7 +38,7 @@
     "cloudinary": "^2.9.0",
     "clsx": "^2.1.1",
     "csv-parser": "^3.2.0",
-    "dotenv": "^17.4.0",
+    "dotenv": "^17.4.2",
     "duckduckgo-images-api": "^1.0.5",
     "framer-motion": "^12.38.0",
     "groq-sdk": "^1.1.1",

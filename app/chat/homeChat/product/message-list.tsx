@@ -146,18 +146,18 @@
 // //       <div className="max-w-3xl mx-auto pb-20 flex flex-col space-y-8">
 // //         {messages.map((message: any, index: number) => {
 // //           const isUser = message.role?.toLowerCase() === "user";
-          
+
 // //           // Мессеж бүрээс бараа болон төлбөрийн мэдээллийг салгах
 // //           const products = !isUser ? extractProducts(message.content || "") : [];
 // //           const paymentTrigger = !isUser ? extractPaymentTrigger(message.content || "") : null;
-          
+
 // //           const cleanedContent = paymentTrigger
 // //             ? cleanPaymentTrigger(message.content || "")
 // //             : message.content || "";
-            
+
 // //           const rawText = removeImageMarkdown(cleanedContent);
 // //           const hasText = rawText.length > 0;
-          
+
 // //           const isVisual = !isUser && isVisualSearchReply(messages, index) && products.length > 0;
 
 // //           const displayImage = message.imagePreview || message.image;
@@ -280,13 +280,8 @@
 // //   );
 // // };
 
-
-
-
-
-
 // "use client";
- 
+
 // import React, { useState } from "react";
 // import ReactMarkdown from "react-markdown";
 // import { motion, AnimatePresence } from "framer-motion";
@@ -295,7 +290,7 @@
 // import OrderAddress from "../../payment/components/form";
 // import QPayPayment from "../../payment/components/QPayPayment ";
 // import OrderReceipt from "../../ZahialgaHarah/OrderReceipt";
- 
+
 // interface Product {
 //   id: string;
 //   name: string;
@@ -306,7 +301,7 @@
 //   brand?: string;
 //   storeName?: string;
 // }
- 
+
 // interface MessageListProps {
 //   messages: any[];
 //   isTyping: boolean;
@@ -357,7 +352,7 @@
 //     return null;
 //   }
 // };
- 
+
 // const cleanPaymentTrigger = (content: string): string => {
 //   return content.replace(/PAYMENT_TRIGGER:\{[^}]+\}/g, "").trim();
 // };
@@ -393,12 +388,12 @@
 //     if (!addressFormProduct) return;
 //     const product = { ...addressFormProduct };
 //     setAddressFormProduct(null);
- 
+
 //     const numericPrice =
 //       typeof product.price === "string"
 //         ? parseFloat(product.price.replace(/[^0-9.]/g, ""))
 //         : product.price;
- 
+
 //     setTimeout(() => {
 //       setActivePayment({
 //         amount: numericPrice || 0,
@@ -409,7 +404,7 @@
 //       });
 //     }, 400);
 //   };
- 
+
 //   const handlePaymentSuccess = (details: any) => {
 //     const paidInfo = activePayment;
 //     setActivePayment(null);
@@ -422,7 +417,7 @@
 //       transactionId: details.transactionId,
 //     });
 //   };
- 
+
 //   return (
 //     <>
 //       <div className="max-w-3xl mx-auto pb-32 flex flex-col space-y-10 px-4">
@@ -479,7 +474,7 @@
 //                           {rawText}
 //                         </ReactMarkdown>
 //                       </div>
- 
+
 //                       {paymentTrigger && (
 //                         <motion.button
 //                           whileHover={{ scale: 1.02 }}
@@ -513,7 +508,7 @@
 //             </motion.div>
 //           );
 //         })}
- 
+
 //         {isTyping && (
 //           <div className="flex items-center gap-3 py-6 px-4">
 //             <PulsatingDots />
@@ -530,7 +525,7 @@
 //           />
 //         )}
 //       </AnimatePresence>
- 
+
 //       <AnimatePresence>
 //         {activePayment && (
 //           <QPayPayment
@@ -541,7 +536,7 @@
 //           />
 //         )}
 //       </AnimatePresence>
- 
+
 //       <AnimatePresence>
 //         {receiptData && (
 //           <OrderReceipt
@@ -553,9 +548,6 @@
 //     </>
 //   );
 // };
-
-
-
 
 // "use client";
 
@@ -841,6 +833,333 @@
 
 "use client";
 
+// import React, { useState } from "react";
+// import ReactMarkdown from "react-markdown";
+// import { motion, AnimatePresence } from "framer-motion";
+// import PulsatingDots from "@/lib/utils/loading/pulsating-loader";
+// import { ProductCarousel } from "@/app/chat/products/scrollEffect/ProductCarousel";
+// import OrderAddress from "../../payment/components/form";
+// import QPayPayment from "../../payment/components/QPayPayment ";
+// import OrderReceipt from "../../ZahialgaHarah/OrderReceipt";
+
+// interface Product {
+//   id: string;
+//   name: string;
+//   price: string;
+//   image: string;
+//   description: string;
+//   storeId?: string;
+//   brand?: string;
+//   storeName?: string;
+// }
+
+// interface MessageListProps {
+//   messages: any[];
+//   isTyping: boolean;
+//   onProductClick: (product: Product) => void;
+//   onBuy: (name: string, price: any) => void;
+//   messagesEndRef: React.RefObject<HTMLDivElement | null>;
+//   storeName?: string;
+// }
+
+// const removeImageMarkdown = (content: string): string => {
+//   if (!content) return "";
+//   return content
+//     .replace(/!\[[^\]]*\]\([^)]+\)/g, "")
+//     .replace(/\n{3,}/g, "\n\n")
+//     .trim();
+// };
+
+// const extractProducts = (content: string): Product[] => {
+//   const imgRegex = /!\[([^\]]+)\]\(([^)]+)\)/g;
+//   const products: Product[] = [];
+//   let match;
+//   while ((match = imgRegex.exec(content)) !== null) {
+//     const altText = match[1];
+//     const imageSrc = match[2];
+//     const parts = altText.split("|").map((p) => p.trim());
+//     if (parts.length >= 2) {
+//       products.push({
+//         name: parts[0] || "Нэргүй бараа",
+//         price: parts[1] || "0",
+//         description: parts[2] || "",
+//         id: parts[3] || `id-${Math.random()}`,
+//         brand: parts[4] || "",
+//         storeId: parts[5] || "store-001",
+//         storeName: parts[6] || "Turuu's store",
+//         image: imageSrc,
+//       });
+//     }
+//   }
+//   return products;
+// };
+
+// const extractPaymentTrigger = (content: string) => {
+//   const match = content.match(/PAYMENT_TRIGGER:(\{[^}]+\})/);
+//   if (!match) return null;
+//   try {
+//     return JSON.parse(match[1]);
+//   } catch {
+//     return null;
+//   }
+// };
+
+// const cleanPaymentTrigger = (content: string): string => {
+//   return content.replace(/PAYMENT_TRIGGER:\{[^}]+\}/g, "").trim();
+// };
+
+// export const MessageList: React.FC<MessageListProps> = ({
+//   messages,
+//   isTyping,
+//   onProductClick,
+//   onBuy: externalOnBuy,
+//   messagesEndRef,
+//   storeName,
+// }) => {
+//   const [addressFormProduct, setAddressFormProduct] = useState<any>(null);
+//   const [activePayment, setActivePayment] = useState<any>(null);
+//   const [receiptData, setReceiptData] = useState<any>(null);
+
+//   const handleOpenOrderForm = (name: string, price: any) => {
+//     const allProducts = messages.flatMap((m) =>
+//       extractProducts(m.content || ""),
+//     );
+//     const match = allProducts.find((p) => p.name === name);
+
+//     setAddressFormProduct({
+//       name: name,
+//       price: price,
+//       image: match?.image || "",
+//       id: match?.id || `id-${Date.now()}`,
+//       storeName: storeName || match?.storeName,
+//     });
+//   };
+
+//   // const handleAddressConfirm = () => {
+//   //   if (!addressFormProduct) return;
+//   //   const product = { ...addressFormProduct };
+//   //   setAddressFormProduct(null);
+
+//   //   const numericPrice =
+//   //     typeof product.price === "string"
+//   //       ? parseFloat(product.price.replace(/[^0-9.]/g, ""))
+//   //       : product.price;
+
+//   //   setTimeout(() => {
+//   //     setActivePayment({
+//   //       amount: numericPrice || 0,
+//   //       orderId: product.id || `ORD-${Date.now()}`,
+//   //       productName: product.name,
+//   //       image: product.image,
+//   //       storeName: storeName || product.storeName || "Манай дэлгүүр",
+//   //     });
+//   //   }, 400);
+//   // };
+
+//   const handleAddressConfirm = (addressData: {
+//     phone: string;
+//     address: string;
+//   }) => {
+//     if (!addressFormProduct) return;
+//     const product = { ...addressFormProduct };
+
+//     // 1. Үнийг цэвэрлэж тоо болгох (₮ тэмдэгт, таслал зэргийг устгана)
+//     const numericPrice =
+//       typeof product.price === "string"
+//         ? parseFloat(product.price.replace(/[^0-9.-]/g, ""))
+//         : Number(product.price);
+
+//     // Үнэ тоо биш байвал 0 эсвэл алдаа харуулна
+//     const finalAmount = isNaN(numericPrice) ? 0 : numericPrice;
+
+//     setTimeout(() => {
+//       setActivePayment({
+//         ...addressFormProduct,
+//         customerPhone: addressData.phone,
+//         address: addressData.address,
+//         amount: finalAmount, // Энд Number(product.price) биш finalAmount-аа ашиглана
+//         orderId: `ORD-${Date.now()}`,
+//         items: [
+//           {
+//             productId: addressFormProduct.id,
+//             name: addressFormProduct.name,
+//             price: finalAmount, // Энд бас тоо байх ёстой
+//             quantity: 1,
+//             image:
+//               addressFormProduct.image || addressFormProduct.product_image_url,
+
+//             storeId: addressFormProduct.storeId || "store-01",
+//           },
+//         ],
+//       });
+//     }, 400);
+//   };
+//   const handlePaymentSuccess = (details: any) => {
+//     const paidInfo = activePayment;
+
+//     setActivePayment(null);
+//     setAddressFormProduct(null);
+
+//     setReceiptData({
+//       productName: paidInfo.name || paidInfo.productName,
+//       amount: paidInfo.amount,
+//       orderId: paidInfo.orderId,
+//       date: new Date().toLocaleString(),
+//       image: paidInfo.image,
+//       transactionId: details.transactionId,
+//     });
+//   };
+
+//   return (
+//     <>
+//       <div className="max-w-3xl mx-auto pb-32 flex flex-col space-y-10 px-4">
+//         {messages.map((message: any, index: number) => {
+//           const isUser = message.role?.toLowerCase() === "user";
+//           const products = !isUser
+//             ? extractProducts(message.content || "")
+//             : [];
+//           const paymentTrigger = !isUser
+//             ? extractPaymentTrigger(message.content || "")
+//             : null;
+//           const cleanedContent = paymentTrigger
+//             ? cleanPaymentTrigger(message.content || "")
+//             : message.content || "";
+//           const rawText = removeImageMarkdown(cleanedContent);
+//           const hasText = rawText.length > 0;
+//           const displayImage = message.imagePreview || message.image;
+
+//           return (
+//             <motion.div
+//               key={`msg-${index}`}
+//               initial={{ opacity: 0, y: 20 }}
+//               animate={{ opacity: 1, y: 0 }}
+//               className={`flex flex-col ${isUser ? "items-end" : "items-start"} w-full group`}
+//             >
+//               {isUser ? (
+//                 <div className="flex flex-col items-end gap-3 max-w-[85%]">
+//                   {displayImage && (
+//                     <img
+//                       src={displayImage}
+//                       className="w-full max-w-[280px] rounded-2xl border border-white/10"
+//                       alt="User"
+//                     />
+//                   )}
+//                   {hasText && (
+//                     <div className="px-5 py-3 rounded-[1.6rem] rounded-tr-md bg-blue-600 text-white shadow-lg text-sm md:text-base">
+//                       {rawText}
+//                     </div>
+//                   )}
+//                 </div>
+//               ) : (
+//                 <div className="w-full space-y-4">
+//                   {hasText && (
+//                     <div className="max-w-[88%] px-6 py-4 rounded-[1.8rem] rounded-tl-md bg-white/80 dark:bg-slate-900/50 backdrop-blur-xl border border-slate-100 dark:border-white/5 shadow-sm">
+//                       <div className="prose dark:prose-invert max-w-none text-sm md:text-[15px] leading-relaxed">
+//                         <ReactMarkdown
+//                           components={{
+//                             img: () => null,
+//                             p: ({ children }) => (
+//                               <p className="m-0">{children}</p>
+//                             ),
+//                           }}
+//                         >
+//                           {rawText}
+//                         </ReactMarkdown>
+//                       </div>
+
+//                       {paymentTrigger && (
+//                         <motion.button
+//                           whileHover={{ scale: 1.02 }}
+//                           whileTap={{ scale: 0.98 }}
+//                           onClick={() =>
+//                             handleOpenOrderForm(
+//                               paymentTrigger.name,
+//                               paymentTrigger.price,
+//                             )
+//                           }
+//                           className="mt-5 w-full md:w-auto px-8 py-3 bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-bold rounded-xl shadow-lg flex items-center justify-center gap-2 text-sm uppercase"
+//                         >
+//                           🛍️ Захиалах
+//                         </motion.button>
+//                       )}
+//                     </div>
+//                   )}
+
+//                   {products.length > 0 && (
+//                     <div className="w-full mt-2">
+//                       <ProductCarousel
+//                         products={products}
+//                         onBuy={handleOpenOrderForm}
+//                         onSelect={onProductClick}
+//                         history={[]}
+//                       />
+//                     </div>
+//                   )}
+//                 </div>
+//               )}
+//             </motion.div>
+//           );
+//         })}
+
+//         {isTyping && (
+//           <div className="flex items-center gap-3 py-6 px-4">
+//             <PulsatingDots />
+//           </div>
+//         )}
+//         <div ref={messagesEndRef} className="h-4 w-full" />
+//       </div>
+
+//       <AnimatePresence>
+//         {addressFormProduct && (
+//           <OrderAddress
+//             onClose={() => setAddressFormProduct(null)}
+//             onConfirm={handleAddressConfirm}
+//           />
+//         )}
+//       </AnimatePresence>
+
+//       {/* <AnimatePresence>
+//         {activePayment && (
+//           <QPayPayment
+//             amount={activePayment.amount}
+//             orderId={activePayment.orderId}
+//             onSuccess={handlePaymentSuccess}
+//             onCancel={() => setActivePayment(null)}
+//           />
+//         )}
+//       </AnimatePresence> */}
+//       {/* MessageList.tsx доторх хэсэг */}
+//       <AnimatePresence>
+//         {activePayment && (
+//           <QPayPayment
+//             amount={activePayment.amount}
+//             orderId={activePayment.orderId}
+//             items={activePayment.items}
+//             customerPhone={activePayment.customerPhone}
+//             address={activePayment.address}
+//             onSuccess={handlePaymentSuccess} // Дээрх зассан функц ажиллана
+//             onCancel={() => {
+//               setActivePayment(null);
+//               setAddressFormProduct(null); // Цуцлах үед хаягны формыг бас хаана
+//             }}
+//           />
+//         )}
+//       </AnimatePresence>
+
+//       <AnimatePresence>
+//         {receiptData && (
+//           <OrderReceipt
+//             orderData={receiptData}
+//             onClose={() => setReceiptData(null)}
+//           />
+//         )}
+//       </AnimatePresence>
+//     </>
+//   );
+// };
+
+"use client";
+
 import React, { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { motion, AnimatePresence } from "framer-motion";
@@ -850,15 +1169,48 @@ import OrderAddress from "../../payment/components/form";
 import QPayPayment from "../../payment/components/QPayPayment ";
 import OrderReceipt from "../../ZahialgaHarah/OrderReceipt";
 
+// ── Types ──────────────────────────────────────────────────────────────────
+
 interface Product {
   id: string;
   name: string;
   price: string;
   image: string;
   description: string;
-  storeId?: string;
+  storeId?: string; // ✅ optional
+  storeName?: string; // ✅ optional
   brand?: string;
-  storeName?: string;
+}
+
+interface AddressFormProduct {
+  name: string;
+  price: string | number;
+  image: string;
+  id: string;
+  storeId: string;
+  storeName: string;
+}
+
+interface ActivePayment {
+  amount: number;
+  orderId: string;
+  name: string;
+  image: string;
+  customerPhone: string;
+  address: string;
+  storeId: string;
+  storeName: string;
+  items: PaymentItem[];
+}
+
+interface PaymentItem {
+  productId: string;
+  name: string;
+  price: number;
+  quantity: number;
+  product_image_url: string;
+  storeId: string;
+  storeName: string;
 }
 
 interface MessageListProps {
@@ -870,6 +1222,8 @@ interface MessageListProps {
   storeName?: string;
 }
 
+// ── Helpers ────────────────────────────────────────────────────────────────
+
 const removeImageMarkdown = (content: string): string => {
   if (!content) return "";
   return content
@@ -878,26 +1232,30 @@ const removeImageMarkdown = (content: string): string => {
     .trim();
 };
 
+/**
+ * AI response-оос барааны мэдээлэл задлана.
+ * Alt text формат: name|price|description|id|brand|storeId|storeName
+ */
 const extractProducts = (content: string): Product[] => {
-  const imgRegex = /!\[([^\]]+)\]\(([^)]+)\)/g;
+  const imgRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
   const products: Product[] = [];
   let match;
+
   while ((match = imgRegex.exec(content)) !== null) {
-    const altText = match[1];
+    const parts = match[1].split("|").map((p) => p.trim());
     const imageSrc = match[2];
-    const parts = altText.split("|").map((p) => p.trim());
-    if (parts.length >= 2) {
-      products.push({
-        name: parts[0] || "Нэргүй бараа",
-        price: parts[1] || "0",
-        description: parts[2] || "",
-        id: parts[3] || `id-${Math.random()}`,
-        brand: parts[4] || "",
-        storeId: parts[5] || "store-001",
-        storeName: parts[6] || "Turuu's store",
-        image: imageSrc,
-      });
-    }
+    if (parts.length < 2) continue;
+
+    products.push({
+      name: parts[0] || "Нэргүй бараа",
+      price: parts[1] || "0",
+      description: parts[2] || "",
+      id: parts[3] || `id-${Math.random()}`,
+      brand: parts[4] || "",
+      storeId: parts[5] || "", // ✅ Pinecone metadata-аас ирнэ
+      storeName: parts[6] || "", // ✅ Pinecone metadata-аас ирнэ
+      image: imageSrc,
+    });
   }
   return products;
 };
@@ -912,9 +1270,20 @@ const extractPaymentTrigger = (content: string) => {
   }
 };
 
-const cleanPaymentTrigger = (content: string): string => {
-  return content.replace(/PAYMENT_TRIGGER:\{[^}]+\}/g, "").trim();
+const cleanPaymentTrigger = (content: string): string =>
+  content.replace(/PAYMENT_TRIGGER:\{[^}]+\}/g, "").trim();
+
+/** Ямар ч форматын үнийг аюулгүй тоо болгоно */
+const toNumber = (value: any): number => {
+  if (typeof value === "number") return isNaN(value) ? 0 : value;
+  if (typeof value === "string") {
+    const n = parseFloat(value.replace(/[^0-9.-]/g, ""));
+    return isNaN(n) ? 0 : n;
+  }
+  return 0;
 };
+
+// ── Component ──────────────────────────────────────────────────────────────
 
 export const MessageList: React.FC<MessageListProps> = ({
   messages,
@@ -922,118 +1291,111 @@ export const MessageList: React.FC<MessageListProps> = ({
   onProductClick,
   onBuy: externalOnBuy,
   messagesEndRef,
-  storeName,
+  storeName: propStoreName,
 }) => {
-  const [addressFormProduct, setAddressFormProduct] = useState<any>(null);
-  const [activePayment, setActivePayment] = useState<any>(null);
+  const [addressFormProduct, setAddressFormProduct] =
+    useState<AddressFormProduct | null>(null);
+  const [activePayment, setActivePayment] = useState<ActivePayment | null>(
+    null,
+  );
   const [receiptData, setReceiptData] = useState<any>(null);
 
-  const handleOpenOrderForm = (name: string, price: any) => {
-    const allProducts = messages.flatMap((m) =>
-      extractProducts(m.content || ""),
-    );
-    const match = allProducts.find((p) => p.name === name);
+  // ── Бүх мессежийн бараануудаас нэрээр хайна ──────────────────────────
+  const findProductByName = (name: string): Product | undefined => {
+    for (const m of messages) {
+      const found = extractProducts(m.content || "").find(
+        (p) => p.name === name,
+      );
+      if (found) return found;
+    }
+    return undefined;
+  };
 
+  const handleOpenOrderForm = (name: string, price: any) => {
+    const matched = findProductByName(name);
+
+    console.log("🔍 matched product:", matched);
+
+    // ✅ storeName-г propStoreName-аас авна (URL-аас дамжиж ирдэг)
+    // storeId-г Prisma-аас storeName-аар хайлгана
     setAddressFormProduct({
-      name: name,
-      price: price,
-      image: match?.image || "",
-      id: match?.id || `id-${Date.now()}`,
-      storeName: storeName || match?.storeName,
+      name,
+      price,
+      image: matched?.image || "",
+      id: matched?.id || `id-${Date.now()}`,
+      storeId: matched?.storeId || "",
+      // ✅ propStoreName нь ChatPage-аас дамжиж ирдэг — үүнийг ашиглана
+      storeName: matched?.storeName || propStoreName || "",
     });
   };
 
-  // const handleAddressConfirm = () => {
-  //   if (!addressFormProduct) return;
-  //   const product = { ...addressFormProduct };
-  //   setAddressFormProduct(null);
-
-  //   const numericPrice =
-  //     typeof product.price === "string"
-  //       ? parseFloat(product.price.replace(/[^0-9.]/g, ""))
-  //       : product.price;
-
-  //   setTimeout(() => {
-  //     setActivePayment({
-  //       amount: numericPrice || 0,
-  //       orderId: product.id || `ORD-${Date.now()}`,
-  //       productName: product.name,
-  //       image: product.image,
-  //       storeName: storeName || product.storeName || "Манай дэлгүүр",
-  //     });
-  //   }, 400);
-  // };
-
+  // ── Хаяг баталгаажсан → QPay руу шилжинэ ─────────────────────────────
   const handleAddressConfirm = (addressData: {
     phone: string;
     address: string;
   }) => {
     if (!addressFormProduct) return;
-    const product = { ...addressFormProduct };
 
-    // 1. Үнийг цэвэрлэж тоо болгох (₮ тэмдэгт, таслал зэргийг устгана)
-    const numericPrice =
-      typeof product.price === "string"
-        ? parseFloat(product.price.replace(/[^0-9.-]/g, ""))
-        : Number(product.price);
-
-    // Үнэ тоо биш байвал 0 эсвэл алдаа харуулна
-    const finalAmount = isNaN(numericPrice) ? 0 : numericPrice;
+    const finalAmount = toNumber(addressFormProduct.price);
+    setAddressFormProduct(null);
 
     setTimeout(() => {
       setActivePayment({
-        ...addressFormProduct,
+        amount: finalAmount,
+        orderId: `ORD-${Date.now()}`,
+        name: addressFormProduct.name,
+        image: addressFormProduct.image,
         customerPhone: addressData.phone,
         address: addressData.address,
-        amount: finalAmount, // Энд Number(product.price) биш finalAmount-аа ашиглана
-        orderId: `ORD-${Date.now()}`,
+        storeId: addressFormProduct.storeId, // ✅ orders route-д хэрэглэнэ
+        storeName: addressFormProduct.storeName,
         items: [
           {
             productId: addressFormProduct.id,
             name: addressFormProduct.name,
-            price: finalAmount, // Энд бас тоо байх ёстой
+            price: finalAmount,
             quantity: 1,
-            image:
-              addressFormProduct.image || addressFormProduct.product_image_url,
-
-            storeId: addressFormProduct.storeId || "store-01",
+            product_image_url: addressFormProduct.image || "",
+            storeId: addressFormProduct.storeId || "",
+            storeName: addressFormProduct.storeName || propStoreName || "",
           },
         ],
       });
     }, 400);
   };
+
+  // ── Төлбөр амжилттай ──────────────────────────────────────────────────
   const handlePaymentSuccess = (details: any) => {
-    const paidInfo = activePayment;
-
+    const paid = activePayment;
     setActivePayment(null);
-    setAddressFormProduct(null);
 
+    if (!paid) return;
     setReceiptData({
-      productName: paidInfo.name || paidInfo.productName,
-      amount: paidInfo.amount,
-      orderId: paidInfo.orderId,
-      date: new Date().toLocaleString(),
-      image: paidInfo.image,
-      transactionId: details.transactionId,
+      productName: paid.name,
+      amount: paid.amount,
+      orderId: paid.orderId,
+      date: new Date().toLocaleString("mn-MN"),
+      image: paid.image,
+      transactionId: details?.transactionId || "",
     });
   };
 
+  // ── Render ────────────────────────────────────────────────────────────
   return (
     <>
       <div className="max-w-3xl mx-auto pb-32 flex flex-col space-y-10 px-4">
         {messages.map((message: any, index: number) => {
           const isUser = message.role?.toLowerCase() === "user";
-          const products = !isUser
-            ? extractProducts(message.content || "")
-            : [];
-          const paymentTrigger = !isUser
-            ? extractPaymentTrigger(message.content || "")
-            : null;
+
+          const products = isUser ? [] : extractProducts(message.content || "");
+          const paymentTrigger = isUser
+            ? null
+            : extractPaymentTrigger(message.content || "");
           const cleanedContent = paymentTrigger
             ? cleanPaymentTrigger(message.content || "")
             : message.content || "";
           const rawText = removeImageMarkdown(cleanedContent);
-          const hasText = rawText.length > 0;
+          const hasText = rawText.trim().length > 0;
           const displayImage = message.imagePreview || message.image;
 
           return (
@@ -1093,12 +1455,24 @@ export const MessageList: React.FC<MessageListProps> = ({
                     </div>
                   )}
 
-                  {products.length > 0 && (
+                  {/* {products.length > 0 && (
                     <div className="w-full mt-2">
                       <ProductCarousel
                         products={products}
                         onBuy={handleOpenOrderForm}
                         onSelect={onProductClick}
+                        history={[]}
+                      />
+                    </div>
+                  )} */}
+                  {products.length > 0 && (
+                    <div className="w-full mt-2">
+                      <ProductCarousel
+                        products={products}
+                        onBuy={handleOpenOrderForm}
+                        onSelect={(product) =>
+                          onProductClick(product as Product)
+                        } // ✅ cast
                         history={[]}
                       />
                     </div>
@@ -1117,6 +1491,7 @@ export const MessageList: React.FC<MessageListProps> = ({
         <div ref={messagesEndRef} className="h-4 w-full" />
       </div>
 
+      {/* Хаягны форм */}
       <AnimatePresence>
         {addressFormProduct && (
           <OrderAddress
@@ -1126,17 +1501,7 @@ export const MessageList: React.FC<MessageListProps> = ({
         )}
       </AnimatePresence>
 
-      {/* <AnimatePresence>
-        {activePayment && (
-          <QPayPayment
-            amount={activePayment.amount}
-            orderId={activePayment.orderId}
-            onSuccess={handlePaymentSuccess}
-            onCancel={() => setActivePayment(null)}
-          />
-        )}
-      </AnimatePresence> */}
-      {/* MessageList.tsx доторх хэсэг */}
+      {/* QPay төлбөр — storeId/storeName бүрэн дамжуулна */}
       <AnimatePresence>
         {activePayment && (
           <QPayPayment
@@ -1145,15 +1510,15 @@ export const MessageList: React.FC<MessageListProps> = ({
             items={activePayment.items}
             customerPhone={activePayment.customerPhone}
             address={activePayment.address}
-            onSuccess={handlePaymentSuccess} // Дээрх зассан функц ажиллана
-            onCancel={() => {
-              setActivePayment(null);
-              setAddressFormProduct(null); // Цуцлах үед хаягны формыг бас хаана
-            }}
+            storeId={activePayment.storeId} // ✅ Шинэ prop
+            storeName={activePayment.storeName} // ✅ Шинэ prop
+            onSuccess={handlePaymentSuccess}
+            onCancel={() => setActivePayment(null)}
           />
         )}
       </AnimatePresence>
 
+      {/* Баримт */}
       <AnimatePresence>
         {receiptData && (
           <OrderReceipt
@@ -1165,4 +1530,3 @@ export const MessageList: React.FC<MessageListProps> = ({
     </>
   );
 };
-
